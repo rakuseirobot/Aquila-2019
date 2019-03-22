@@ -1,0 +1,9 @@
+/.settings/
+/Debug/
+*.json
+*.o
+*.hex
+*.elf
+/.vs/
+/NUCLEO-F411RE.xml
+/Drivers
