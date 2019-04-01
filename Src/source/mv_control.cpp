@@ -26,29 +26,28 @@ MV
 #include "stm32f4xx_hal.h"
 #include "stm32f429xx.h"
 #include "stm32f4xx_hal_gpio.h"
-/*
+
 void mv_cap(mv_ch_t di,bool st){
 	switch(di){
 		case MV_LEFT:
 			if(st==true){
 				HAL_GPIO_WritePin ((GPIO_TypeDef*)MVSIG1_GPIO_Port ,(uint16_t)MVSIG1_Pin , GPIO_PIN_RESET);
-				HAL_GPIO_WritePin(GPIOC,10,RESET);
 			}else{
 				HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_SET);
 			}
 			break;
 		case MV_FRONT:
 			if(st==true){
-				PORTD.OUTCLR=PIN3_bm;
+				HAL_GPIO_WritePin ((GPIO_TypeDef*)MVSIG2_GPIO_Port ,(uint16_t)MVSIG2_Pin , GPIO_PIN_RESET);
 			}else{
-				PORTD.OUTSET=PIN3_bm;
+				HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 			}
 			break;
 		case MV_RIGHT:
 			if(st==true){
-				PORTD.OUTCLR=PIN4_bm;
+				HAL_GPIO_WritePin ((GPIO_TypeDef*)MVSIG3_GPIO_Port ,(uint16_t)MVSIG3_Pin , GPIO_PIN_RESET);
 			}else{
-				PORTD.OUTSET=PIN4_bm;
+				HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 			}
 			break;
 		default:
@@ -56,6 +55,7 @@ void mv_cap(mv_ch_t di,bool st){
 	}
 	return;
 }
+/*
 void mv_sig(uint8_t i,bool ud){
 	if (ud){
 		if (i==1){
