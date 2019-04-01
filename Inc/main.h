@@ -4,45 +4,35 @@
   * @brief          : Header for main.c file.
   *                   This file contains the common defines of the application.
   ******************************************************************************
-  * This notice applies to any and all portions of this file
+  ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
   * USER CODE END. Other portions of this file, whether 
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2019 STMicroelectronics International N.V. 
-  * All rights reserved.
+  * COPYRIGHT(c) 2019 STMicroelectronics
   *
-  * Redistribution and use in source and binary forms, with or without 
-  * modification, are permitted, provided that the following conditions are met:
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *   1. Redistributions of source code must retain the above copyright notice,
+  *      this list of conditions and the following disclaimer.
+  *   2. Redistributions in binary form must reproduce the above copyright notice,
+  *      this list of conditions and the following disclaimer in the documentation
+  *      and/or other materials provided with the distribution.
+  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *      may be used to endorse or promote products derived from this software
+  *      without specific prior written permission.
   *
-  * 1. Redistribution of source code must retain the above copyright notice, 
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
   */
@@ -52,6 +42,7 @@
 #define __MAIN_H__
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -59,54 +50,66 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define LED_RED_Pin GPIO_PIN_2
-#define LED_RED_GPIO_Port GPIOE
-#define LED_GREEN_Pin GPIO_PIN_3
-#define LED_GREEN_GPIO_Port GPIOE
-#define LED_BLUE_Pin GPIO_PIN_4
-#define LED_BLUE_GPIO_Port GPIOE
-#define ERROR_LED1_Pin GPIO_PIN_5
-#define ERROR_LED1_GPIO_Port GPIOE
-#define ERROR_LED2_Pin GPIO_PIN_6
-#define ERROR_LED2_GPIO_Port GPIOE
-#define MVS1_Pin GPIO_PIN_13
-#define MVS1_GPIO_Port GPIOC
-#define MVS2_Pin GPIO_PIN_14
-#define MVS2_GPIO_Port GPIOC
-#define MVS3_Pin GPIO_PIN_15
-#define MVS3_GPIO_Port GPIOC
+#define MVS3_Pin GPIO_PIN_2
+#define MVS3_GPIO_Port GPIOE
+#define MVS2_Pin GPIO_PIN_3
+#define MVS2_GPIO_Port GPIOE
+#define MVS1_Pin GPIO_PIN_4
+#define MVS1_GPIO_Port GPIOE
+#define RAM_CS_Pin GPIO_PIN_5
+#define RAM_CS_GPIO_Port GPIOE
+#define SS_R_Pin GPIO_PIN_6
+#define SS_R_GPIO_Port GPIOE
+#define FLED_BLUE_Pin GPIO_PIN_13
+#define FLED_BLUE_GPIO_Port GPIOC
+#define FLED_GREEN_Pin GPIO_PIN_14
+#define FLED_GREEN_GPIO_Port GPIOC
+#define FLED_RED_Pin GPIO_PIN_15
+#define FLED_RED_GPIO_Port GPIOC
+#define TOUCH1_Pin GPIO_PIN_0
+#define TOUCH1_GPIO_Port GPIOC
+#define TOUCH2_Pin GPIO_PIN_1
+#define TOUCH2_GPIO_Port GPIOC
 #define RAM_HOLD_Pin GPIO_PIN_4
 #define RAM_HOLD_GPIO_Port GPIOA
-#define RAM_CS_Pin GPIO_PIN_4
-#define RAM_CS_GPIO_Port GPIOC
-#define LCD_CS_Pin GPIO_PIN_5
-#define LCD_CS_GPIO_Port GPIOC
+#define E1_Pin GPIO_PIN_0
+#define E1_GPIO_Port GPIOB
+#define E2_Pin GPIO_PIN_1
+#define E2_GPIO_Port GPIOB
 #define INAA_Pin GPIO_PIN_2
 #define INAA_GPIO_Port GPIOB
-#define INBA_Pin GPIO_PIN_7
-#define INBA_GPIO_Port GPIOE
-#define ENA_Pin GPIO_PIN_8
+#define ENA_Pin GPIO_PIN_7
 #define ENA_GPIO_Port GPIOE
+#define INBA_Pin GPIO_PIN_8
+#define INBA_GPIO_Port GPIOE
 #define CSA_Pin GPIO_PIN_10
 #define CSA_GPIO_Port GPIOE
-#define INAB_Pin GPIO_PIN_12
-#define INAB_GPIO_Port GPIOE
-#define INBB_Pin GPIO_PIN_13
-#define INBB_GPIO_Port GPIOE
-#define ENB_Pin GPIO_PIN_14
+#define ENB_Pin GPIO_PIN_12
 #define ENB_GPIO_Port GPIOE
+#define INAB_Pin GPIO_PIN_13
+#define INAB_GPIO_Port GPIOE
+#define INBB_Pin GPIO_PIN_14
+#define INBB_GPIO_Port GPIOE
 #define CSB_Pin GPIO_PIN_15
 #define CSB_GPIO_Port GPIOE
-#define TOUCH2_Pin GPIO_PIN_8
-#define TOUCH2_GPIO_Port GPIOA
-#define TOUCH1_Pin GPIO_PIN_9
-#define TOUCH1_GPIO_Port GPIOA
-#define SW1_Pin GPIO_PIN_10
-#define SW1_GPIO_Port GPIOA
-#define SW2_Pin GPIO_PIN_11
-#define SW2_GPIO_Port GPIOA
-#define SW3_Pin GPIO_PIN_12
-#define SW3_GPIO_Port GPIOA
+#define LCD_CS_Pin GPIO_PIN_14
+#define LCD_CS_GPIO_Port GPIOB
+#define LCD_RST_Pin GPIO_PIN_15
+#define LCD_RST_GPIO_Port GPIOB
+#define SW1_Pin GPIO_PIN_8
+#define SW1_GPIO_Port GPIOD
+#define SW2_Pin GPIO_PIN_9
+#define SW2_GPIO_Port GPIOD
+#define SW3_Pin GPIO_PIN_10
+#define SW3_GPIO_Port GPIOD
+#define CL_Pin GPIO_PIN_8
+#define CL_GPIO_Port GPIOC
+#define DP1_Pin GPIO_PIN_10
+#define DP1_GPIO_Port GPIOA
+#define DP2_Pin GPIO_PIN_11
+#define DP2_GPIO_Port GPIOA
+#define LCD_RSTA12_Pin GPIO_PIN_12
+#define LCD_RSTA12_GPIO_Port GPIOA
 #define MVSIG1_Pin GPIO_PIN_10
 #define MVSIG1_GPIO_Port GPIOC
 #define MVSIG2_Pin GPIO_PIN_11
@@ -125,14 +128,18 @@
 #define PING5_GPIO_Port GPIOD
 #define PING6_Pin GPIO_PIN_5
 #define PING6_GPIO_Port GPIOD
-#define DOUT_Pin GPIO_PIN_6
-#define DOUT_GPIO_Port GPIOD
-#define GATE_Pin GPIO_PIN_7
-#define GATE_GPIO_Port GPIOD
-#define CK_Pin GPIO_PIN_3
-#define CK_GPIO_Port GPIOB
-#define RANGE_Pin GPIO_PIN_4
-#define RANGE_GPIO_Port GPIOB
+#define RANGE_Pin GPIO_PIN_6
+#define RANGE_GPIO_Port GPIOD
+#define CK_Pin GPIO_PIN_7
+#define CK_GPIO_Port GPIOD
+#define GATE_Pin GPIO_PIN_3
+#define GATE_GPIO_Port GPIOB
+#define DOUT_Pin GPIO_PIN_4
+#define DOUT_GPIO_Port GPIOB
+#define FET1_Pin GPIO_PIN_8
+#define FET1_GPIO_Port GPIOB
+#define FET2_Pin GPIO_PIN_9
+#define FET2_GPIO_Port GPIOB
 
 /* ########################## Assert Selection ############################## */
 /**
