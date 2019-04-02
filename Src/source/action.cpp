@@ -11,57 +11,57 @@ uint32_t Servo_count = 750; //1.5ms  2ms:1000 1ms:500
 bool Victim_front = false;
 uint8_t Victim_front_kit = 0;
 
-
+#warning Program isnt finished
 void Drop_kit(uint8_t lr,uint16_t num){ //lr:1:?E 0:??
 	if(lr==1){
 		for(int i=0;i<=num;i++){
-			PORTK.OUTSET = PIN0_bm|PIN1_bm;
-			PORTK.OUTCLR = PIN2_bm|PIN3_bm;
+			//PORTK.OUTSET = PIN0_bm|PIN1_bm;
+			//PORTK.OUTCLR = PIN2_bm|PIN3_bm;
 			HAL_Delay(2);
-			PORTK.OUTSET = PIN1_bm|PIN2_bm;
-			PORTK.OUTCLR = PIN0_bm|PIN3_bm;
+			//PORTK.OUTSET = PIN1_bm|PIN2_bm;
+			//PORTK.OUTCLR = PIN0_bm|PIN3_bm;
 			HAL_Delay(2);
-			PORTK.OUTSET = PIN2_bm|PIN3_bm;
-			PORTK.OUTCLR = PIN0_bm|PIN1_bm;
+			//PORTK.OUTSET = PIN2_bm|PIN3_bm;
+			//PORTK.OUTCLR = PIN0_bm|PIN1_bm;
 			HAL_Delay(2);
-			PORTK.OUTSET = PIN3_bm|PIN0_bm;
-			PORTK.OUTCLR = PIN1_bm|PIN2_bm;
+			//PORTK.OUTSET = PIN3_bm|PIN0_bm;
+			//PORTK.OUTCLR = PIN1_bm|PIN2_bm;
 			HAL_Delay(2);
 		}
 	}
 	else if(lr==0){
 		for(int i=0;i<=num;i++){
-			PORTK.OUTSET = PIN3_bm|PIN0_bm;
-			PORTK.OUTCLR = PIN1_bm|PIN2_bm;
+			//PORTK.OUTSET = PIN3_bm|PIN0_bm;
+			//PORTK.OUTCLR = PIN1_bm|PIN2_bm;
 			HAL_Delay(2);
-			PORTK.OUTSET = PIN2_bm|PIN3_bm;
-			PORTK.OUTCLR = PIN0_bm|PIN1_bm;
+			//PORTK.OUTSET = PIN2_bm|PIN3_bm;
+			//PORTK.OUTCLR = PIN0_bm|PIN1_bm;
 			HAL_Delay(2);
-			PORTK.OUTSET = PIN1_bm|PIN2_bm;
-			PORTK.OUTCLR = PIN0_bm|PIN3_bm;
+			//PORTK.OUTSET = PIN1_bm|PIN2_bm;
+			//PORTK.OUTCLR = PIN0_bm|PIN3_bm;
 			HAL_Delay(2);
-			PORTK.OUTSET = PIN0_bm|PIN1_bm;
-			PORTK.OUTCLR = PIN2_bm|PIN3_bm;
+			//PORTK.OUTSET = PIN0_bm|PIN1_bm;
+			//PORTK.OUTCLR = PIN2_bm|PIN3_bm;
 			HAL_Delay(2);
 		}
 	}
-	PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm|PIN3_bm;
+	//PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm|PIN3_bm;
 	return;
 }
 
 void throw_kit(void){
 	for(int i=0;i<=40;i++){
-		PORTK.OUTSET = PIN0_bm;
-		PORTK.OUTCLR = PIN1_bm|PIN2_bm|PIN3_bm;
+		//PORTK.OUTSET = PIN0_bm;
+		//PORTK.OUTCLR = PIN1_bm|PIN2_bm|PIN3_bm;
 		HAL_Delay(2);
-		PORTK.OUTSET = PIN1_bm;
-		PORTK.OUTCLR = PIN0_bm|PIN2_bm|PIN3_bm;
+		//PORTK.OUTSET = PIN1_bm;
+		//PORTK.OUTCLR = PIN0_bm|PIN2_bm|PIN3_bm;
 		HAL_Delay(2);
-		PORTK.OUTSET = PIN2_bm;
-		PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN3_bm;
+		//PORTK.OUTSET = PIN2_bm;
+		//PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN3_bm;
 		HAL_Delay(2);
-		PORTK.OUTSET = PIN3_bm;
-		PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm;
+		//PORTK.OUTSET = PIN3_bm;
+		//PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm;
 		HAL_Delay(2);
 	}
 }
@@ -111,7 +111,7 @@ void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and 
 	else{
 		Victim_front=false;
 	}
-	PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm|PIN3_bm;
+	#warning Not yet//ここはステッピングモーターのピンすべてLOW
 	led(Redled,0);
 	led(Blueled,0);
 	led(Greenled,0);

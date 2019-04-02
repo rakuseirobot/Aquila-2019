@@ -17,7 +17,7 @@ void buzzer(uint16_t t){
 }
 
 
-void led(uint8_t ledkind,uint8_t ledmode){//0:消灯1:点灯3:TGL4:全部消灯
+void led(uint16_t ledkind,uint8_t ledmode){//0:消灯1:点灯3:TGL4:全部消灯
 	if(ledmode==1){
 		HAL_GPIO_WritePin(FLED_BLUE_GPIO_Port,ledkind,GPIO_PIN_RESET);
 	}
