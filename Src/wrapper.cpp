@@ -12,7 +12,9 @@
 #include <math.h>
 #include "peripheral.hpp"
 #include "uart_control.hpp"
+#include "spi_control.hpp"
 uart serial(&huart2);
+spi spi_t(&hspi1);
 void cpploop(void) {
 	while(1);
 }

@@ -26,6 +26,17 @@ MV
 #include "stm32f4xx_hal.h"
 #include "stm32f429xx.h"
 #include "stm32f4xx_hal_gpio.h"
+#include "spi_control.hpp"
+#include "uart_control.hpp"
+#include "core.hpp"
+#include "action.hpp"
+#include "ui_control.hpp"
+#include "lcd_control.hpp"
+
+extern spi spi_t;
+spi mv_spi=spi_t;
+extern uart serial;
+uart mv_serial = serial;
 
 void mv_cap(mv_ch_t di,bool st){
 	switch(di){
@@ -55,17 +66,17 @@ void mv_cap(mv_ch_t di,bool st){
 	}
 	return;
 }
-/*
+
 void mv_sig(uint8_t i,bool ud){
 	if (ud){
 		if (i==1){
-			PORTD.OUTSET=PIN2_bm;
+			HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_SET);
 		}
 		else if (i==2){	
-			PORTD.OUTSET=PIN3_bm;
+			HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 		}
 		else if(i==3){
-			PORTD.OUTSET=PIN4_bm;
+			HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 		}
 		else{
 			return;
@@ -73,13 +84,13 @@ void mv_sig(uint8_t i,bool ud){
 	}
 	else{
 		if (i==1){
-			PORTD.OUTCLR=PIN2_bm;
+			HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG2_Pin,GPIO_PIN_RESET);
 		}
 		else if (i==2){
-			PORTD.OUTCLR=PIN3_bm;
+			HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_RESET);
 		}
 		else if(i==3){
-			PORTD.OUTCLR=PIN4_bm;
+			HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
 		}
 		else{
 			return;
@@ -89,47 +100,50 @@ void mv_sig(uint8_t i,bool ud){
 }
 uint8_t mv_spi_send(uint8_t val, uint8_t i){
 	if (i==1){
-		PORTD.OUTSET=PIN2_bm;
+		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	}
 	else if (i==2){
-		PORTD.OUTSET=PIN3_bm;
+		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	}
 	else if(i==3){
-		PORTD.OUTSET=PIN4_bm;
+		HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	}
 	else{
 		return 0;
 	}
-	_delay_ms(10);
+	HAL_Delay(10);
 	if (i==1){
-		PORTD.OUTCLR=PIN2_bm;
+		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
 	}
 	else if (i==2){
-		PORTD.OUTCLR=PIN3_bm;
+		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
 	}
 	else if(i==3){
-		PORTD.OUTCLR=PIN4_bm;
+		HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
 	}
 	else{
 		return 0;
 	}
-	uint8_t dat = 0;
-	_delay_ms(10);
-	dat = mv.send(val);
+	uint8_t dat[1];
+	uint8_t tx[1]={0};
+	HAL_Delay(10);
+	mv_spi.send(tx,dat);
 	if (i==1){
-		PORTD.OUTSET=PIN2_bm;
+		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 	}
 	else if (i==2){
-		PORTD.OUTSET=PIN3_bm;	
+		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 	}
 	else if(i==3){
-		PORTD.OUTSET=PIN4_bm;
+		HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	}
 	else{
 		return 0;
 	}
-	_delay_ms(10);
-	PORTD.OUTCLR=PIN2_bm|PIN3_bm|PIN4_bm;
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	//while((PORTJ.IN & PIN5_bm)==0||(PORTJ.IN & PIN6_bm)==0||(PORTJ.IN & PIN7_bm)==0);
 	return dat;
 }
@@ -154,31 +168,31 @@ bool kit_chk(uint8_t num=0){//num = type of victim. //unknown(1/17)
 
 uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	//mv_sig(dir,false);
-	_delay_ms(2);
+	HAL_Delay(2);
 	led(Blueled,1);
 	uint8_t res = mv_spi_send(dir,1);
-	serial.putint((int)ta.r_now());
-	serial.string(" , ");
-	serial.putint(ta.r_now()->x);
-	serial.string(" , ");
-	serial.putint(ta.r_now()->y);
-	serial.string(" , ");
-	serial.putint(ta.r_now()->z);
-	serial.string(" ::sermo\n");
+	mv_serial.putint((int)ta.r_now());
+	mv_serial.string(" , ");
+	mv_serial.putint(ta.r_now()->x);
+	mv_serial.string(" , ");
+	mv_serial.putint(ta.r_now()->y);
+	mv_serial.string(" , ");
+	mv_serial.putint(ta.r_now()->z);
+	mv_serial.string(" ::sermo\n");
 	if(kit_chk()==false){
-		PORTB.OUTCLR=PIN0_bm|PIN1_bm;
+		//モーター再開
 		lcd_clear();
 		led(Blueled,0);
 		lcd_putstr(LCD1_TWI,"return");
 		buzzer(400);
 		return 0;
 	}
-	PORTB.OUTSET=PIN0_bm|PIN1_bm;
+	//モーター停止
 	//hhh.key=1;
 	mv_cap(dir,false);
-	serial.string("ch");
-	serial.putdec(res);
-	serial.string("\n\r");
+	mv_serial.string("ch");
+	mv_serial.putint(res);
+	mv_serial.string("\n\r");
 	//if (dir==3&&res!=0){
 	//	return 2;
 	//}
@@ -227,9 +241,9 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	mv_cap(MV_RIGHT,true);
 	mv_cap(dir,false);
 	led(Blueled,0);
-	_delay_ms(2);
-	PORTB.OUTCLR=PIN0_bm|PIN1_bm;
+	HAL_Delay(2);
+	//モーター再開
 	return 1;
 }
 
-*/
+
