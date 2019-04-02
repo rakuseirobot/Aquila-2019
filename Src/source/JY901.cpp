@@ -8,7 +8,7 @@
 #include "JY901.hpp"
 
 #include "stm32f4xx_hal.h"
-#include <math.h>
+#include <cmath>
 
 jy901::jy901(I2C_HandleTypeDef *jy_i2ct,uint16_t ad){
 	jy_i2c = jy_i2ct;
@@ -20,6 +20,19 @@ float jy901::read_angle(void){
 	HAL_I2C_Mem_Read(jy_i2c,addr,0x3f,I2C_MEMADD_SIZE_8BIT,(uint8_t*) ret,2,0xFFFF);
 	return ((float)((int16_t)(ret[1] << 8) | ret[0])  / 32768 * 180) + 180;
 }
+
+float jy901::read_angle_x(void){
+	int16_t ret[2];
+	HAL_I2C_Mem_Read(jy_i2c,addr,0x3d,I2C_MEMADD_SIZE_8BIT,(uint8_t*) ret,2,0xFFFF);
+	return ((float)((int16_t)(ret[1] << 8) | ret[0])  / 32768 * 180) + 180;
+}
+
+float jy901::read_angle_y(void){
+	int16_t ret[2];
+	HAL_I2C_Mem_Read(jy_i2c,addr,0x3e,I2C_MEMADD_SIZE_8BIT,(uint8_t*) ret,2,0xFFFF);
+	return ((float)((int16_t)(ret[1] << 8) | ret[0])  / 32768 * 180) + 180;
+}
+
 
 float jy901::read_acc_x(void){
 	int16_t ret[2];

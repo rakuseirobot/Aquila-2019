@@ -50,6 +50,10 @@ namespace motor{
 	}move_dis_t;
 	void check_job();
 	void brake(ch_t x);
+	void forward(ch_t x);
+	void back(ch_t x);
+	void set_speed(ch_t x,uint16_t sp);
+	void set_speed(uint16_t sp);
 	uint8_t status(motor::ch_t m);
 	void wait(bool check=true);
 	void move(move_t x=BRAKE);/*

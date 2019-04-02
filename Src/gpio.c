@@ -72,14 +72,14 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, MVS3_Pin|MVS2_Pin|MVS1_Pin|RAM_CS_Pin 
-                          |SS_R_Pin|ENA_Pin|INBA_Pin|CSA_Pin 
-                          |ENB_Pin|INAB_Pin|INBB_Pin|CSB_Pin, GPIO_PIN_RESET);
+                          |SS_R_Pin|M1_EN_Pin|M1_INB_Pin|M1_CS_Pin 
+                          |M2_EN_Pin|M2_INA_Pin|M2_INB_Pin|M2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, RAM_HOLD_Pin|DP1_Pin|DP2_Pin|LCD_RSTA12_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, E1_Pin|E2_Pin|INAA_Pin|LCD_CS_Pin 
+  HAL_GPIO_WritePin(GPIOB, E1_Pin|E2_Pin|M1_INA_Pin|LCD_CS_Pin 
                           |LCD_RST_Pin|GATE_Pin|FET1_Pin|FET2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -92,8 +92,8 @@ void MX_GPIO_Init(void)
                            PEPin PEPin PEPin PEPin 
                            PEPin PEPin PEPin PEPin */
   GPIO_InitStruct.Pin = MVS3_Pin|MVS2_Pin|MVS1_Pin|RAM_CS_Pin 
-                          |SS_R_Pin|ENA_Pin|INBA_Pin|CSA_Pin 
-                          |ENB_Pin|INAB_Pin|INBB_Pin|CSB_Pin;
+                          |SS_R_Pin|M1_EN_Pin|M1_INB_Pin|M1_CS_Pin 
+                          |M2_EN_Pin|M2_INA_Pin|M2_INB_Pin|M2_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -122,7 +122,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin 
                            PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = E1_Pin|E2_Pin|INAA_Pin|LCD_CS_Pin 
+  GPIO_InitStruct.Pin = E1_Pin|E2_Pin|M1_INA_Pin|LCD_CS_Pin 
                           |LCD_RST_Pin|GATE_Pin|FET1_Pin|FET2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

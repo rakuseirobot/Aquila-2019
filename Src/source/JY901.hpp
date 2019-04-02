@@ -14,6 +14,8 @@ class jy901{
 		uint16_t addr;
 		jy901(I2C_HandleTypeDef *jy_i2ct,uint16_t ad=0x50<<1);
 		float read_angle(void);
+		float read_angle_x(void);
+		float read_angle_y(void);
 		float read_acc_x(void);
 		float read_acc_y(void);
 		float read_acc_z(void);
