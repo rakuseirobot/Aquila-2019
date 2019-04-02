@@ -4,19 +4,22 @@
  *  Author: emile
  */ 
 #include "iris.hpp"
-#include "initializing.hpp"
+//#include "initializing.hpp"
 #include "color_control.hpp"
 #include "motor_control.hpp"
 #include "lcd_control.hpp"
 #include "ping_control.hpp"
 #include "mv_control.hpp"
-#include "gyro_control.hpp"
+#include "JY901.hpp"
 #include "action.hpp"
-//using namespace motor;
+#include "uart_control.hpp"
 #define ping_flag true //trueなら2マス先も見る
 
+extern uart serial;
+uart iris_serial = serial;
+
 void make_nodes(){
-	serial.string("make_nodes\n");
+	iris_serial.string("make_nodes\n");
     if(!ta.r_now()->ac){
 		rep(i,4){
 			if(check_ping(i)>1){
@@ -88,7 +91,7 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
 	if(flag==0)return false;
 	motor::brake(motor::MOTOR_LEFT);
 	motor::brake(motor::MOTOR_RIGHT);
-	serial.putint(x);
+	iris_serial.putint(x);
 	if(x==v::front){
 		motor::move(motor::HALF_ADVANCE);
 	}
@@ -97,15 +100,15 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
 	}
 	motor::gb_fix();
 	motor::turn_fix();
-	serial.string("nac2");
+	iris_serial.string("nac2");
 	if(ta.r_now()->type==v::slope){
-		serial.string("a");
+		iris_serial.string("a");
 		node* t = ta.r_now();/*空間計算量を抑える為に使いまわす*/
 		rep(i,4){ if(t->next[i]->type==v::slope){t=t->next[i];break;} }/*node_aの探索*/
 		rep(i,4){ if(t->next[i]->type!=v::slope){t=t->next[i];break;} }/*node_bの探索*/
 		ta.w_now(t);
 	}else{/*make_nodesよりも後だと、こちらが面倒*/
-		serial.string("b");
+		iris_serial.string("b");
 		ta.r_now()->type=v::slope;
 		node* t = ta.ac_next(v::back,1);/*t=nowの一つ前のnode*/
 		uint8_t zz = ta.r_now()->z;
@@ -115,26 +118,26 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
 				ta.r_now()->next[i]=ta.mall.make(t->x,t->y,zz,(ta.r_flg()+1)%2); 
 				t=ta.r_now()->next[i];/*t=node_a*/
 				t->next[0]=ta.r_now();
-				serial.string("c");
+				iris_serial.string("c");
 				break;
 			}
 		}
 		ta.w_now(t);t->type=v::slope;
 		ta.go_st();/*node_b*/
-		serial.string("nac2:end:");
-		serial.putint((int)ta.r_now());
-		serial.string(",");
-		serial.putint((int)ta.r_now()->x);
-		serial.string(",");
-		serial.putint((int)ta.r_now()->y);
-		serial.string(",");
-		serial.putint((int)ta.r_now()->z);
-		serial.string(",");
-		serial.putint((int)ta.r_now()->type);
-		serial.string("\n");
-		serial.string("find :");
-		serial.putint((int)ta.find(ta.r_now()->x,ta.r_now()->y,ta.r_now()->z));
-		serial.string("\n");
+		iris_serial.string("nac2:end:");
+		iris_serial.putint((int)ta.r_now());
+		iris_serial.string(",");
+		iris_serial.putint((int)ta.r_now()->x);
+		iris_serial.string(",");
+		iris_serial.putint((int)ta.r_now()->y);
+		iris_serial.string(",");
+		iris_serial.putint((int)ta.r_now()->z);
+		iris_serial.string(",");
+		iris_serial.putint((int)ta.r_now()->type);
+		iris_serial.string("\n");
+		iris_serial.string("find :");
+		iris_serial.putint((int)ta.find(ta.r_now()->x,ta.r_now()->y,ta.r_now()->z));
+		iris_serial.string("\n");
 		//ta.stk.pop();//????its test.
 	}
 	return true;
@@ -209,19 +212,19 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
 		default:
 			break;
 	}
-	serial.string("now:: ");
-	serial.putint((int)ta.r_now());
-	serial.string(" -> ");
-	serial.putint(ta.r_now()->x);
-	serial.string(" , ");
-	serial.putint(ta.r_now()->y);
-	serial.string(" , ");
-	serial.putint(ta.r_now()->z);
-	serial.string(" : ");
-	serial.putint(ta.r_now()->type);
-	serial.string(" : ");
-	serial.putint(ta.r_now()->color);
-	serial.string("\n");
+	iris_serial.string("now:: ");
+	iris_serial.putint((int)ta.r_now());
+	iris_serial.string(" -> ");
+	iris_serial.putint(ta.r_now()->x);
+	iris_serial.string(" , ");
+	iris_serial.putint(ta.r_now()->y);
+	iris_serial.string(" , ");
+	iris_serial.putint(ta.r_now()->z);
+	iris_serial.string(" : ");
+	iris_serial.putint(ta.r_now()->type);
+	iris_serial.string(" : ");
+	iris_serial.putint(ta.r_now()->color);
+	iris_serial.string("\n");
 	if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
 	black_tile();
 	if(num==v::back){ nachylenie2(v::back); }else{ nachylenie2(v::front); }
@@ -240,15 +243,15 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
 
 void move_n(node* n){//move to neighborhood((node*)n)
 	if(n!=np){
-		serial.string("m_n");
+		iris_serial.string("m_n");
         rep(i,4)if(ta.ac_next(i,1)==n && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->type!=v::black){
 	        move(i);
 			lcd_clear();
-			lcd_putstr(LCD1_TWI,"m_n");
-			serial.string("-a");
+			lcd_putstr("m_n");
+			iris_serial.string("-a");
 			break;
 		}
-		serial.string("mn-end\n");
+		iris_serial.string("mn-end\n");
     }
 }
 
@@ -257,43 +260,43 @@ void move_toa(node* a){//move to (node*)a
 	ta.clear_dist();
 	ta.bfs(a,ta.r_now());
 	bl fg;
-	serial.string("m_a:a=");
-	serial.putint((int)a);	
-	serial.string("\n");
-	serial.putint(a->x);
-	serial.string("\n");
-	serial.putint(a->y);
-	serial.string("\n");
-	serial.putint(a->z);
-	serial.string("\n");
-	serial.string("\n");
+	iris_serial.string("m_a:a=");
+	iris_serial.putint((int)a);
+	iris_serial.string("\n");
+	iris_serial.putint(a->x);
+	iris_serial.string("\n");
+	iris_serial.putint(a->y);
+	iris_serial.string("\n");
+	iris_serial.putint(a->z);
+	iris_serial.string("\n");
+	iris_serial.string("\n");
 	while(ta.r_now()!=a && a->type!=v::black && a->type!=v::slope){
 		fg = false;
 		rep(i,4){
-			serial.string("-aa");
-			serial.putint((int)a);
+			iris_serial.string("-aa");
+			iris_serial.putint((int)a);
 			if(!fg && ta.ac_next(i,1)!=np && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->dist<ta.r_now()->dist && ta.ac_next(i,1)->type!=v::black){ move_n(ta.ac_next(i,1)); fg=true; }
 			if(ta.find(a->x,a->y,a->z)->type==v::slope)fg=true;
 		}
 	}
-	serial.string("-b");
+	iris_serial.string("-b");
 	ta.clear_dist();
 	lcd_clear();
-	serial.string("ma-end\n");
-	lcd_putstr(LCD1_TWI,"end");
+	iris_serial.string("ma-end\n");
+	lcd_putstr("end");
 }
 
 void stack_dfs(){	
-	serial.string("start: ");
-	serial.putint((int)ta.r_now());
-	serial.string("\n");
-	serial.putint(ta.r_now()->x);
-	serial.string("\n");
-	serial.putint(ta.r_now()->y);
-	serial.string("\n");
-	serial.putint(ta.r_now()->z);
-	serial.string("\n");
-	serial.string("-------------\n");
+	iris_serial.string("start: ");
+	iris_serial.putint((int)ta.r_now());
+	iris_serial.string("\n");
+	iris_serial.putint(ta.r_now()->x);
+	iris_serial.string("\n");
+	iris_serial.putint(ta.r_now()->y);
+	iris_serial.string("\n");
+	iris_serial.putint(ta.r_now()->z);
+	iris_serial.string("\n");
+	iris_serial.string("-------------\n");
 	ta.stk.push(ta.r_start());
 	ta.r_start()->color=color::gray;
 	make_nodes();
@@ -305,7 +308,7 @@ void stack_dfs(){
 			for(int i=3;i>=0;i--){
 				if(check_ping(i)>j+1)if(ta.ac_next(i,1)!=np && ta.ac_next(i,1)->color==color::white 
 																	&& ta.ck_conect(ta.r_now(),ta.ac_next(i,1))){
-					serial.string("m");
+					iris_serial.string("m");
 					ta.stk.push(ta.ac_next(i,1));
 					ta.ac_next(i,1)->color=color::gray;
 				}
@@ -338,22 +341,22 @@ void stack_dfs(){
 			ta.ac_next(tmp[0],1)->color=color::gray;
 		}
 		//node追加部分ここまで
-		*/serial.string("n");
+		*/iris_serial.string("n");
 		lcd_clear();
-		lcd_putstr(LCD1_TWI,"dfs");
+		lcd_putstr("dfs");
 		fg=false;
 		while(!fg){
 			if(ta.stk.top()->color!=color::black && !ta.stk.empty() && ta.stk.top()!=np){
-				serial.string("dfs2 : ");
-				serial.putint((int)ta.stk.top());
-				serial.string("\n");
+				iris_serial.string("dfs2 : ");
+				iris_serial.putint((int)ta.stk.top());
+				iris_serial.string("\n");
 				move_toa(ta.stk.top());
 				lcd_clear();
-				lcd_putstr(LCD1_TWI,"dfs2");
-				serial.string("s_dfs\n");
+				lcd_putstr("dfs2");
+				iris_serial.string("s_dfs\n");
 				fg=true;
 			}else{ ta.stk.pop(); }
 		}
-		serial.string("end");
+		iris_serial.string("end");
 	}
 }

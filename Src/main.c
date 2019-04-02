@@ -110,6 +110,7 @@ int main(void)
   MX_I2C3_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
