@@ -4,7 +4,7 @@
  *  Author: emile
  */
 #include "data_structure.hpp"
-
+extern const int max_size;
 void tuple_four::update(uint8_t x,uint8_t y){
 	x_min = min(x_min,x); x_max = max(x_max,x);
 	y_min = min(y_min,y); y_max = max(y_max,y);

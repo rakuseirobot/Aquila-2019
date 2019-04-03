@@ -7,11 +7,11 @@
  */ 
  #include <stdint.h>
 #define np nullptr
-#define max_size 250
 #define rep(i,N) for(int i=0;i<N;i++)
 using ll = long long int;
 using ci = const int;
 using bl = bool;
+ci max_size=250;
 namespace v{
     //for all ,such as wall,move,and so on...
     ci left =0;

@@ -45,12 +45,12 @@ namespace motor{
 		LEFT_TURN_NO_GYRO,
 		BRAKE
 	}move_t;
-	typedef enum{
-		ONE_BLOCK,
-		TWO_BLOCK,
-		TURN,
-		HALF_BLOCK,
-	}move_dis_t;
+	enum move_dis_t{
+		ONE_BLOCK=1,
+		TWO_BLOCK=1,
+		TURN=1,
+		HALF_BLOCK=1,
+	};
 
 	typedef enum{
 		FREE,
@@ -91,9 +91,6 @@ namespace motor{
 
 void Save_angle(void);
 void init_motor(void);
-uint8_t mspi(uint8_t val,motor::ch_t i);
-void m_send(motor::ch_t rl,motor::move_sig_t sig,uint8_t y,motor::move_dis_t dis);
-void m_send(motor::ch_t rl,motor::move_sig_t sig,uint8_t y,uint8_t z);
 int16_t smaller_s(int16_t x,int16_t y);
 void enkaigei(void);
 #endif /* MOTOR_CONTROL_H_ */

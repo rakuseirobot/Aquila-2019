@@ -259,7 +259,7 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 			break;
 		default:
 			break;
-	};
+	}
 	lcd_clear();
 	mv_cap(MV_LEFT,true);
 	mv_cap(MV_FRONT,true);

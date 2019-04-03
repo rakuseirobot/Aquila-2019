@@ -12,8 +12,8 @@ PB2,PB3 --SS
 #include "lcd_control.hpp"
 #include "ping_control.hpp"
 #include "ui_control.hpp"
+//#include "data_structure.hpp"
 #include "mv_control.hpp"
-#include "data_structure.hpp"
 #include "JY901.hpp"
 #include "delay.hpp"
 #include "uart_control.hpp"
@@ -22,7 +22,6 @@ PB2,PB3 --SS
 #include "main.h"
 #include "stm32f4xx.h"
 #include <queue>
-#include "Array_wrapper.hpp"
 //#include "core.hpp"
 
 extern jy901 gyro;
@@ -65,18 +64,37 @@ int16_t smaller_s(int16_t x,int16_t y){
 	}
 }
 
-namespace motor{
-	array_wrapper<uint16_t, move_dis_t> Move_Distance = {
-	  1,1,1,1,
-	};
-	float b_angle=0.0;
+namespace motor{	float b_angle=0.0;
 	std::queue<move_t> Motor_task;
 	int32_t Motor_target;
 	int32_t Right_count,Left_count;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
 	void check_job(){
 		if(check_task()!=FREE){
-			Motor_target=Move_Distance[Motor_task.front()];
+			switch(Motor_task.front()){
+			case ONE_ADVANCE:
+			case ONE_BACK:
+				Motor_target=ONE_BLOCK;
+				break;
+			case TWO_ADVANCE:
+			case TWO_BACK:
+				Motor_target=TWO_BLOCK;
+				break;
+			case HALF_ADVANCE:
+			case HALF_BACK:
+				Motor_target=HALF_BLOCK;
+				break;
+			case RIGHT_TURN_NO_GYRO:
+			case LEFT_TURN_NO_GYRO:
+				Motor_target=TURN;
+				break;
+			case BRAKE:
+			case RIGHT_TURN:
+			case LEFT_TURN:
+				break;
+			default:
+				break;
+			}
 			switch(Motor_task.front()){
 			case ONE_ADVANCE:
 			case TWO_ADVANCE:
@@ -91,12 +109,22 @@ namespace motor{
 				Left_count-=Motor_target;
 				break;
 			case RIGHT_TURN:
+				move(RIGHT_TURN);
+				break;
+			case LEFT_TURN:
+				move(LEFT_TURN);
+				break;
+			case BRAKE:
+				break;
+			case RIGHT_TURN_NO_GYRO:
 				Right_count-=Motor_target;
 				Left_count+=Motor_target;
 				break;
-			case LEFT_TURN:
+			case LEFT_TURN_NO_GYRO:
 				Right_count+=Motor_target;
 				Left_count-=Motor_target;
+				break;
+			default:
 				break;
 			}
 			Motor_task.pop();
@@ -166,7 +194,7 @@ namespace motor{
 		return;
 	}
 	void set_speed(ch_t x,uint16_t sp){
-		sp*10;
+		sp=sp*10;
 		if(x==MOTOR_RIGHT){
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1,sp);//1
 		}
@@ -193,35 +221,6 @@ namespace motor{
 			return FREE;
 		}
 	}
-	void motor_job(move_t job){
-		switch(job){
-		case ONE_ADVANCE:
-			break;
-		case TWO_ADVANCE:
-			break;
-		case RIGHT_TURN:
-			break;
-		case LEFT_TURN:
-			break;
-		case ONE_BACK:
-			break;
-		case TWO_BACK:
-			break;
-		case HALF_ADVANCE:
-			break;
-		case HALF_BACK:
-			break;
-		case RIGHT_TURN_NO_GYRO:
-			break;
-		case LEFT_TURN_NO_GYRO:
-			break;
-		case BRAKE:
-			break;
-		default:
-			break;
-		}
-		return;
-	}
 	void wait(bool check){
 		while(check_task()!=FREE&&abs(Right_count)>=Motor_thre&&abs(Left_count)>=Motor_thre){
 			check_sig(check);
@@ -240,14 +239,12 @@ namespace motor{
 		motor::wait();
 		switch(x){
 			case ONE_ADVANCE: //1block advance
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_speed,1);
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_speed,1);
+				task_add(x);
 				st_f=true;
 				//HAL_Delay(300);
 			break;
 			case TWO_ADVANCE: //2block advance
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_speed,2);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_speed,2);
+				task_add(x);
 				st_f=true;
 				//HAL_Delay(300);
 			break;
@@ -256,8 +253,8 @@ namespace motor{
 				//serial.putint(first);
 				//serial.string("\n\r");
 				turn_retry2:
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_turnspeed,5);
-				m_send(MOTOR_LEFT,MOTOR_BACK,m_turnspeed,5);
+				forward(MOTOR_RIGHT);
+				back(MOTOR_LEFT);
 				HAL_Delay(2);
 				now = motor_gyro.read_angle();
 				//serial.putint(now);
@@ -266,10 +263,6 @@ namespace motor{
 					now=motor_gyro.read_angle();
 					//serial.putint(now);
 					//serial.string("\n\r");
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){	
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_turnspeed,5);
-						m_send(MOTOR_LEFT,MOTOR_BACK,m_turnspeed,5);
-					}
 				}while((first<now?now-first:now-first+360)>270||(first<now?now-first:now-first+360)<90);
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
@@ -290,8 +283,8 @@ namespace motor{
 				//serial.putint(first);
 				//serial.string("\n\r");
 				turn_retry3:
-				m_send(MOTOR_RIGHT,MOTOR_BACK,m_turnspeed,5);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_turnspeed,5);
+				back(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				HAL_Delay(2);
 				now=motor_gyro.read_angle();
 				//serial.putint(now);
@@ -300,10 +293,6 @@ namespace motor{
 					now=motor_gyro.read_angle();
 					//serial.putint(now);
 					//serial.string("\n\r");
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){	
-						m_send(MOTOR_RIGHT,MOTOR_BACK,m_turnspeed,5);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_turnspeed,5);
-					}
 				}while((first<now?now-first:now-first+360)<90||(first<now?now-first:now-first+360)>270);
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
@@ -320,38 +309,32 @@ namespace motor{
 				}
 				break;
 			case ONE_BACK: //1block back
-				m_send(MOTOR_RIGHT,MOTOR_BACK,m_speed,1);
-				m_send(MOTOR_LEFT,MOTOR_BACK,m_speed,1);
+				task_add(x);
 				st_f=true;
 			break;
 			case TWO_BACK: //2block back
-				m_send(MOTOR_RIGHT,MOTOR_BACK,m_speed,2);
-				m_send(MOTOR_LEFT,MOTOR_BACK,m_speed,2);
+				task_add(x);
 				st_f=true;
 			break;
 
 			case HALF_ADVANCE: //half advance
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_speed,4);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_speed,4);
+				task_add(x);
 				st_f=true;
 			break;
 			case HALF_BACK: //half back
-				m_send(MOTOR_RIGHT,MOTOR_BACK,m_speed,4);
-				m_send(MOTOR_LEFT,MOTOR_BACK,m_speed,4);
+				task_add(x);
 				st_f=true;
 			break;
 			case LEFT_TURN_NO_GYRO: //Left Turn without gyro (????)
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_turnspeed,3);
-				m_send(MOTOR_LEFT,MOTOR_BACK,m_turnspeed,3);
+				task_add(x);
 				//HAL_Delay(300);
 			break;
 			case RIGHT_TURN_NO_GYRO: //Right Turn without gyro (???)
-				m_send(MOTOR_RIGHT,MOTOR_BACK,m_turnspeed,3);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_turnspeed,3);
+				task_add(x);
 			break;
 			default:
-				motor::brake(MOTOR_RIGHT);
-				motor::brake(MOTOR_LEFT);
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
 			break;
 		}
 		motor::wait();
@@ -365,57 +348,20 @@ namespace motor{
 		HAL_Delay(200);
 	}
 	void forever(void){
-		m_send(MOTOR_RIGHT,MOTOR_ADVANCE,5,0);
-		m_send(MOTOR_LEFT,MOTOR_ADVANCE,5,0);
+		forward(MOTOR_LEFT);
+		forward(MOTOR_RIGHT);
 		while(ping(FRONT)>=3);
 		motor::move();
 		return;
-	}/*
-	void back(int x){
-		if(x==1){
-			lcd_putstr("back1");
-		}
-		else if(x==2){
-			lcd_putstr("back2");
-		}
-		motor::move(x-1);
-		lcd_clear();
-		return;
-	}
-
-	void advance(int x){
-		if(x==1){
-			lcd_putstr("advance1");
-		}
-		else if(x==2){
-			lcd_putstr("advance2");
-		}
-		motor::move(x+3);
-		lcd_clear();
-		return;
-	}
-
-	void turn(int x){//right left ???
-		if(x==1){
-			lcd_putstr("turn_l");
-		}
-		else if(x==2){
-			lcd_putstr("turn_r");
-		}
-		motor::move(x+1);
-		lcd_clear();
-		return;
-	}*/
-
-	void fix(uint8_t x,uint8_t ping1,uint8_t ping2,int no){//x=right,left ping1,ping2:Compare ping number no:Sikiiti 
+	}	void fix(uint8_t x,uint8_t ping1,uint8_t ping2,int no){//x=right,left ping1,ping2:Compare ping number no:Sikiiti
 		int val=0;
 		if(x==1){//left
-			m_send(MOTOR_RIGHT,MOTOR_BACK,2,1);
-			m_send(MOTOR_LEFT,MOTOR_ADVANCE,2,1);
+			back(MOTOR_RIGHT);
+			forward(MOTOR_LEFT);
 		}
 		else if(x==2){//right
-			m_send(MOTOR_RIGHT,MOTOR_ADVANCE,2,1);
-			m_send(MOTOR_LEFT,MOTOR_BACK,2,1);
+			back(MOTOR_LEFT);
+			forward(MOTOR_RIGHT);
 		}
 		while(1){
 			val=ping(ping1)-ping(ping2);
@@ -452,15 +398,11 @@ namespace motor{
 			lcd_clear();
 			if((gbbest-dis[0])<fixno*-1){
 				lcd_putstr("gb_fixF");
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,1,2);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,1,2);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				while(dis[0]>gbbest){
 					if(dis[0]>=longway){
 						break;
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,1,2);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,1,2);
 					}
 					dis[0]=ping(FRONT);
 				}
@@ -469,15 +411,11 @@ namespace motor{
 			}
 			else if((gbbest-dis[0])>fixno){
 				lcd_putstr("gb_fixB");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,1,2);
-				m_send(MOTOR_LEFT,MOTOR_BACK,1,2);
+				back(MOTOR_RIGHT);
+				back(MOTOR_LEFT);
 				while(dis[0]<gbbest){
 					if(dis[0]>=longway){
 						break;
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,1,2);
-						m_send(MOTOR_LEFT,MOTOR_BACK,1,2);
 					}
 					dis[0]=ping(FRONT);
 				}
@@ -495,15 +433,11 @@ namespace motor{
 			lcd_clear();
 			if((gbbest-dis[1])>fixno){
 				lcd_putstr("gb_fixF");
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,1,2);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,1,2);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				while(dis[1]<gbbest){
 					if(dis[1]>=longway){
 						break;
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,1,2);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,1,2);
 					}
 					dis[1]=ping(BACK);
 				}
@@ -512,15 +446,11 @@ namespace motor{
 			}
 			else if((gbbest-dis[1])<fixno*-1){
 				lcd_putstr("gb_fixB");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,1,2);
-				m_send(MOTOR_LEFT,MOTOR_BACK,1,2);
+				back(MOTOR_RIGHT);
+				back(MOTOR_LEFT);
 				while(dis[1]>gbbest){
 					if(dis[1]>=longway){
 						break;
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,1,2);
-						m_send(MOTOR_LEFT,MOTOR_BACK,1,2);
 					}
 					dis[1]=ping(BACK);
 				}
@@ -573,27 +503,19 @@ namespace motor{
 			if(val < turnvalue*-1){ //Right Turn
 				lcd_clear();
 				lcd_putstr("FixingTurn");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,1,2);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,1,2);
+				back(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				do{
 					val=ping(chk[0])-ping(chk[1]);
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,1,2);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,1,2);
-					}
 				}while(val<turnvalue*-1);
 			}
 			else if(val > turnvalue){
 				lcd_clear();
 				lcd_putstr("FixingTurn");
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,1,2);
-				m_send(MOTOR_LEFT,MOTOR_BACK,1,2);
+				forward(MOTOR_RIGHT);
+				back(MOTOR_LEFT);
 				do{
 					val=ping(chk[0])-ping(chk[1]);
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,1,2);
-						m_send(MOTOR_LEFT,MOTOR_BACK,1,2);
-					}
 				}while(val>turnvalue);
 			}
 			else{
@@ -722,9 +644,8 @@ namespace motor{
 			dis[0] = ping(FRONT);
 			if(gbbest<=dis[0]){
 				led(Redled,1);
-				do{
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,7,1);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,7,1);
+				do{forward(MOTOR_RIGHT);
+					forward(MOTOR_LEFT);
 					dis[0] = ping(FRONT);
 					dis[1] = smaller_s(ping(LEFT_FRONT),ping(LEFT_BACK));
 					dis[2] = smaller_s(ping(RIGHT_BACK),ping(RIGHT_FRONT));/*
@@ -776,8 +697,8 @@ namespace motor{
 			if(dis >= gbbest){
 				led(Redled,1);
 				do{
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,m_speed,1);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,m_speed,1);
+					forward(MOTOR_LEFT);
+					forward(MOTOR_RIGHT);
 					dis = ping(FRONT);
 				}while(dis >= gbbest);
 				motor::brake(MOTOR_LEFT);
@@ -799,7 +720,6 @@ namespace motor{
 	
 	uint8_t notify_long_acc(uint8_t x,bool buz){//0:なし,1:下り,2:上り
 		float ac=motor_gyro.read_acc_x();
-		uint8_t spos = 6;
 		float now=0;
 		if(x==v::front){//前進中
 			if(ac>=Acc_thre_u){//上り
@@ -820,8 +740,8 @@ namespace motor{
 				}
 				lcd_clear();
 				lcd_putstr("NotiL!U");
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				ac=motor_gyro.read_acc_x();
 				while(ac>=Acc_thre_u){
 					ac=motor_gyro.read_acc_x();
@@ -838,25 +758,22 @@ namespace motor{
 						if(now>Acc_slope_thre){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//右の速度落とす
 							do 
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos-2,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-								}
+
 							} while (now>Acc_slope_thre);
 						}
 						else if(now<Acc_slope_thre*-1){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//左の速度落とす
 							do
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_LEFT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos-2,3);
-								}
 							} while (now<Acc_slope_thre*-1);
 						}
 					}
@@ -875,13 +792,6 @@ namespace motor{
 						error_led(2,0);
 						error_led(1,0);
 					}
-					if(motor::status(MOTOR_RIGHT)==1||motor::status(MOTOR_LEFT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						error_led(2,0);
-						error_led(1,0);
-					}
-				
 					if(!(ac>=Acc_thre_u)){
 						ac=motor_gyro.read_acc_x();
 					}
@@ -921,8 +831,8 @@ namespace motor{
 				}
 				lcd_clear();
 				lcd_putstr("NotiL!D");
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				ac=motor_gyro.read_acc_x();
 				while(ac<=Acc_thre_d){
 					ac=motor_gyro.read_acc_x();
@@ -939,25 +849,21 @@ namespace motor{
 						if(now>Acc_slope_thre){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//左の速度落とす
 							do 
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos-3,3);
-								}
 							} while (now>Acc_slope_thre);
 						}
 						else if(now<Acc_slope_thre*-1){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//右の速度落とす
 							do
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos-3,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-								}
 							} while (now<Acc_slope_thre*-1);
 						}
 					}
@@ -976,13 +882,6 @@ namespace motor{
 						error_led(2,0);
 						error_led(1,0);
 					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						error_led(2,0);
-						error_led(1,0);
-					}
-				
 					if(!(ac<=Acc_thre_d)){
 						ac=motor_gyro.read_acc_x();
 					}
@@ -1023,8 +922,8 @@ namespace motor{
 				}
 				lcd_clear();
 				lcd_putstr("NotiL!D");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+				back(MOTOR_LEFT);
+				back(MOTOR_RIGHT);
 				ac=motor_gyro.read_acc_x();
 				while(ac>=Acc_thre_u){
 					ac=motor_gyro.read_acc_x();
@@ -1037,25 +936,21 @@ namespace motor{
 						if(now>Acc_slope_thre){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//左の速度落とす
 							do 
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos-2,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-								}
 							} while (now>Acc_slope_thre);
 						}
 						else if(now<Acc_slope_thre*-1){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//右の速度落とす
 							do
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos-2,3);
-								}
 							} while (now<Acc_slope_thre*-1);
 						}
 					}
@@ -1074,13 +969,6 @@ namespace motor{
 						error_led(2,0);
 						error_led(1,0);
 					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						error_led(2,0);
-						error_led(1,0);
-					}
-				
 					if(!(ac>=Acc_thre_u)){
 						ac=motor_gyro.read_acc_x();
 					}
@@ -1120,8 +1008,8 @@ namespace motor{
 				}
 				lcd_clear();
 				lcd_putstr("NotiL!U");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+				back(MOTOR_LEFT);
+				back(MOTOR_RIGHT);
 				ac=motor_gyro.read_acc_x();
 				while(ac<=Acc_thre_d){
 					ac=motor_gyro.read_acc_x();
@@ -1134,25 +1022,21 @@ namespace motor{
 						if(now>Acc_slope_thre){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//右速度落とす
 							do 
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos-3,3);
-								}
 							} while (now>Acc_slope_thre);
 						}
 						else if(now<Acc_slope_thre*-1){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							//左速度落とす
+							#warning Not yet
 							do
 							{
 								now=motor_gyro.read_acc_y();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos-3,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-								}
 							} while (now<Acc_slope_thre*-1);
 						}
 					}
@@ -1171,13 +1055,6 @@ namespace motor{
 						error_led(2,0);
 						error_led(1,0);
 					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						error_led(2,0);
-						error_led(1,0);
-					}
-				
 					if(!(ac<=Acc_thre_d)){
 						ac=motor_gyro.read_acc_x();
 					}
@@ -1210,15 +1087,14 @@ namespace motor{
 	uint8_t notify_long_ang(uint8_t x,bool buz){//0:なし,1:下り,2:上り
 		float ang=motor_gyro.read_angle_y();
 		float anx=motor_gyro.read_angle_x();
-		uint8_t spos = 6;
 		if(x==v::front){//前進中
 			if(ang<=Ang_slope_Norm-Ang_slope_thre){//上り
 				lcd_clear();
 				lcd_putstr("NotiL!U");
 				buzzer(400);
 				buzzer(800);
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
 				while(ang<=Ang_slope_Norm-Ang_slope_thre){
 					ang=motor_gyro.read_angle_y();
 					anx=motor_gyro.read_angle_x();
@@ -1226,37 +1102,27 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//右速度落とす
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos-2,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-								}
 							} while (anx>Ang_x_Norm);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//左速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos-2,3);
-								}
 							} while (anx<Ang_x_Norm);
 						}
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+						#warning Not yet
+						//速度戻す
 					}
 					else{
-						error_led(2,0);
-						error_led(1,0);
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
 						error_led(2,0);
 						error_led(1,0);
 					}
@@ -1268,8 +1134,8 @@ namespace motor{
 				lcd_putstr("NotiL!D");
 				buzzer(800);
 				buzzer(400);
-				m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+				forward(MOTOR_LEFT);
+				forward(MOTOR_RIGHT);
 				while(ang>=Ang_slope_Norm+Ang_slope_thre){
 					ang=motor_gyro.read_angle_y();
 					anx=motor_gyro.read_angle_x();
@@ -1277,37 +1143,27 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//左速度落とす
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos-2,3);
-								}
 							} while (anx>Ang_x_Norm);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//右速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos-2,3);
-									m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-								}
 							} while (anx<Ang_x_Norm);
 						}
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+						#warning Not yet
+						//速度戻す
 					}
 					else{
-						error_led(2,0);
-						error_led(1,0);
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
 						error_led(2,0);
 						error_led(1,0);
 					}
@@ -1318,8 +1174,8 @@ namespace motor{
 			if(ang>=Ang_slope_Norm+Ang_slope_thre){//下り
 				lcd_clear();
 				lcd_putstr("NotiL!U");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+				back(MOTOR_LEFT);
+				back(MOTOR_RIGHT);
 				buzzer(400);
 				buzzer(800);
 				while(ang>=Ang_slope_Norm+Ang_slope_thre){
@@ -1329,37 +1185,27 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//右速度落とす
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos-2,3);
-								}
 							} while (anx>Ang_x_Norm);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//左速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos-2,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-								}
 							} while (anx<Ang_x_Norm);
 						}
-						m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+						#warning Not yet
+						//速度戻す
 					}
 					else{
-						error_led(2,0);
-						error_led(1,0);
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
 						error_led(2,0);
 						error_led(1,0);
 					}
@@ -1369,8 +1215,8 @@ namespace motor{
 			else if(ang<=Ang_slope_Norm-Ang_slope_thre){//昇り
 				lcd_clear();
 				lcd_putstr("NotiL!U");
-				m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-				m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+				back(MOTOR_LEFT);
+				back(MOTOR_RIGHT);
 				buzzer(800);
 				buzzer(400);
 				while(ang<=Ang_slope_Norm-Ang_slope_thre){
@@ -1380,37 +1226,27 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
+							#warning Not yet
+							//左速度落とす
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos-2,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-								}
 							} while (anx>Ang_x_Norm);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
+							#warning Not yet
+							//右速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-								if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-									m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-									m_send(MOTOR_RIGHT,MOTOR_BACK,spos-2,3);
-								}
 							} while (anx<Ang_x_Norm);
 						}
-						m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+						#warning Not yet
+						//速度戻す
 					}
 					else{
-						error_led(2,0);
-						error_led(1,0);
-					}
-					if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-						m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-						m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
 						error_led(2,0);
 						error_led(1,0);
 					}
@@ -1445,7 +1281,6 @@ namespace motor{
 	
 	void fix_angle(void){
 		float now=0;
-		uint8_t spos=1;
 		float siki=1;//修正する閾値
 		now=motor_gyro.read_angle();
 		if(abs(now-b_angle)>siki){
@@ -1453,53 +1288,37 @@ namespace motor{
 			lcd_putstr("fix_angl");
 			if(now-b_angle>0){
 				if(abs(now-b_angle)<=180){
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do 
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						}
 					} while (abs(now-b_angle)>siki);
 				}
 				else if(abs(now-b_angle)>180){
-					m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						}
 					} while (abs(now-b_angle)>siki);
 				}
 			}
 			else if(now-b_angle<0){
 				if(abs(now-b_angle)<=180){
-					m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						}
 					} while (abs(now-b_angle)>siki);
 				}
 				else if(abs(now-b_angle)>180){
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						}
 					} while (abs(now-b_angle)>siki);
 				}
 			}
@@ -1510,7 +1329,6 @@ namespace motor{
 		return;
 	}void fix_angle_v(float angl){
 		float now=0;
-		uint8_t spos=1;
 		float siki=1;//修正する閾値
 		now=motor_gyro.read_angle();
 		if(abs(now-angl)>siki){
@@ -1518,53 +1336,37 @@ namespace motor{
 			lcd_putstr("fix_ag_v");
 			if(now-angl>0){
 				if(abs(now-angl)<=180){
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do 
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						}
 					} while (abs(now-angl)>siki);
 				}
 				else if(abs(now-angl)>180){
-					m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						}
 					} while (abs(now-angl)>siki);
 				}
 			}
 			else if(now-angl<0){
 				if(abs(now-angl)<=180){
-					m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						}
 					} while (abs(now-angl)>siki);
 				}
 				else if(abs(now-angl)>180){
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						}
 					} while (abs(now-angl)>siki);
 				}
 			}
@@ -1576,7 +1378,6 @@ namespace motor{
 	}
 	void set_angle(float ang){
 		float now=0;
-		uint8_t spos=4;
 		float siki=1;//修正する閾値
 		now=motor_gyro.read_angle();
 		if(abs(now-ang)>siki){
@@ -1584,53 +1385,37 @@ namespace motor{
 			lcd_putstr("set_ag_v");
 			if(now-ang>0){
 				if(abs(now-ang)<=180){
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do 
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						}
 					} while (abs(now-ang)>siki);
 				}
 				else if(abs(now-ang)>180){
-					m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						}
 					} while (abs(now-ang)>siki);
 				}
 			}
 			else if(now-ang<0){
 				if(abs(now-ang)<=180){
-					m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_BACK,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_ADVANCE,spos,3);
-						}
 					} while (abs(now-ang)>siki);
 				}
 				else if(abs(now-ang)>180){
-					m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-					m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
-						if(motor::status(MOTOR_LEFT)==1||motor::status(MOTOR_RIGHT)==1){
-							m_send(MOTOR_RIGHT,MOTOR_ADVANCE,spos,3);
-							m_send(MOTOR_LEFT,MOTOR_BACK,spos,3);
-						}
 					} while (abs(now-ang)>siki);
 				}
 			}
@@ -1644,28 +1429,27 @@ namespace motor{
 
 void enkaigei(void){
 	float first=motor_gyro.read_angle(), now=0;
-	uint8_t spos=5;
 	while(1){
 		now=motor_gyro.read_angle();
 		if(abs(now-first)>1){
 			if(now-first>0){
 				if(abs(now-first)<=180){
-					m_send(motor::MOTOR_RIGHT,motor::MOTOR_ADVANCE,spos,3);
-					m_send(motor::MOTOR_LEFT,motor::MOTOR_BACK,spos,3);
+					motor::forward(motor::MOTOR_RIGHT);
+					motor::back(motor::MOTOR_LEFT);
 				}
 				else if(abs(now-first)>180){
-					m_send(motor::MOTOR_RIGHT,motor::MOTOR_BACK,spos,3);
-					m_send(motor::MOTOR_LEFT,motor::MOTOR_ADVANCE,spos,3);
+					motor::forward(motor::MOTOR_LEFT);
+					motor::back(motor::MOTOR_RIGHT);
 				}
 			}
 			else if(now-first<0){
 				if(abs(now-first)<=180){
-					m_send(motor::MOTOR_RIGHT,motor::MOTOR_BACK,spos,3);
-					m_send(motor::MOTOR_LEFT,motor::MOTOR_ADVANCE,spos,3);
+					motor::back(motor::MOTOR_RIGHT);
+					motor::forward(motor::MOTOR_LEFT);
 				}
 				else if(abs(now-first)>180){
-					m_send(motor::MOTOR_RIGHT,motor::MOTOR_ADVANCE,spos,3);
-					m_send(motor::MOTOR_LEFT,motor::MOTOR_BACK,spos,3);
+					motor::forward(motor::MOTOR_RIGHT);
+					motor::back(motor::MOTOR_LEFT);
 				}
 			}
 		}
