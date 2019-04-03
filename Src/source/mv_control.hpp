@@ -8,8 +8,8 @@
 
 #ifndef MV_CONTROL_HPP_
 #define MV_CONTROL_HPP_
-#include "../peripheral.hpp"
 #include <stdint.h>
+#include "../peripheral.hpp"
 
 void mv_sig(uint8_t i,bool ud);
 void init_mv(void);
@@ -22,6 +22,7 @@ typedef enum{
 }mv_ch_t;
 void mv_cap(mv_ch_t di,bool st);
 uint8_t mv_spi_send(uint8_t val, uint8_t i);
+bool check_sig(bool check = true);
 uint8_t check_mv(mv_ch_t dir);
 
 

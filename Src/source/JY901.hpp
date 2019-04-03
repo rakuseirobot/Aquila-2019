@@ -7,7 +7,8 @@
 
 #ifndef SOURCE_JY901_H_
 #define SOURCE_JY901_H_
-#include "stm32f4xx_hal.h"
+
+#include "stm32f4xx.h"
 
 class jy901{
 	public:

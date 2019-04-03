@@ -10,7 +10,7 @@
 #include "motor_control.hpp"
 
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void interrupt_callback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim13)
 	{

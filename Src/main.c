@@ -47,6 +47,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "wrapper.hpp"
+#include "source/interrupt.hpp"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -215,7 +216,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+  interrupt_callback(htim);
   /* USER CODE END Callback 1 */
 }
 

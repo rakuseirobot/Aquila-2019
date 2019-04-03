@@ -19,6 +19,9 @@
 #define Ang_slope_thre 15
 #define Ang_x_Norm 180
 #define Ang_x_thre 3
+
+#define Motor_thre 10
+
 namespace motor{
 	typedef enum{
 		MOTOR_RIGHT,
@@ -48,13 +51,22 @@ namespace motor{
 		TURN,
 		HALF_BLOCK,
 	}move_dis_t;
+
+	typedef enum{
+		FREE,
+		BUSY
+	}task_status_t;
+
 	void check_job();
+	void check_Enocoder(void);
+	void task_add(move_t right,move_t left);
+	task_status_t check_task();
 	void brake(ch_t x);
 	void forward(ch_t x);
 	void back(ch_t x);
 	void set_speed(ch_t x,uint16_t sp);
 	void set_speed(uint16_t sp);
-	uint8_t status(motor::ch_t m);
+	task_status_t status(motor::ch_t m);
 	void wait(bool check=true);
 	void move(move_t x=BRAKE);/*
 	void forever(void);

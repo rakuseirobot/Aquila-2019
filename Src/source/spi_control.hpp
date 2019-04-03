@@ -8,7 +8,7 @@
 #ifndef SOURCE_SPI_CONTROL_HPP_
 #define SOURCE_SPI_CONTROL_HPP_
 
-#include "../peripheral.hpp"
+#include "stm32f4xx.h"
 
 struct spi{
 	SPI_HandleTypeDef *spi_u;

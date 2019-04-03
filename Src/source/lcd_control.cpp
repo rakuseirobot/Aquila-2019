@@ -16,26 +16,15 @@ I2C_HandleTypeDef lcd_i2c = hi2c2;
 
 
 void init_lcd(void){
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x38},2, 100);//FunctionSet無効化
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x39},2, 100);//FunctionSet有効化
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x14},2, 100);//Internal OSC frequency
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x7e},2, 100);//コントラスト設定	//70?
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x55},2, 100);//Power,ICON,Contrast Control
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x6c},2, 100);//Follower Control
-	HAL_Delay(500);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x38},2, 100);//FunctionSet無効化
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x0c},2, 100);//Display ON\OFF Control
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x01},2, 100);//ClearDisplay
-	HAL_Delay(50);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x06},2, 100);//EntryMode??
-	HAL_Delay(50);
+	uint8_t tx[10][2]={{0x00,0x38},{0x00,0x39},{0x00,0x14},{0x00,0x7e},{0x00,0x55},{0x00,0x6c},{0x00,0x38},{0x00,0x0c},{0x00,0x01},{0x00,0x06}};
+	//FunctionSet無効化,FunctionSet有効化,Internal OSC frequency
+	//コントラスト設定	//70?,Power,ICON,Contrast Control,Follower Control,
+	//FunctionSet無効化,Display ON\OFF Control,ClearDisplay,EntryMode??
+	for (uint8_t i=0;i<10;i++){
+		HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1,tx[i],2, 100);
+		HAL_Delay(50);
+	}
+
 	return;
 }
 void lcd_putstr(const char *data)
@@ -81,7 +70,8 @@ void lcd_putdec(uint16_t num){
 
 void lcd_clear(void){
 	//twi lcd_twi(&TWID,400000);
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1, (uint8_t*){0x00,0x01},2, 100);
+	uint8_t tx[2]={0x00,0x01};
+	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1,tx,2, 100);
 	_delay_us(600);
 	return;
 }

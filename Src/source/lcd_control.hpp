@@ -8,7 +8,7 @@
 
 #ifndef LCD_CONTROL_H_
 #define LCD_CONTROL_H_
-#include "initializing.hpp"
+//#include "initializing.hpp"
 #include <stdint.h>
 
 

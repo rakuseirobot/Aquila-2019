@@ -145,7 +145,7 @@ uint8_t mv_spi_send(uint8_t val, uint8_t i){
 	HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	//while((PORTJ.IN & PIN5_bm)==0||(PORTJ.IN & PIN6_bm)==0||(PORTJ.IN & PIN7_bm)==0);
-	return dat;
+	return dat[0];
 }
 
 bool kit_chk(uint8_t num=0){//num = type of victim. //unknown(1/17)
@@ -166,6 +166,31 @@ bool kit_chk(uint8_t num=0){//num = type of victim. //unknown(1/17)
 	//return (hhh.key==0 || hhh.key==1 );//normal or unknown
 }
 
+bool check_sig(bool check){
+	if(HAL_GPIO_ReadPin(MVS1_GPIO_Port,MVS1_Pin)==0 && check==true){
+		mv_cap(MV_LEFT,false);
+		mv_cap(MV_FRONT,false);
+		mv_cap(MV_RIGHT,false);
+		check_mv(MV_LEFT);
+		return false;
+	}
+	else if(HAL_GPIO_ReadPin(MVS2_GPIO_Port,MVS2_Pin)==0==0 && check==true){
+		mv_cap(MV_LEFT,false);
+		mv_cap(MV_FRONT,false);
+		mv_cap(MV_RIGHT,false);
+		check_mv(MV_FRONT);
+		return false;
+	}
+	else if(HAL_GPIO_ReadPin(MVS3_GPIO_Port,MVS3_Pin)==0 && check==true){
+		mv_cap(MV_LEFT,false);
+		mv_cap(MV_FRONT,false);
+		mv_cap(MV_RIGHT,false);
+		check_mv(MV_RIGHT);
+		return false;
+	}
+	else{}
+	return true;
+}
 uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	//mv_sig(dir,false);
 	HAL_Delay(2);

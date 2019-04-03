@@ -13,8 +13,10 @@
 #include "peripheral.hpp"
 #include "uart_control.hpp"
 #include "spi_control.hpp"
+#include "JY901.hpp"
 uart serial(&huart2);
 spi spi_t(&hspi1);
+jy901 gyro(&hi2c2);
 void cpploop(void) {
 	while(1);
 }

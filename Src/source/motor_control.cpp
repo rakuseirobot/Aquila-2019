@@ -21,6 +21,8 @@ PB2,PB3 --SS
 #include <stdlib.h>
 #include "main.h"
 #include "stm32f4xx.h"
+#include <queue>
+#include "Array_wrapper.hpp"
 //#include "core.hpp"
 
 extern jy901 gyro;
@@ -42,6 +44,8 @@ const int16_t longway = 4500;
 const int gbno=120;
 float Saved_angle=0;
 
+
+
 uint8_t data=000;
 void init_motor(void){
 	HAL_GPIO_WritePin(M1_PWM_GPIO_Port,M1_PWM_Pin|M2_PWM_Pin,GPIO_PIN_SET);
@@ -51,70 +55,7 @@ void init_motor(void){
 void Save_angle(void){
 	Saved_angle=motor_gyro.read_angle();
 }
-uint8_t mspi(uint8_t val,motor::ch_t i){
-	if(i==motor::MOTOR_LEFT){
-		PORTB.OUTCLR=LeftM;
-	}
-	else if(i==motor::MOTOR_RIGHT){
-		PORTB.OUTCLR=RightM;
-	}
-	else{
-		return 0;
-	}
-	uint8_t dat = 0;
-	HAL_Delay(5);
-	dat = motor_spi.send(val);
-	PORTB.OUTSET=PIN2_bm|PIN3_bm;
-	return dat;
-}
-void m_send(motor::ch_t rl,motor::move_sig_t sig,uint8_t y,motor::move_dis_t dis){
-	switch (dis){
-		case motor::ONE_BLOCK:
-			m_send(rl,sig,y,1);
-			break;
-		case motor::TWO_BLOCK:
-			m_send(rl,sig,y,2);
-			break;
-		case motor::TURN:
-			m_send(rl,sig,y,3);
-			break;
-		case motor::HALF_BLOCK:
-			m_send(rl,sig,y,4);
-			break;
-		default:
-			break;
-	}
-	return;
-}
-void m_send(motor::ch_t rl,motor::move_sig_t sig,uint8_t y,uint8_t z){//rl:Right or Left(1:L2:R)x:Go or Back(1:Back,2:Go)y:speed(max7(1 is for fixing movement))z:distance(1:1block,2:2blocks,3:turn,4:half))
-	//data = 100*x+10*y+z;
-	uint8_t x=3;
-	if(sig==motor::MOTOR_BACK){
-		x=1;
-	}
-	else if(sig==motor::MOTOR_ADVANCE){
-		x=2;
-	}
-	if(y>7){
-		y=7;
-	}
-	if(z>7){
-		z=7;
-	}
-	data = (x<<6) | (y<<3) | z;
-	if(rl == motor::MOTOR_RIGHT){
-		PORTB.OUTCLR = PIN2_bm;
-	}
-	else if(rl == motor::MOTOR_LEFT){
-		PORTB.OUTCLR = PIN3_bm;
-	}
-	else{
-		return;
-	}
-	_delay_us(10);
-	motor_spi.send(data);
-	PORTB.OUTSET=PIN2_bm|PIN3_bm;
-}
+
 int16_t smaller_s(int16_t x,int16_t y){
 	if(x<y){
 		return x;
@@ -125,15 +66,76 @@ int16_t smaller_s(int16_t x,int16_t y){
 }
 
 namespace motor{
-	//usart serial(&USARTC0,&PORTC);
+	array_wrapper<uint16_t, move_dis_t> Move_Distance = {
+	  1,1,1,1,
+	};
 	float b_angle=0.0;
-	uint16_t Right_Motor_task[16]={};
-	uint16_t Left_Motor_task[16]={};
-	
+	std::queue<move_t> Motor_task;
+	int32_t Motor_target;
+	int32_t Right_count,Left_count;
+	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
 	void check_job(){
-
+		if(check_task()!=FREE){
+			Motor_target=Move_Distance[Motor_task.front()];
+			switch(Motor_task.front()){
+			case ONE_ADVANCE:
+			case TWO_ADVANCE:
+			case HALF_ADVANCE:
+				Right_count+=Motor_target;
+				Left_count+=Motor_target;
+				break;
+			case ONE_BACK:
+			case TWO_BACK:
+			case HALF_BACK:
+				Right_count-=Motor_target;
+				Left_count-=Motor_target;
+				break;
+			case RIGHT_TURN:
+				Right_count-=Motor_target;
+				Left_count+=Motor_target;
+				break;
+			case LEFT_TURN:
+				Right_count+=Motor_target;
+				Left_count-=Motor_target;
+				break;
+			}
+			Motor_task.pop();
+		}
 	}
-
+	void check_Enocoder(void){
+		 Left_count+=__HAL_TIM_GetCounter(&htim3);
+		 Right_count+=__HAL_TIM_GetCounter(&htim5);
+		 if(Left_count<0){
+			 back(MOTOR_LEFT);
+		 }
+		 else if(Left_count>0){
+			 forward(MOTOR_LEFT);
+		 }
+		 else{
+			 brake(MOTOR_LEFT);
+		 }
+		 if(Right_count<0){
+			 back(MOTOR_RIGHT);
+		 }
+		 else if(Right_count>0){
+			 forward(MOTOR_RIGHT);
+		 }
+		 else{
+			 brake(MOTOR_RIGHT);
+		 }
+		 return;
+	}
+	void task_add(move_t ta){
+		Motor_task.push(ta);
+	}
+	task_status_t check_task(){
+		if(Motor_task.size()!=0){
+			return BUSY;
+		}
+		else{
+			return FREE;
+		}
+	}
 	void brake(ch_t x){
 		if(x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
@@ -180,219 +182,52 @@ namespace motor{
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1,sp);//1
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2,sp);//2
 	}
-	//uint32_t mcount = 0;
-	//const uint32_t mvalue = 600;
-	/*void wait(void){
-		PORTF.OUTCLR = PIN3_bm;
-		while(spi(0,1)!=1&&mcount<=mvalue){
-			mcount++;
+	task_status_t status(motor::ch_t m){//1:free 2:busy
+		if(m==MOTOR_RIGHT&&Right_Motor_Status!=FREE){
+			return BUSY;
 		}
-		while(spi(0,2)!=1&&mcount<=mvalue){
-			mcount++;
-		}
-		if(mcount >= mvalue){
-			PORTF.OUTSET = PIN3_bm;
-		}
-		mcount = 0;
-	}*/
-	uint8_t status(motor::ch_t m){//1:free 2:busy
-		return mspi(0,m);
-	}
-	void wait(bool check){
-		if((PORTJ.IN & PIN5_bm)==0 && check==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_LEFT);
-			check=false;
-		}
-		if((PORTJ.IN & PIN6_bm)==0 && check==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_FRONT);
-			check=false;
-		}
-		if((PORTJ.IN & PIN7_bm)==0 && check==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_RIGHT);
-			check=false;
-		}
-		while(mspi(0,MOTOR_LEFT)!=1){
-			if((PORTJ.IN & PIN5_bm)==0 && check==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_LEFT);
-				check=false;
-			}
-			if((PORTJ.IN & PIN6_bm)==0 && check==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_FRONT);
-				check=false;
-			}
-			if((PORTJ.IN & PIN7_bm)==0 && check==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_RIGHT);
-				check=false;
-			}
-		}
-		while(mspi(0,MOTOR_RIGHT)!=1){
-			if((PORTJ.IN & PIN5_bm)==0 && check==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_LEFT);
-				check=false;
-			}
-			if((PORTJ.IN & PIN6_bm)==0 && check==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_FRONT);
-				check=false;
-			}
-			if((PORTJ.IN & PIN7_bm)==0 && check==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_RIGHT);
-				check=false;
-			}
-		}
-		if((PORTJ.IN & PIN5_bm)==0 && check==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_LEFT);
-			check=false;
-		}
-		if((PORTJ.IN & PIN6_bm)==0 && check==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_FRONT);
-			check=false;
-		}
-		if((PORTJ.IN & PIN7_bm)==0 && check==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_RIGHT);
-			check=false;
-		}
-		return;
-	}
-
-	/*
-	void wait(bool check){
-		bool chk[3]={true,true,true};
-		if(check==false){
-			chk[0]=false;
-			chk[1]=false;
-			chk[2]=false;
+		else if(m==MOTOR_LEFT&&Left_Motor_Status!=FREE){
+			return BUSY;
 		}
 		else{
-			chk[0]=true;
-			chk[1]=true;
-			chk[2]=true;
+			return FREE;
 		}
-		if((PORTJ.IN & PIN5_bm)==0 && chk[0]==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_LEFT);
-			chk[0]=false;
-		}
-		if((PORTJ.IN & PIN6_bm)==0 && chk[1]==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_FRONT);
-			chk[1]=false;
-		}
-		if((PORTJ.IN & PIN7_bm)==0 && chk[2]==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_RIGHT);
-			chk[2]=false;
-		}
-		while(mspi(0,1)!=1){
-			if((PORTJ.IN & PIN5_bm)==0 && chk[0]==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_LEFT);
-				chk[0]=false;
-			}
-			if((PORTJ.IN & PIN6_bm)==0 && chk[1]==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_FRONT);
-				chk[1]=false;
-			}
-			if((PORTJ.IN & PIN7_bm)==0 && chk[2]==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_RIGHT);
-				chk[2]=false;
-			}
-		}
-		while(mspi(0,2)!=1){
-			if((PORTJ.IN & PIN5_bm)==0 && chk[0]==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_LEFT);
-				chk[0]=false;
-			}
-			if((PORTJ.IN & PIN6_bm)==0 && chk[1]==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_FRONT);
-				chk[1]=false;
-			}
-			if((PORTJ.IN & PIN7_bm)==0 && chk[2]==true){
-				mv_cap(MV_LEFT,false);
-				mv_cap(MV_FRONT,false);
-				mv_cap(MV_RIGHT,false);
-				check_mv(MV_RIGHT);
-				chk[2]=false;
-			}
-		}
-		if((PORTJ.IN & PIN5_bm)==0 && chk[0]==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_LEFT);
-			chk[0]=false;
-		}
-		if((PORTJ.IN & PIN6_bm)==0 && chk[1]==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_FRONT);
-			chk[1]=false;
-		}
-		if((PORTJ.IN & PIN7_bm)==0 && chk[2]==true){
-			mv_cap(MV_LEFT,false);
-			mv_cap(MV_FRONT,false);
-			mv_cap(MV_RIGHT,false);
-			check_mv(MV_RIGHT);
-			chk[2]=false;
+	}
+	void motor_job(move_t job){
+		switch(job){
+		case ONE_ADVANCE:
+			break;
+		case TWO_ADVANCE:
+			break;
+		case RIGHT_TURN:
+			break;
+		case LEFT_TURN:
+			break;
+		case ONE_BACK:
+			break;
+		case TWO_BACK:
+			break;
+		case HALF_ADVANCE:
+			break;
+		case HALF_BACK:
+			break;
+		case RIGHT_TURN_NO_GYRO:
+			break;
+		case LEFT_TURN_NO_GYRO:
+			break;
+		case BRAKE:
+			break;
+		default:
+			break;
 		}
 		return;
-	}*/
+	}
+	void wait(bool check){
+		while(check_task()!=FREE&&abs(Right_count)>=Motor_thre&&abs(Left_count)>=Motor_thre){
+			check_sig(check);
+		}
+		return;
+	}
 	void move(move_t x){// x = 0:1 block Advance 1:2 blocks Advance 2:Right Turn with Gyro 3:Left Turn with Gyro 4:1 block Back 5:2 block Back 6:Half block Advance 7:Half block Back 8:right Turn without Compass 9:left Turn without Compass 
 		HAL_Delay(5);
 		float first = 0;
