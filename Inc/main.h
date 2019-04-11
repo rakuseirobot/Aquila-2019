@@ -120,8 +120,8 @@
 #define DP1_GPIO_Port GPIOA
 #define DP2_Pin GPIO_PIN_11
 #define DP2_GPIO_Port GPIOA
-#define LCD_RSTA12_Pin GPIO_PIN_12
-#define LCD_RSTA12_GPIO_Port GPIOA
+#define LED_RST_Pin GPIO_PIN_12
+#define LED_RST_GPIO_Port GPIOA
 #define MVSIG1_Pin GPIO_PIN_10
 #define MVSIG1_GPIO_Port GPIOC
 #define MVSIG2_Pin GPIO_PIN_11
