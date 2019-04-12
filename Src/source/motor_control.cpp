@@ -47,6 +47,7 @@ float Saved_angle=0;
 
 uint8_t data=000;
 void init_motor(void){
+	//motor::speed=100;
 	HAL_GPIO_WritePin(M1_PWM_GPIO_Port,M1_PWM_Pin|M2_PWM_Pin,GPIO_PIN_SET);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
@@ -68,7 +69,12 @@ namespace motor{	float b_angle=0.0;
 	std::queue<move_t> Motor_task;
 	int32_t Motor_target;
 	int32_t Right_count,Left_count;
+	int32_t kasan[2]={0,0};
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
+	/*void pid(){
+		uint16_t ocr = __HAL_TIM_GET_COMPARE() + P_GAIN*(speed*SPEED_GAIN-__HAL_TIM_GET_COUNTER(&htim3)) + I_GAIN*kasan[0] + D_GAIN*(dev[0][1]-dev[0][1]);
+		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,ocr);
+	}*/
 	void check_job(){
 		if(check_task()!=FREE){
 			switch(Motor_task.front()){
@@ -193,7 +199,7 @@ namespace motor{	float b_angle=0.0;
 		}
 		return;
 	}
-	void set_speed(ch_t x,uint16_t sp){
+	void set_pwm(ch_t x,uint16_t sp){
 		sp=sp*10;
 		if(x==MOTOR_RIGHT){
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1,sp);//1
@@ -206,7 +212,7 @@ namespace motor{	float b_angle=0.0;
 		}
 		return;
 	}
-	void set_speed(uint16_t sp){
+	void set_pwm(uint16_t sp){
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1,sp);//1
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2,sp);//2
 	}

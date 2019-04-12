@@ -7,6 +7,24 @@
 #include "ui_control.hpp"
 #include "delay.hpp"
 
+void led_one_count(void){
+	HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_SET);
+	_delay_us(1);
+	HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_RESET);
+	return;
+}
+void led_count_set(uint8_t count){
+	HAL_GPIO_WritePin(LED_RST_GPIO_Port,LED_RST_Pin,GPIO_PIN_SET);
+	HAL_Delay(1);
+	HAL_GPIO_WritePin(LED_RST_GPIO_Port,LED_RST_Pin,GPIO_PIN_RESET);
+	for(uint8_t i=0;i<count;i++){
+		HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_SET);
+		_delay_us(1);
+		HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_RESET);
+		_delay_us(1);
+	}
+	return;
+}
 void buzzer(uint16_t t){
 	for(int i=0;i<=1000-t;i++){
 		//ブザーピンHIGH

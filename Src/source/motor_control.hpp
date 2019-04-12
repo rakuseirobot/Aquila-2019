@@ -12,6 +12,11 @@
 #include "data_structure.hpp"
 #include <stdint.h>
 
+#define P_GAIN 0
+#define I_GAIN 0
+#define D_GAIN 0
+#define SPEED_GAIN 0
+
 #define Acc_thre_u 2.9
 #define Acc_thre_d -4
 #define Acc_slope_thre 0.1
@@ -23,6 +28,7 @@
 #define Motor_thre 10
 
 namespace motor{
+	//uint16_t speed=0;
 	typedef enum{
 		MOTOR_RIGHT,
 		MOTOR_LEFT
@@ -57,6 +63,8 @@ namespace motor{
 		BUSY
 	}task_status_t;
 
+	void pid();
+	
 	void check_job();
 	void check_Enocoder(void);
 	void task_add(move_t right,move_t left);
@@ -64,8 +72,8 @@ namespace motor{
 	void brake(ch_t x);
 	void forward(ch_t x);
 	void back(ch_t x);
-	void set_speed(ch_t x,uint16_t sp);
-	void set_speed(uint16_t sp);
+	void set_pwm(ch_t x,uint16_t sp);
+	void set_pwm(uint16_t sp);
 	task_status_t status(motor::ch_t m);
 	void wait(bool check=true);
 	void move(move_t x=BRAKE);/*

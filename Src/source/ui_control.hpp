@@ -22,6 +22,9 @@
 #define SW2 HAL_GPIO_ReadPin(SW2_GPIO_Port,SW2_Pin)!=0
 #define SW3 HAL_GPIO_ReadPin(SW3_GPIO_Port,SW3_Pin)!=0
 
+
+void led_one_count(void);
+void led_count_set(uint8_t count);
 void init_buzzer(void);
 void buzzer(uint16_t t = 800);
 void delay_us(uint16_t t);

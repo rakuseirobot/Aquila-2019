@@ -18,7 +18,11 @@ uart serial(&huart2);
 spi spi_t(&hspi1);
 jy901 gyro(&hi2c2);
 void cpploop(void) {
-	while(1);
+	while(1){
+		HAL_GPIO_TogglePin(E1_GPIO_Port,E1_Pin);
+		HAL_GPIO_TogglePin(CL_GPIO_Port,CL_Pin);
+		HAL_Delay(1);
+	}
 }
 
 
