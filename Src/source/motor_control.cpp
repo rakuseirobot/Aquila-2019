@@ -23,6 +23,7 @@ PB2,PB3 --SS
 #include "stm32f4xx.h"
 #include <queue>
 //#include "core.hpp"
+#include <stdint.h>
 
 extern jy901 gyro;
 jy901 motor_gyro = gyro;
@@ -65,16 +66,28 @@ int16_t smaller_s(int16_t x,int16_t y){
 	}
 }
 
-namespace motor{	float b_angle=0.0;
+namespace motor{
+	float b_angle=0.0;
 	std::queue<move_t> Motor_task;
 	int32_t Motor_target;
 	int32_t Right_count,Left_count;
+	int32_t speed=0,MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t kasan[2]={0,0};
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
-	/*void pid(){
-		uint16_t ocr = __HAL_TIM_GET_COMPARE() + P_GAIN*(speed*SPEED_GAIN-__HAL_TIM_GET_COUNTER(&htim3)) + I_GAIN*kasan[0] + D_GAIN*(dev[0][1]-dev[0][1]);
-		__HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,ocr);
-	}*/
+	void pid(){
+		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]=M1_Encoder_COUNT;
+		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=M2_Encoder_COUNT;
+	}
+	void start_encoder(void){
+		HAL_TIM_Encoder_Start(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		HAL_TIM_Encoder_Start(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		return;
+	}
+	void stop_encoder(void){
+		HAL_TIM_Encoder_Stop(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		HAL_TIM_Encoder_Stop(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		return;
+	}
 	void check_job(){
 		if(check_task()!=FREE){
 			switch(Motor_task.front()){

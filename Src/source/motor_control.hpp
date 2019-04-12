@@ -27,8 +27,18 @@
 
 #define Motor_thre 10
 
+#define PID_LEFT_MOTOR 0
+#define PID_RIGHT_MOTOR 1
+
+#define PID_COUNT_PAST 1
+#define PID_COUNT_NOW 0
+
+#define M1_TIM_CHANNEL &htim5
+#define M2_TIM_CHANNEL &htim3
+#define M1_Encoder_COUNT TIM5->CNT
+#define M2_Encoder_COUNT TIM3->CNT
+
 namespace motor{
-	//uint16_t speed=0;
 	typedef enum{
 		MOTOR_RIGHT,
 		MOTOR_LEFT
