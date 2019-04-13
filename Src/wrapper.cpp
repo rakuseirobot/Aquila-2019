@@ -19,6 +19,7 @@
 #include "lcd_control.hpp"
 #include "spi_lcd.hpp"
 #include "motor_control.hpp"
+#include "color_control.hpp"
 uart serial(&huart2);
 uart xbee(&huart1);
 spi spi_t(&hspi1);
@@ -36,6 +37,15 @@ void cpploop(void) {
 	lcd_clear();
 	lcd_putstr("Hello");
 	led_count_set(77);
+	while(1){
+		color_read();
+		xbee.putint(red);
+		xbee.string(",");
+		xbee.putint(blue);
+		xbee.string(",");
+		xbee.putint(green);
+		xbee.string("\n\r");
+	}
 	while(1){
 		motor::move(motor::ONE_ADVANCE);
 		HAL_Delay(1000);
