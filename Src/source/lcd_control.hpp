@@ -12,9 +12,7 @@
 #include <stdint.h>
 
 
-#define LCD1_TWI &TWIF
 #define LCD1_SLvADD 0x7c
-#define lcd_fre 300000
 
 void lcd_putstr(const char *data);
 void lcd_putmath(uint16_t num);

@@ -17,11 +17,11 @@ void led_count_set(uint8_t count){
 	HAL_GPIO_WritePin(LED_RST_GPIO_Port,LED_RST_Pin,GPIO_PIN_SET);
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(LED_RST_GPIO_Port,LED_RST_Pin,GPIO_PIN_RESET);
-	for(uint8_t i=0;i<count;i++){
+	for(uint8_t i=0;i<=count;i++){
 		HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_SET);
-		_delay_us(1);
+		_delay_us(10);
 		HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_RESET);
-		_delay_us(1);
+		_delay_us(10);
 	}
 	return;
 }

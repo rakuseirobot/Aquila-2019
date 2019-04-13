@@ -62,23 +62,27 @@ namespace motor{
 		BRAKE
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=1,
-		TWO_BLOCK=1,
-		TURN=1,
-		HALF_BLOCK=1,
+		ONE_BLOCK=1000,
+		TWO_BLOCK=2000,
+		TURN=800,
+		HALF_BLOCK=500,
 	};
 
 	typedef enum{
-		FREE,
-		BUSY
+		FREE=0,
+		BUSY=1
 	}task_status_t;
 
 	void pid();
-	
+	void start_timer();
+	void stop_timer();
+	void start_encoder();
+	void stop_encoder();
 	void check_job();
 	void check_Enocoder(void);
 	void task_add(move_t right,move_t left);
 	task_status_t check_task();
+	int32_t Get_Encoder(ch_t x);
 	void brake(ch_t x);
 	void forward(ch_t x);
 	void back(ch_t x);

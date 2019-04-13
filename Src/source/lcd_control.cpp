@@ -12,7 +12,7 @@
 #include "stm32f4xx.h"
 #include "delay.hpp"
 
-I2C_HandleTypeDef lcd_i2c = hi2c2;
+I2C_HandleTypeDef *lcd_i2c = &hi2c3;
 
 
 void init_lcd(void){
@@ -21,7 +21,7 @@ void init_lcd(void){
 	//コントラスト設定	//70?,Power,ICON,Contrast Control,Follower Control,
 	//FunctionSet無効化,Display ON\OFF Control,ClearDisplay,EntryMode??
 	for (uint8_t i=0;i<10;i++){
-		HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1,tx[i],2, 100);
+		HAL_I2C_Master_Transmit(lcd_i2c, LCD1_SLvADD,tx[i],2,10000);
 		HAL_Delay(50);
 	}
 
@@ -32,20 +32,20 @@ void lcd_putstr(const char *data)
 	//twi lcd_twi(&TWID,400000);
 	uint8_t i=0;
 	uint16_t datalong=strlen(data);
-	uint8_t tx[datalong*2] = {};
+	uint8_t tx[datalong][2];
 	for(i=0; i<datalong; i++)
 	{
 		if(i==datalong-1){
-			tx[i*2-1]=0x40;
+			tx[i][0]=0x40;
 		}
 		else{
-			tx[i*2-1]=0xc0;
+			tx[i][0]=0xc0;
 		}
-		tx[i*2]=*data;
+		tx[i][1]=*data;
 		data++;
+		HAL_I2C_Master_Transmit(lcd_i2c, LCD1_SLvADD,tx[i],2,10000);
 		_delay_us(10);
 	}
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1,tx,datalong*2,100);
 	//_delay_us(500);
 	return;
 }
@@ -71,7 +71,7 @@ void lcd_putdec(uint16_t num){
 void lcd_clear(void){
 	//twi lcd_twi(&TWID,400000);
 	uint8_t tx[2]={0x00,0x01};
-	HAL_I2C_Master_Transmit(&lcd_i2c, LCD1_SLvADD<<1,tx,2, 100);
+	HAL_I2C_Master_Transmit(lcd_i2c, LCD1_SLvADD,tx,2, 100);
 	_delay_us(600);
 	return;
 }

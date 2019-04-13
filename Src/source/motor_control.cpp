@@ -24,6 +24,7 @@ PB2,PB3 --SS
 #include <queue>
 //#include "core.hpp"
 #include <stdint.h>
+#include <math.h>
 
 extern jy901 gyro;
 jy901 motor_gyro = gyro;
@@ -48,10 +49,14 @@ float Saved_angle=0;
 
 uint8_t data=000;
 void init_motor(void){
+	M1_Encoder_COUNT=32767;
+	M2_Encoder_COUNT=32767;
 	//motor::speed=100;
 	HAL_GPIO_WritePin(M1_PWM_GPIO_Port,M1_PWM_Pin|M2_PWM_Pin,GPIO_PIN_SET);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	motor::start_timer();
+	motor::start_encoder();
 }
 void Save_angle(void){
 	Saved_angle=motor_gyro.read_angle();
@@ -74,18 +79,28 @@ namespace motor{
 	int32_t speed=0,MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t kasan[2]={0,0};
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
+	void start_timer(void){
+		HAL_TIM_Base_Start_IT(&htim13);
+		return;
+	}
+	void stop_timer(void){
+		HAL_TIM_Base_Stop_IT(&htim13);
+		return;
+	}
 	void pid(){
-		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]=M1_Encoder_COUNT;
-		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=M2_Encoder_COUNT;
+		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]=Get_Encoder(MOTOR_LEFT);
+		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=Get_Encoder(MOTOR_RIGHT);
 	}
 	void start_encoder(void){
-		HAL_TIM_Encoder_Start(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
-		HAL_TIM_Encoder_Start(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		HAL_TIM_Encoder_Start_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		HAL_TIM_Encoder_Start_IT(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		M1_Encoder_COUNT=32767;
+		M2_Encoder_COUNT=32767;
 		return;
 	}
 	void stop_encoder(void){
-		HAL_TIM_Encoder_Stop(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
-		HAL_TIM_Encoder_Stop(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		HAL_TIM_Encoder_Stop_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+		HAL_TIM_Encoder_Stop_IT(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
 		return;
 	}
 	void check_job(){
@@ -150,8 +165,8 @@ namespace motor{
 		}
 	}
 	void check_Enocoder(void){
-		 Left_count+=__HAL_TIM_GetCounter(&htim3);
-		 Right_count+=__HAL_TIM_GetCounter(&htim5);
+		 Left_count+=Get_Encoder(MOTOR_LEFT);
+		 Right_count+=Get_Encoder(MOTOR_RIGHT);
 		 if(Left_count<0){
 			 back(MOTOR_LEFT);
 		 }
@@ -161,10 +176,10 @@ namespace motor{
 		 else{
 			 brake(MOTOR_LEFT);
 		 }
-		 if(Right_count<0){
+		 if(Right_count>0){
 			 back(MOTOR_RIGHT);
 		 }
-		 else if(Right_count>0){
+		 else if(Right_count<0){
 			 forward(MOTOR_RIGHT);
 		 }
 		 else{
@@ -183,6 +198,25 @@ namespace motor{
 			return FREE;
 		}
 	}
+	int32_t Get_Encoder(ch_t x){
+		if(x==MOTOR_RIGHT){
+			if(M1_Encoder_COUNT<32767){
+				return (32767-M1_Encoder_COUNT)*-1;
+			}
+			else{
+				return (M1_Encoder_COUNT-32767);
+			}
+		}
+		else if (x==MOTOR_LEFT){
+			if(M2_Encoder_COUNT<32767){
+				return (32767-M2_Encoder_COUNT)*-1;
+			}
+			else{
+				return (M2_Encoder_COUNT-32767);
+			}
+
+		}
+	}
 	void brake(ch_t x){
 		if(x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
@@ -197,17 +231,21 @@ namespace motor{
 		if(x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_RESET);
 		}
 		else if (x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin|M2_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INB_Pin,GPIO_PIN_RESET);
 		}
 		return;
 	}
 	void back(ch_t x){
 		if(x==MOTOR_RIGHT){
+			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin|M1_EN_Pin,GPIO_PIN_SET);
 		}
 		else if (x==MOTOR_LEFT){
+			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin,GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INB_Pin|M2_EN_Pin,GPIO_PIN_SET);
 		}
 		return;
@@ -361,6 +399,8 @@ namespace motor{
 			fix_angle_v(b_angle);
 		}
 		motor::wait();
+		motor::brake(MOTOR_LEFT);
+		motor::brake(MOTOR_RIGHT);
 		mv_cap(MV_LEFT,true);
 		mv_cap(MV_FRONT,true);
 		mv_cap(MV_RIGHT,true);

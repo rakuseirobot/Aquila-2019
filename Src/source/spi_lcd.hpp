@@ -13,11 +13,11 @@
 
 #define ROW 320
 #define COL 240
-
+/*
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
-
+*/
 #ifndef _swap_int16_t
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #endif

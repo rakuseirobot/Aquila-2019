@@ -23,21 +23,21 @@
 //void CS(int x){
 	//PORTD.OUT |= (x<<PIN4_bm);
 //}
-SPI_HandleTypeDef lcd_spi = hspi1;
+SPI_HandleTypeDef *lcd_spi = &hspi1;
 
 
 void lcd_com(uint16_t comm){
 	HAL_GPIO_WritePin(LCD_CS_GPIO_Port,LCD_CS_Pin,GPIO_PIN_RESET);
 	HAL_Delay(1);
 	uint8_t TxBuf[3]={0x70,(uint8_t)(comm>>8),(uint8_t)(comm & 0xFF)};
-	HAL_SPI_Transmit(&lcd_spi,TxBuf,3,100);
+	HAL_SPI_Transmit(lcd_spi,TxBuf,3,100);
 	HAL_GPIO_WritePin(LCD_CS_GPIO_Port,LCD_CS_Pin,GPIO_PIN_SET);
 }
 void lcd_data(uint16_t data){
 	HAL_GPIO_WritePin(LCD_CS_GPIO_Port,LCD_CS_Pin,GPIO_PIN_RESET);
 	HAL_Delay(1);
 	uint8_t TxBuf[3]={0x72,(uint8_t)(data>>8),(uint8_t)(data & 0xFF)};
-	HAL_SPI_Transmit(&lcd_spi,TxBuf,3,100);
+	HAL_SPI_Transmit(lcd_spi,TxBuf,3,100);
 	HAL_GPIO_WritePin(LCD_CS_GPIO_Port,LCD_CS_Pin,GPIO_PIN_SET);
 }
 void lcd_ctrl(uint16_t com,uint16_t data){
