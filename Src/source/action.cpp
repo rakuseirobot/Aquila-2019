@@ -6,6 +6,7 @@
  */ 
 #include "action.hpp"
 #include "ui_control.hpp"
+#include "motor_control.hpp"
 
 uint32_t Servo_count = 750; //1.5ms  2ms:1000 1ms:500
 bool Victim_front = false;
@@ -67,6 +68,7 @@ void throw_kit(void){
 }
 
 void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and Left or Right?
+	motor::set_Status(motor::PAUSE);
 	led(Redled,1);
 	led(Blueled,1);
 	led(Greenled,1);
