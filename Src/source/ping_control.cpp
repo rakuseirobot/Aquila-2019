@@ -8,8 +8,8 @@
 #include "delay.hpp"
 #include "uart_control.hpp"
 
-extern uart serial;
-uart serial_ping = serial;
+extern uart xbee;
+uart serial_ping = xbee;
 
 uint16_t ping(int no){
 	uint16_t ping_data=0;
