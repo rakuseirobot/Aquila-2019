@@ -34,21 +34,11 @@ void cpploop(void) {
 	led(Greenled,1);
 	led(Blueled,1);
 	init_motor();
-	motor::set_pwm(500);
-	led_count_set(30);
-	HAL_Delay(1000);
-	led_count_set(29);
 	lcd_clear();
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,500);
 	while(1){
-		led(Redled,0);
-		motor::move(motor::ONE_ADVANCE);
-		led(Redled,1);
-		HAL_Delay(1000);
 	}
 }
 

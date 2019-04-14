@@ -27,9 +27,9 @@ void led_count_set(uint8_t count){
 }
 void buzzer(uint16_t t){
 	for(int i=0;i<=1000-t;i++){
-		//ブザーピンHIGH
+		HAL_GPIO_WritePin(BUZZER_GPIO_Port,BUZZER_Pin,GPIO_PIN_SET);
 		_delay_us(t);
-		//ブザーピンLOW
+		HAL_GPIO_WritePin(BUZZER_GPIO_Port,BUZZER_Pin,GPIO_PIN_RESET);
 		_delay_us(t);
 	}
 }
