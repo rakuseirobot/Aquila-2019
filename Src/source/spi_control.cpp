@@ -10,7 +10,7 @@ spi::spi(SPI_HandleTypeDef *spit){
 	spi_u=spit;
 }
 void spi::send(uint8_t* txBuffer,uint8_t* rxBuffer){
-	uint8_t len = sizeof(txBuffer) / sizeof(txBuffer);
-	HAL_SPI_TransmitReceive(spi_u,(uint8_t*)txBuffer,(uint8_t*)rxBuffer,len,2000);
+	uint8_t len = sizeof(txBuffer);
+	HAL_SPI_TransmitReceive(spi_u,(uint8_t*)txBuffer,(uint8_t*)rxBuffer,len,10000);
 	return;
 }

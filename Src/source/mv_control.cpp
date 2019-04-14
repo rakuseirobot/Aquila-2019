@@ -33,10 +33,9 @@ MV
 #include "ui_control.hpp"
 #include "lcd_control.hpp"
 
-extern spi spi_t;
-spi mv_spi=spi_t;
-extern uart serial;
-uart mv_serial = serial;
+spi mv_spi(&hspi2);
+extern uart xbee;
+uart mv_serial = xbee;
 
 void mv_cap(mv_ch_t di,bool st){
 	switch(di){
@@ -84,7 +83,7 @@ void mv_sig(uint8_t i,bool ud){
 	}
 	else{
 		if (i==1){
-			HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG2_Pin,GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_RESET);
 		}
 		else if (i==2){
 			HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_RESET);
@@ -98,43 +97,43 @@ void mv_sig(uint8_t i,bool ud){
 	}
 	return;
 }
-uint8_t mv_spi_send(uint8_t val, uint8_t i){
-	if (i==1){
-		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
+uint8_t mv_spi_send(mv_ch_t i,uint8_t val){
+	if (i==MV_LEFT){
+		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_SET);
 	}
-	else if (i==2){
-		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
+	else if (i==MV_FRONT){
+		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 	}
-	else if(i==3){
+	else if(i==MV_RIGHT){
 		HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	}
 	else{
 		return 0;
 	}
 	HAL_Delay(10);
-	if (i==1){
-		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
+	if (i==MV_LEFT){
+		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_RESET);
 	}
-	else if (i==2){
-		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
+	else if (i==MV_FRONT){
+		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_RESET);
 	}
-	else if(i==3){
+	else if(i==MV_RIGHT){
 		HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_RESET);
 	}
 	else{
 		return 0;
 	}
 	uint8_t dat[1];
-	uint8_t tx[1]={0};
+	uint8_t tx[1]={val};
 	HAL_Delay(10);
 	mv_spi.send(tx,dat);
-	if (i==1){
-		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
+	if (i==MV_LEFT){
+		HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_SET);
 	}
-	else if (i==2){
+	else if (i==MV_FRONT){
 		HAL_GPIO_WritePin(MVSIG2_GPIO_Port,MVSIG2_Pin,GPIO_PIN_SET);
 	}
-	else if(i==3){
+	else if(i==MV_RIGHT){
 		HAL_GPIO_WritePin(MVSIG3_GPIO_Port,MVSIG3_Pin,GPIO_PIN_SET);
 	}
 	else{
@@ -174,7 +173,7 @@ bool check_sig(bool check){
 		check_mv(MV_LEFT);
 		return false;
 	}
-	else if(HAL_GPIO_ReadPin(MVS2_GPIO_Port,MVS2_Pin)==0==0 && check==true){
+	else if(HAL_GPIO_ReadPin(MVS2_GPIO_Port,MVS2_Pin)==0 && check==true){
 		mv_cap(MV_LEFT,false);
 		mv_cap(MV_FRONT,false);
 		mv_cap(MV_RIGHT,false);
@@ -195,7 +194,7 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	//mv_sig(dir,false);
 	HAL_Delay(2);
 	led(Blueled,1);
-	uint8_t res = mv_spi_send(dir,1);
+	uint8_t res = mv_spi_send(dir,0);
 	mv_serial.putint((int)ta.r_now());
 	mv_serial.string(" , ");
 	mv_serial.putint(ta.r_now()->x);
@@ -203,7 +202,10 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	mv_serial.putint(ta.r_now()->y);
 	mv_serial.string(" , ");
 	mv_serial.putint(ta.r_now()->z);
-	mv_serial.string(" ::sermo\n");
+	mv_serial.string(" ::VictimNotify!\n\r");
+	mv_serial.string("ch");
+	mv_serial.putint(res);
+	mv_serial.string("\n\r");
 	if(kit_chk()==false){
 		//モーター再開
 		lcd_clear();
@@ -215,9 +217,6 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	//モーター停止
 	//hhh.key=1;
 	mv_cap(dir,false);
-	mv_serial.string("ch");
-	mv_serial.putint(res);
-	mv_serial.string("\n\r");
 	//if (dir==3&&res!=0){
 	//	return 2;
 	//}

@@ -84,7 +84,8 @@ namespace motor{
 
 	typedef enum{
 		FREE=0,
-		BUSY=1
+		BUSY=1,
+		STOP=3
 	}task_status_t;
 	void stm_studio();
 	void pid();

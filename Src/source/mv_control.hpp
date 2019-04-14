@@ -21,7 +21,7 @@ typedef enum{
     MV_RIGHT
 }mv_ch_t;
 void mv_cap(mv_ch_t di,bool st);
-uint8_t mv_spi_send(uint8_t val, uint8_t i);
+uint8_t mv_spi_send(mv_ch_t i,uint8_t val);
 bool check_sig(bool check = true);
 uint8_t check_mv(mv_ch_t dir);
 
