@@ -85,7 +85,8 @@ namespace motor{
 	typedef enum{
 		FREE=0,
 		BUSY=1,
-		STOP=3
+		PAUSE=2,
+		RESTART=3
 	}task_status_t;
 	void stm_studio();
 	void pid();
@@ -96,6 +97,7 @@ namespace motor{
 	void check_job();
 	void check_Enocoder(void);
 	void task_add(move_t right,move_t left);
+	void set_Status(task_status_t s);
 	task_status_t check_task();
 	int32_t Get_Encoder(ch_t x);
 	void brake(ch_t x);

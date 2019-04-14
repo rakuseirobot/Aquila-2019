@@ -83,6 +83,7 @@ namespace motor{
 	int32_t MOTOR_PID_var[2][3];
 	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
+	uint16_t SAVE_PWM[2]={0,0};
 	void start_timer(void){
 		HAL_TIM_Base_Start_IT(&htim13);
 		return;
@@ -94,6 +95,18 @@ namespace motor{
 	void set_Status(task_status_t s){
 		if(s==FREE){
 			set_pwm(MOTOR_SPEED[SPEED_TARGET]);
+		}
+		else if(s==PAUSE){
+			brake(MOTOR_LEFT);
+			brake(MOTOR_RIGHT);
+			SAVE_PWM[SPEED_RIGHT_MOTOR]=__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2);
+			SAVE_PWM[SPEED_LEFT_MOTOR]=__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1);
+			set_pwm(0);
+		}
+		else if(s==RESTART){
+			set_pwm(MOTOR_RIGHT,SAVE_PWM[SPEED_RIGHT_MOTOR]);
+			set_pwm(MOTOR_LEFT,SAVE_PWM[SPEED_LEFT_MOTOR]);
+			set_Status(BUSY);
 		}
 		Right_Motor_Status=s;
 		Left_Motor_Status=s;
@@ -332,6 +345,9 @@ namespace motor{
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2,sp);//2
 	}
 	task_status_t status(void){//1:free 2:busy
+		if(Left_Motor_Status==PAUSE&&Left_Motor_Status==PAUSE){
+			return PAUSE;
+		}
 		if(Left_Motor_Status!=FREE||Right_Motor_Status!=FREE){
 			return BUSY;
 		}
@@ -352,7 +368,7 @@ namespace motor{
 	}
 	void wait(bool check){
 		while(check_task()!=FREE||abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre){
-			//check_sig(check);
+			check_sig(check);
 		}
 		return;
 	}

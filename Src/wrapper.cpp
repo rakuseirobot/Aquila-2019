@@ -31,6 +31,8 @@ void cpploop(void) {
 	init_lcd();
 	led_count_set(20);
 	buzzer();
+	led(Greenled,1);
+	led(Blueled,1);
 	init_motor();
 	motor::set_pwm(500);
 	led_count_set(30);
@@ -43,15 +45,9 @@ void cpploop(void) {
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
 	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,500);
 	while(1){
-		check_sig(true);
-		xbee.string("refresh!\n\r");
-		mv_cap(MV_LEFT,true);
-		mv_cap(MV_FRONT,true);
-		mv_cap(MV_RIGHT,true);
-	}
-	while(1){
+		led(Redled,0);
 		motor::move(motor::ONE_ADVANCE);
-		led_one_count();
+		led(Redled,1);
 		HAL_Delay(1000);
 	}
 }

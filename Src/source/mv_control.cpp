@@ -32,6 +32,7 @@ MV
 #include "action.hpp"
 #include "ui_control.hpp"
 #include "lcd_control.hpp"
+#include "motor_control.hpp"
 
 spi mv_spi(&hspi2);
 extern uart xbee;
@@ -205,7 +206,7 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	mv_serial.string(" ::VictimNotify!\n\r");
 	mv_serial.string("ch");
 	mv_serial.putint(res);
-	mv_serial.string("\n\r");
+	mv_serial.string("\n\r");/*
 	if(kit_chk()==false){
 		//モーター再開
 		lcd_clear();
@@ -213,8 +214,8 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 		lcd_putstr("return");
 		buzzer(400);
 		return 0;
-	}
-	//モーター停止
+	}*/
+	motor::set_Status(motor::PAUSE);
 	//hhh.key=1;
 	mv_cap(dir,false);
 	//if (dir==3&&res!=0){
@@ -264,9 +265,12 @@ uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	mv_cap(MV_FRONT,true);
 	mv_cap(MV_RIGHT,true);
 	mv_cap(dir,false);
+
+	HAL_Delay(2000);
+
 	led(Blueled,0);
 	HAL_Delay(2);
-	//モーター再開
+	motor::set_Status(motor::RESTART);
 	return 1;
 }
 
