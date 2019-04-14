@@ -10,9 +10,14 @@
 #define ACTION_H_
 #include <stdint.h>
 
+typedef enum{
+    FREE,
+    DROP_RIGHT,
+    DROP_LEFT,
+}kit_drop_status_t;
 void init_Servo();
-void Drop_kit(uint8_t lr,uint16_t num=120);
-void throw_kit(void);
+void ST_Motor_Move(kit_drop_status_t lr,uint16_t num);
+void Drop_kit(kit_drop_status_t lr,uint16_t num);
 //void finded_victim(void);
 void finded_victim(uint8_t co,uint8_t lr);
 bool record_time(uint16_t time);

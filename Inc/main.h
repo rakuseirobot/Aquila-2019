@@ -110,6 +110,14 @@
 #define SW2_GPIO_Port GPIOD
 #define SW3_Pin GPIO_PIN_10
 #define SW3_GPIO_Port GPIOD
+#define ST_MOTOR_CH4_Pin GPIO_PIN_12
+#define ST_MOTOR_CH4_GPIO_Port GPIOD
+#define ST_MOTOR_CH3_Pin GPIO_PIN_13
+#define ST_MOTOR_CH3_GPIO_Port GPIOD
+#define ST_MOTOR_CH2_Pin GPIO_PIN_14
+#define ST_MOTOR_CH2_GPIO_Port GPIOD
+#define ST_MOTOR_CH1_Pin GPIO_PIN_15
+#define ST_MOTOR_CH1_GPIO_Port GPIOD
 #define M2_CHA_Pin GPIO_PIN_6
 #define M2_CHA_GPIO_Port GPIOC
 #define M2_CHB_Pin GPIO_PIN_7

@@ -9,11 +9,25 @@
 #include "../peripheral.hpp"
 #include "motor_control.hpp"
 #include "ui_control.hpp"
-
-extern uint32_t int_count;
-
+#include "uart_control.hpp"
+#include "action.hpp"
+extern uart xbee;
+extern uint16_t KIT_DROP_COUNT;
+extern kit_drop_status_t KIT_DROP_Status;
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {
+	if (htim->Instance == TIM2){
+		if(KIT_DROP_COUNT>0){
+			ST_Motor_Move(KIT_DROP_Status,KIT_DROP_COUNT);
+			KIT_DROP_COUNT-=1;
+		}
+		else{
+			HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+			KIT_DROP_COUNT=0;
+			KIT_DROP_Status=FREE;
+			HAL_TIM_Base_Stop_IT(&htim2);
+		}
+	}
 	if (htim->Instance == TIM13)
 	{
 		motor::check_job();

@@ -7,64 +7,97 @@
 #include "action.hpp"
 #include "ui_control.hpp"
 #include "motor_control.hpp"
+#include "stm32f429xx.h"
+#include "../peripheral.hpp"
 
 uint32_t Servo_count = 750; //1.5ms  2ms:1000 1ms:500
 bool Victim_front = false;
 uint8_t Victim_front_kit = 0;
-
+uint16_t KIT_DROP_COUNT=0;
+kit_drop_status_t KIT_DROP_Status=FREE;
 #warning Program isnt finished
-void Drop_kit(uint8_t lr,uint16_t num){ //lr:1:?E 0:??
-	if(lr==1){
-		for(int i=0;i<=num;i++){
-			//PORTK.OUTSET = PIN0_bm|PIN1_bm;
-			//PORTK.OUTCLR = PIN2_bm|PIN3_bm;
-			HAL_Delay(2);
-			//PORTK.OUTSET = PIN1_bm|PIN2_bm;
-			//PORTK.OUTCLR = PIN0_bm|PIN3_bm;
-			HAL_Delay(2);
-			//PORTK.OUTSET = PIN2_bm|PIN3_bm;
-			//PORTK.OUTCLR = PIN0_bm|PIN1_bm;
-			HAL_Delay(2);
-			//PORTK.OUTSET = PIN3_bm|PIN0_bm;
-			//PORTK.OUTCLR = PIN1_bm|PIN2_bm;
-			HAL_Delay(2);
+void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
+	if(lr=DROP_RIGHT){
+		if((8000>=num&&num>7000)||(6000>=num&&num>4000)||(1000>=num)){
+			switch(num%4){
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((7000>=num&&num>6000)||(4000>=num&&num>1000)){
+			switch(num%4){
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+
+	}
+	else if(lr=DROP_LEFT){
+		switch(num%4){
+			case 3:
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+				break;
+			case 2:
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+				break;
+			case 1:
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+				break;
+			case 0:
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+				break;
+			default:
+				break;
 		}
 	}
-	else if(lr==0){
-		for(int i=0;i<=num;i++){
-			//PORTK.OUTSET = PIN3_bm|PIN0_bm;
-			//PORTK.OUTCLR = PIN1_bm|PIN2_bm;
-			HAL_Delay(2);
-			//PORTK.OUTSET = PIN2_bm|PIN3_bm;
-			//PORTK.OUTCLR = PIN0_bm|PIN1_bm;
-			HAL_Delay(2);
-			//PORTK.OUTSET = PIN1_bm|PIN2_bm;
-			//PORTK.OUTCLR = PIN0_bm|PIN3_bm;
-			HAL_Delay(2);
-			//PORTK.OUTSET = PIN0_bm|PIN1_bm;
-			//PORTK.OUTCLR = PIN2_bm|PIN3_bm;
-			HAL_Delay(2);
-		}
-	}
-	//PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm|PIN3_bm;
 	return;
 }
-
-void throw_kit(void){
-	for(int i=0;i<=40;i++){
-		//PORTK.OUTSET = PIN0_bm;
-		//PORTK.OUTCLR = PIN1_bm|PIN2_bm|PIN3_bm;
-		HAL_Delay(2);
-		//PORTK.OUTSET = PIN1_bm;
-		//PORTK.OUTCLR = PIN0_bm|PIN2_bm|PIN3_bm;
-		HAL_Delay(2);
-		//PORTK.OUTSET = PIN2_bm;
-		//PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN3_bm;
-		HAL_Delay(2);
-		//PORTK.OUTSET = PIN3_bm;
-		//PORTK.OUTCLR = PIN0_bm|PIN1_bm|PIN2_bm;
-		HAL_Delay(2);
+void Drop_kit(kit_drop_status_t lr,uint16_t num){ //lr:1:?E 0:??
+	if(lr==DROP_LEFT){
+		KIT_DROP_Status=DROP_LEFT;
 	}
+	else if(lr==DROP_RIGHT){
+		KIT_DROP_Status=DROP_RIGHT;
+	}
+	KIT_DROP_COUNT=8000;
+	HAL_TIM_Base_Start_IT(&htim2);
+	return;
 }
 
 void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and Left or Right?
@@ -75,28 +108,19 @@ void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and 
 	if(lr==1){
 		//Trhow Left
 		if(co==1){
-			Drop_kit(0);
-			Drop_kit(1);
+			Drop_kit(DROP_LEFT,1);
 		}
 		else if(co==2){
-			Drop_kit(0);
-			Drop_kit(1);
-			Drop_kit(0);
-			Drop_kit(1);
-			Drop_kit(1);
+			Drop_kit(DROP_LEFT,2);
 		}
 	}
 	else if(lr==3){
 		//Trhow Right
 		if(co==1){
-			Drop_kit(1);
-			Drop_kit(0);
+			Drop_kit(DROP_RIGHT,1);
 		}
 		else if(co==2){
-			Drop_kit(1);
-			Drop_kit(0);
-			Drop_kit(1);
-			Drop_kit(0);
+			Drop_kit(DROP_RIGHT,2);
 		}
 	}
 	if(lr==2){
@@ -113,7 +137,6 @@ void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and 
 	else{
 		Victim_front=false;
 	}
-	#warning Not yet//ここはステッピングモーターのピンすべてLOW
 	led(Redled,0);
 	led(Blueled,0);
 	led(Greenled,0);
@@ -124,6 +147,7 @@ void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and 
 		buzzer();
 		HAL_Delay(300);
 	}
+	while(KIT_DROP_Status!=FREE);
 	error_led(1,0);
 	error_led(2,0);
 }

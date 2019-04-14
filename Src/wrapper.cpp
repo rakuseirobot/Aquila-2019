@@ -22,12 +22,14 @@
 #include "color_control.hpp"
 #include "ping_control.hpp"
 #include "mv_control.hpp"
+#include "action.hpp"
 uart serial(&huart2);
 uart xbee(&huart1);
 spi spi_t(&hspi1);
 jy901 gyro(&hi2c2);
 uint32_t int_count=0;
 void cpploop(void) {
+	HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
 	init_lcd();
 	led_count_set(20);
 	buzzer();
@@ -38,6 +40,7 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
+	finded_victim(1,3);
 	while(1){
 	}
 }
