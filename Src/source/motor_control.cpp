@@ -45,6 +45,9 @@ const int16_t longway = 4500;
 const int gbno=120;
 float Saved_angle=0;
 
+float P_GAIN=0.17;
+float I_GAIN=0.85;
+float D_GAIN=0.00001;
 
 
 uint8_t data=000;
@@ -76,8 +79,9 @@ namespace motor{
 	std::queue<move_t> Motor_task;
 	int32_t Motor_target;
 	int32_t Right_count,Left_count;
-	int32_t speed=0,MOTOR_COUNT[2][2]={{0,0},{0,0}};
-	int32_t kasan[2]={0,0};
+	int32_t MOTOR_SPEED[4]={0,0,800,400},MOTOR_COUNT[2][2]={{0,0},{0,0}};
+	int32_t MOTOR_PID_var[2][3];
+	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
 	void start_timer(void){
 		HAL_TIM_Base_Start_IT(&htim13);
@@ -87,9 +91,59 @@ namespace motor{
 		HAL_TIM_Base_Stop_IT(&htim13);
 		return;
 	}
+	void set_Status(task_status_t s){
+		if(s==FREE){
+			set_pwm(MOTOR_SPEED[SPEED_TARGET]);
+		}
+		Right_Motor_Status=s;
+		Left_Motor_Status=s;
+	}
+	void stm_studio(void){
+		ldevn=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
+		rdevn=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW];
+		ldevp=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST];
+		rdevp=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_PAST];
+		lkasan=MOTOR_PID_var[PID_LEFT_MOTOR][PID_KASAN];
+		rkasan=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_KASAN];
+		rpwm=__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2);
+		lpwm=__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1);
+	}
 	void pid(){
 		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]=Get_Encoder(MOTOR_LEFT);
 		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=Get_Encoder(MOTOR_RIGHT);
+		//if(abs(Left_count)>=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN){//目標地点までの偏差が一周期に進むべきカウント数以上の場合
+		if(MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]<0){
+		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]*-1;
+		}
+		else{
+		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW];
+		}
+		MOTOR_PID_var[PID_LEFT_MOTOR][PID_KASAN]+=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
+		
+		//}
+		//else{}
+		//if(abs(Right_count)>=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN){//目標地点までの偏差が一周期に進むべきカウント数以上の場合
+		if(MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]<0){
+		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]*-1;
+		}
+		else{
+		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
+		}
+		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_KASAN]+=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW];
+		
+		//}
+		//else{}
+		
+		MOTOR_SPEED[SPEED_LEFT_MOTOR]+=P_GAIN*MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]+I_GAIN*MOTOR_PID_var[PID_LEFT_MOTOR][PID_KASAN]+D_GAIN*(MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]-MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST]);
+		MOTOR_SPEED[SPEED_RIGHT_MOTOR]+=P_GAIN*MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]+I_GAIN*MOTOR_PID_var[PID_RIGHT_MOTOR][PID_KASAN]+D_GAIN*(MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]-MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_PAST]);
+		
+		set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)+MOTOR_SPEED[SPEED_LEFT_MOTOR]*0.1);
+		set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)+MOTOR_SPEED[SPEED_RIGHT_MOTOR]*0.1);
+
+		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_PAST]=MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW];
+		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_PAST]=MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
+		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST]=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
+		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_PAST]=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW];
 	}
 	void start_encoder(void){
 		HAL_TIM_Encoder_Start_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
@@ -162,10 +216,11 @@ namespace motor{
 				break;
 			}
 			Motor_task.pop();
+			set_Status(BUSY);
 		}
 	}
 	void check_Enocoder(void){
-		 Left_count+=Get_Encoder(MOTOR_LEFT);
+		 Left_count-=Get_Encoder(MOTOR_LEFT);
 		 Right_count+=Get_Encoder(MOTOR_RIGHT);
 		 if(Left_count<0){
 			 back(MOTOR_LEFT);
@@ -176,10 +231,10 @@ namespace motor{
 		 else{
 			 brake(MOTOR_LEFT);
 		 }
-		 if(Right_count>0){
+		 if(Right_count<0){
 			 back(MOTOR_RIGHT);
 		 }
-		 else if(Right_count<0){
+		 else if(Right_count>0){
 			 forward(MOTOR_RIGHT);
 		 }
 		 else{
@@ -199,7 +254,7 @@ namespace motor{
 		}
 	}
 	int32_t Get_Encoder(ch_t x){
-		if(x==MOTOR_RIGHT){
+		if(x==MOTOR_LEFT){
 			if(M1_Encoder_COUNT<32767){
 				return (32767-M1_Encoder_COUNT)*-1;
 			}
@@ -207,7 +262,7 @@ namespace motor{
 				return (M1_Encoder_COUNT-32767);
 			}
 		}
-		else if (x==MOTOR_LEFT){
+		else if (x==MOTOR_RIGHT){
 			if(M2_Encoder_COUNT<32767){
 				return (32767-M2_Encoder_COUNT)*-1;
 			}
@@ -220,7 +275,8 @@ namespace motor{
 	void brake(ch_t x){
 		if(x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
-			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin|M1_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
 		}
 		else if (x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin|M2_INB_Pin|M2_EN_Pin,GPIO_PIN_SET);
@@ -228,34 +284,42 @@ namespace motor{
 		return;
 	}
 	void forward(ch_t x){
-		if(x==MOTOR_RIGHT){
+		if(x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
-			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M1_EN_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_RESET);
 		}
-		else if (x==MOTOR_LEFT){
-			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin|M2_EN_Pin,GPIO_PIN_SET);
-			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INB_Pin,GPIO_PIN_RESET);
+		else if (x==MOTOR_RIGHT){
+			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M2_EN_GPIO_Port,M2_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M2_INB_GPIO_Port,M2_INB_Pin,GPIO_PIN_RESET);
 		}
 		return;
 	}
 	void back(ch_t x){
-		if(x==MOTOR_RIGHT){
+		if(x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin|M1_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M1_EN_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
 		}
-		else if (x==MOTOR_LEFT){
+		else if (x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin,GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INB_Pin|M2_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M2_EN_GPIO_Port,M2_EN_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M2_INB_GPIO_Port,M2_INB_Pin,GPIO_PIN_SET);
 		}
 		return;
 	}
 	void set_pwm(ch_t x,uint16_t sp){
-		sp=sp*10;
-		if(x==MOTOR_RIGHT){
+		if(sp>1000){
+			sp=1000;
+		}
+		if(sp<0){
+			sp=0;
+		}
+		if(x==MOTOR_LEFT){
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1,sp);//1
 		}
-		else if (x==MOTOR_LEFT){
+		else if (x==MOTOR_RIGHT){
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2,sp);//2
 		}
 		else{
@@ -266,6 +330,14 @@ namespace motor{
 	void set_pwm(uint16_t sp){
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1,sp);//1
 		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2,sp);//2
+	}
+	task_status_t status(void){//1:free 2:busy
+		if(Left_Motor_Status!=FREE||Right_Motor_Status!=FREE){
+			return BUSY;
+		}
+		else{
+			return FREE;
+		}
 	}
 	task_status_t status(motor::ch_t m){//1:free 2:busy
 		if(m==MOTOR_RIGHT&&Right_Motor_Status!=FREE){
@@ -279,13 +351,16 @@ namespace motor{
 		}
 	}
 	void wait(bool check){
-		while(check_task()!=FREE&&abs(Right_count)>=Motor_thre&&abs(Left_count)>=Motor_thre){
-			check_sig(check);
+		while(check_task()!=FREE||abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre){
+			//check_sig(check);
 		}
 		return;
 	}
 	void move(move_t x){// x = 0:1 block Advance 1:2 blocks Advance 2:Right Turn with Gyro 3:Left Turn with Gyro 4:1 block Back 5:2 block Back 6:Half block Advance 7:Half block Back 8:right Turn without Compass 9:left Turn without Compass 
-		HAL_Delay(5);
+		set_Status(BUSY);
+		MOTOR_SPEED[SPEED_LEFT_MOTOR]=0;
+		MOTOR_SPEED[SPEED_RIGHT_MOTOR]=0;
+		set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 		float first = 0;
 		float now = 0;
 		bool st_f = false;
@@ -395,15 +470,17 @@ namespace motor{
 			break;
 		}
 		motor::wait();
+		set_Status(FREE);
 		if(st_f==true){
+			HAL_Delay(500);
 			fix_angle_v(b_angle);
 		}
-		motor::wait();
 		motor::brake(MOTOR_LEFT);
 		motor::brake(MOTOR_RIGHT);
 		mv_cap(MV_LEFT,true);
 		mv_cap(MV_FRONT,true);
 		mv_cap(MV_RIGHT,true);
+		set_Status(FREE);
 		HAL_Delay(200);
 	}
 	void forever(void){
@@ -1331,6 +1408,7 @@ namespace motor{
 	// 	return e;
 	// }
 	void fix_position(uint8_t x){
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		turn_fix();
 		notify_half(x);
 		gb_fix();
@@ -1339,6 +1417,7 @@ namespace motor{
 	}
 	
 	void fix_angle(void){
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		float now=0;
 		float siki=1;//修正する閾値
 		now=motor_gyro.read_angle();
@@ -1387,6 +1466,7 @@ namespace motor{
 		motor::brake(MOTOR_RIGHT);
 		return;
 	}void fix_angle_v(float angl){
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		float now=0;
 		float siki=1;//修正する閾値
 		now=motor_gyro.read_angle();
@@ -1395,16 +1475,16 @@ namespace motor{
 			lcd_putstr("fix_ag_v");
 			if(now-angl>0){
 				if(abs(now-angl)<=180){
-					forward(MOTOR_RIGHT);
-					back(MOTOR_LEFT);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do 
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-angl)>siki);
 				}
 				else if(abs(now-angl)>180){
-					forward(MOTOR_LEFT);
-					back(MOTOR_RIGHT);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
@@ -1413,16 +1493,16 @@ namespace motor{
 			}
 			else if(now-angl<0){
 				if(abs(now-angl)<=180){
-					forward(MOTOR_LEFT);
-					back(MOTOR_RIGHT);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-angl)>siki);
 				}
 				else if(abs(now-angl)>180){
-					forward(MOTOR_RIGHT);
-					back(MOTOR_LEFT);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
@@ -1444,16 +1524,16 @@ namespace motor{
 			lcd_putstr("set_ag_v");
 			if(now-ang>0){
 				if(abs(now-ang)<=180){
-					forward(MOTOR_RIGHT);
-					back(MOTOR_LEFT);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do 
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-ang)>siki);
 				}
 				else if(abs(now-ang)>180){
-					forward(MOTOR_LEFT);
-					back(MOTOR_RIGHT);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
@@ -1462,16 +1542,16 @@ namespace motor{
 			}
 			else if(now-ang<0){
 				if(abs(now-ang)<=180){
-					forward(MOTOR_LEFT);
-					back(MOTOR_RIGHT);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-ang)>siki);
 				}
 				else if(abs(now-ang)>180){
-					forward(MOTOR_RIGHT);
-					back(MOTOR_LEFT);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();

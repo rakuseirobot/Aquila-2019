@@ -12,10 +12,10 @@
 #include "data_structure.hpp"
 #include <stdint.h>
 
-#define P_GAIN 0
-#define I_GAIN 0
-#define D_GAIN 0
-#define SPEED_GAIN 0
+
+extern float P_GAIN,I_GAIN,D_GAIN;
+
+#define SPEED_GAIN 0.07
 
 #define Acc_thre_u 2.9
 #define Acc_thre_d -4
@@ -25,13 +25,22 @@
 #define Ang_x_Norm 180
 #define Ang_x_thre 3
 
-#define Motor_thre 10
+#define Motor_thre 20
 
 #define PID_LEFT_MOTOR 0
 #define PID_RIGHT_MOTOR 1
 
+#define SPEED_LEFT_MOTOR 0
+#define SPEED_RIGHT_MOTOR 1
+#define SPEED_TARGET 2
+#define SPEED_FIX_TARGET 2
+
 #define PID_COUNT_PAST 1
 #define PID_COUNT_NOW 0
+
+#define PID_DEV_NOW 0
+#define PID_KASAN 1
+#define PID_DEV_PAST 2
 
 #define M1_TIM_CHANNEL &htim5
 #define M2_TIM_CHANNEL &htim3
@@ -39,6 +48,11 @@
 #define M2_Encoder_COUNT TIM3->CNT
 
 namespace motor{
+	extern int32_t Motor_target;
+	extern int32_t Right_count,Left_count;
+	extern int32_t MOTOR_SPEED[4],MOTOR_COUNT[2][2];
+	extern int32_t MOTOR_PID_var[2][3];
+	extern int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	typedef enum{
 		MOTOR_RIGHT,
 		MOTOR_LEFT
@@ -62,17 +76,17 @@ namespace motor{
 		BRAKE
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=1000,
-		TWO_BLOCK=2000,
-		TURN=800,
-		HALF_BLOCK=500,
+		ONE_BLOCK=5000,
+		TWO_BLOCK=10000,
+		TURN=6000,
+		HALF_BLOCK=2000,
 	};
 
 	typedef enum{
 		FREE=0,
 		BUSY=1
 	}task_status_t;
-
+	void stm_studio();
 	void pid();
 	void start_timer();
 	void stop_timer();
@@ -88,6 +102,7 @@ namespace motor{
 	void back(ch_t x);
 	void set_pwm(ch_t x,uint16_t sp);
 	void set_pwm(uint16_t sp);
+	task_status_t status(void);
 	task_status_t status(motor::ch_t m);
 	void wait(bool check=true);
 	void move(move_t x=BRAKE);/*

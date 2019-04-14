@@ -38,18 +38,8 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	led_count_set(77);
 	while(1){
-		color_read();
-		xbee.putint(red);
-		xbee.string(",");
-		xbee.putint(blue);
-		xbee.string(",");
-		xbee.putint(green);
-		xbee.string("\n\r");
-	}
-	while(1){
 		motor::move(motor::ONE_ADVANCE);
-		HAL_Delay(1000);
-		motor::move(motor::ONE_BACK);
+		led_one_count();
 		HAL_Delay(1000);
 	}
 }
