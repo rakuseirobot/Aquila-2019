@@ -29,8 +29,8 @@ PB2,PB3 --SS
 extern jy901 gyro;
 jy901 motor_gyro = gyro;
 
-extern uart serial;
-uart motor_serial = serial;
+extern uart xbee;
+uart motor_serial = xbee;
 
 
 const int rose=700;
@@ -43,7 +43,6 @@ const int16_t longway = 4500;
 #endif
 
 const int gbno=120;
-float Saved_angle=0;
 
 float P_GAIN=0.17;
 float I_GAIN=0.85;
@@ -58,11 +57,9 @@ void init_motor(void){
 	HAL_GPIO_WritePin(M1_PWM_GPIO_Port,M1_PWM_Pin|M2_PWM_Pin,GPIO_PIN_SET);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	motor::set_pwm(motor::MOTOR_SPEED[SPEED_TARGET]);
 	motor::start_timer();
 	motor::start_encoder();
-}
-void Save_angle(void){
-	Saved_angle=motor_gyro.read_angle();
 }
 
 int16_t smaller_s(int16_t x,int16_t y){
@@ -299,13 +296,13 @@ namespace motor{
 	void forward(ch_t x){
 		if(x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
-			HAL_GPIO_WritePin(M1_EN_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(M1_EN_GPIO_Port,M1_EN_Pin,GPIO_PIN_SET);
 		}
 		else if (x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin,GPIO_PIN_SET);
-			HAL_GPIO_WritePin(M2_EN_GPIO_Port,M2_EN_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(M2_INB_GPIO_Port,M2_INB_Pin,GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(M2_EN_GPIO_Port,M2_EN_Pin,GPIO_PIN_SET);
 		}
 		return;
 	}
@@ -317,8 +314,8 @@ namespace motor{
 		}
 		else if (x==MOTOR_RIGHT){
 			HAL_GPIO_WritePin(M2_INA_GPIO_Port,M2_INA_Pin,GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(M2_EN_GPIO_Port,M2_EN_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(M2_INB_GPIO_Port,M2_INB_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(M2_EN_GPIO_Port,M2_EN_Pin,GPIO_PIN_SET);
 		}
 		return;
 	}
@@ -348,6 +345,9 @@ namespace motor{
 		if(Left_Motor_Status==PAUSE&&Left_Motor_Status==PAUSE){
 			return PAUSE;
 		}
+		if(Left_Motor_Status==NOPID||Right_Motor_Status==NOPID){
+			return NOPID;
+		}
 		if(Left_Motor_Status!=FREE||Right_Motor_Status!=FREE){
 			return BUSY;
 		}
@@ -373,14 +373,16 @@ namespace motor{
 		return;
 	}
 	void move(move_t x){// x = 0:1 block Advance 1:2 blocks Advance 2:Right Turn with Gyro 3:Left Turn with Gyro 4:1 block Back 5:2 block Back 6:Half block Advance 7:Half block Back 8:right Turn without Compass 9:left Turn without Compass 
-		set_Status(BUSY);
+		b_angle=motor_gyro.read_angle();
+		if((x!=LEFT_TURN&&x!=RIGHT_TURN)&&x!=BRAKE){
+			set_Status(BUSY);
+		}
 		MOTOR_SPEED[SPEED_LEFT_MOTOR]=0;
 		MOTOR_SPEED[SPEED_RIGHT_MOTOR]=0;
 		set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 		float first = 0;
 		float now = 0;
 		bool st_f = false;
-		b_angle=motor_gyro.read_angle();
 		mv_cap(MV_LEFT,true);
 		mv_cap(MV_FRONT,true);
 		mv_cap(MV_RIGHT,true);
@@ -397,20 +399,21 @@ namespace motor{
 				//HAL_Delay(300);
 			break;
 			case RIGHT_TURN: //Right turn with gyro
+				set_Status(NOPID);
 				first = motor_gyro.read_angle();
-				//serial.putint(first);
-				//serial.string("\n\r");
+				//motor_serial.putint(first);
+				//motor_serial.string("\n\r");
 				turn_retry2:
-				forward(MOTOR_RIGHT);
-				back(MOTOR_LEFT);
+				forward(MOTOR_LEFT);
+				back(MOTOR_RIGHT);
 				HAL_Delay(2);
 				now = motor_gyro.read_angle();
-				//serial.putint(now);
-				//serial.string("\n\r");
+				//motor_serial.putint(now);
+				//motor_serial.string("\n\r");
 				do{
 					now=motor_gyro.read_angle();
-					//serial.putint(now);
-					//serial.string("\n\r");
+					//motor_serial.putint(now);
+					//motor_serial.string("\n\r");
 				}while((first<now?now-first:now-first+360)>270||(first<now?now-first:now-first+360)<90);
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
@@ -427,20 +430,21 @@ namespace motor{
 				}
 			break;
 			case LEFT_TURN: //Left Turn with gyro
+				set_Status(NOPID);
 				first = motor_gyro.read_angle();
-				//serial.putint(first);
-				//serial.string("\n\r");
+				//motor_serial.putint(first);
+				//motor_serial.string("\n\r");
 				turn_retry3:
-				back(MOTOR_RIGHT);
-				forward(MOTOR_LEFT);
+				back(MOTOR_LEFT);
+				forward(MOTOR_RIGHT);
 				HAL_Delay(2);
 				now=motor_gyro.read_angle();
-				//serial.putint(now);
-				//serial.string("\n\r");
+				//motor_serial.putint(now);
+				//motor_serial.string("\n\r");
 				do{
 					now=motor_gyro.read_angle();
-					//serial.putint(now);
-					//serial.string("\n\r");
+					//motor_serial.putint(now);
+					//motor_serial.string("\n\r");
 				}while((first<now?now-first:now-first+360)<90||(first<now?now-first:now-first+360)>270);
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
@@ -528,6 +532,8 @@ namespace motor{
 	const int gbbest=175;//185
 	uint32_t tbest = 600;
 	void gb_fix(void){
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+		set_Status(NOPID);
 		int16_t dis[3];
 		dis[0]=ping(FRONT);//Forward
 		dis[1]=ping(BACK);//Back
@@ -538,10 +544,11 @@ namespace motor{
 		else if(ang>=Ang_slope_Norm+Ang_slope_thre*1.5){
 			motor::move(HALF_ADVANCE);
 		}
-		
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+		set_Status(NOPID);
 		dis[0]=ping(FRONT);//Forward
 		dis[1]=ping(BACK);//Back
-		if(Sikiti>=dis[0]){
+		if(Sikiti>=dis[0]){//‘O‚Ì•ÇŠî€
 			HAL_Delay(1);
 			dis[0]=ping(FRONT);
 			if(!(Sikiti>=dis[0])){
@@ -562,7 +569,7 @@ namespace motor{
 				motor::brake(MOTOR_RIGHT);
 			}
 			else if((gbbest-dis[0])>fixno){
-				lcd_putstr("gb_fixB");
+				lcd_putstr("gb_fixF");
 				back(MOTOR_RIGHT);
 				back(MOTOR_LEFT);
 				while(dis[0]<gbbest){
@@ -616,6 +623,8 @@ namespace motor{
 	}
 	const int32_t turnvalue = 5;
 	void turn_fix(uint8_t force){
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+		set_Status(NOPID);
 		int val=0;
 		ping_ch_t chk[2]={};
 		if (!force&&smaller_s(ping(LEFT_BACK),ping(LEFT_FRONT))>=Sikiti&&smaller_s(ping(RIGHT_FRONT),ping(RIGHT_BACK))>=Sikiti){
@@ -655,8 +664,8 @@ namespace motor{
 			if(val < turnvalue*-1){ //Right Turn
 				lcd_clear();
 				lcd_putstr("FixingTurn");
-				back(MOTOR_RIGHT);
-				forward(MOTOR_LEFT);
+				back(MOTOR_LEFT);
+				forward(MOTOR_RIGHT);
 				do{
 					val=ping(chk[0])-ping(chk[1]);
 				}while(val<turnvalue*-1);
@@ -664,8 +673,8 @@ namespace motor{
 			else if(val > turnvalue){
 				lcd_clear();
 				lcd_putstr("FixingTurn");
-				forward(MOTOR_RIGHT);
-				back(MOTOR_LEFT);
+				forward(MOTOR_LEFT);
+				back(MOTOR_RIGHT);
 				do{
 					val=ping(chk[0])-ping(chk[1]);
 				}while(val>turnvalue);
@@ -722,35 +731,27 @@ namespace motor{
 	
 	
 	uint8_t notify_half(uint8_t x){
-		uint8_t dis[10];
+		uint16_t dis[5];
 		uint8_t i = 0;
-		dis[0] = c_p(1);
-		dis[1] = c_p(2);
-		dis[2] = c_p(5);
-		dis[3] = c_p(4);
-		if(dis[0]==1&&dis[1]!=1){
+		dis[0] = ping(LEFT_BACK);
+		dis[1] = ping(LEFT_FRONT);
+		dis[2] = ping(RIGHT_FRONT);
+		dis[3] = ping(RIGHT_BACK);
+		if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
 			i=2;
-		}else if(dis[0]!=1&&dis[1]==1){
-			i=2;
-		}else if(dis[2]==1&&dis[3]!=1){
-			i=2;
-		}else if(dis[2]!=1&&dis[3]==1){
+		}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
 			i=2;
 		}else{
 			i=0;
 		}
 		if(i==2){
-		dis[0] = c_p(1);
-		dis[1] = c_p(2);
-		dis[2] = c_p(5);
-		dis[3] = c_p(4);
-			if(dis[0]==1&&dis[1]!=1){
+			dis[0] = ping(LEFT_BACK);
+			dis[1] = ping(LEFT_FRONT);
+			dis[2] = ping(RIGHT_FRONT);
+			dis[3] = ping(RIGHT_BACK);
+			if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
 				i=1;
-			}else if(dis[0]!=1&&dis[1]==1){
-				i=1;
-			}else if(dis[2]==1&&dis[3]!=1){
-				i=1;
-			}else if(dis[2]!=1&&dis[3]==1){
+			}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
 				i=1;
 			}else{
 				i=0;
@@ -758,8 +759,8 @@ namespace motor{
 		}if(i==1){
 			lcd_clear();
 			lcd_putstr("NotifyHA");
-			serial.string("NotifyHalf");
-			serial.string("\n\r");
+			motor_serial.string("NotifyHalf");
+			motor_serial.string("\n\r");
 			if (x == v::front){
 				motor::move(HALF_ADVANCE);
 			}
@@ -858,8 +859,8 @@ namespace motor{
 				//motor::wait();
 				led(Redled,0);
 			}
-			serial.string("saka!");
-			serial.string("\n\r");
+			motor_serial.string("saka!");
+			motor_serial.string("\n\r");
 			led(Blueled,0);
 			motor::gb_fix();
 			lcd_clear();
@@ -1425,10 +1426,15 @@ namespace motor{
 	// }
 	void fix_position(uint8_t x){
 		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+		set_Status(NOPID);
 		turn_fix();
+		set_Status(NOPID);
 		notify_half(x);
+		set_Status(NOPID);
 		gb_fix();
+		set_Status(NOPID);
 		turn_fix();
+		set_Status(NOPID);
 		//return;
 	}
 	
@@ -1440,36 +1446,36 @@ namespace motor{
 		if(abs(now-b_angle)>siki){
 			lcd_clear();
 			lcd_putstr("fix_angl");
-			if(now-b_angle>0){
+			if(now>b_angle){
 				if(abs(now-b_angle)<=180){
-					forward(MOTOR_RIGHT);
-					back(MOTOR_LEFT);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do 
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-b_angle)>siki);
 				}
 				else if(abs(now-b_angle)>180){
-					forward(MOTOR_LEFT);
-					back(MOTOR_RIGHT);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-b_angle)>siki);
 				}
 			}
-			else if(now-b_angle<0){
+			else if(now<b_angle){
 				if(abs(now-b_angle)<=180){
-					forward(MOTOR_LEFT);
-					back(MOTOR_RIGHT);
+					forward(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
 					do
 					{
 						now=motor_gyro.read_angle();
 					} while (abs(now-b_angle)>siki);
 				}
 				else if(abs(now-b_angle)>180){
-					forward(MOTOR_RIGHT);
-					back(MOTOR_LEFT);
+					forward(MOTOR_LEFT);
+					back(MOTOR_RIGHT);
 					do
 					{
 						now=motor_gyro.read_angle();
@@ -1483,13 +1489,14 @@ namespace motor{
 		return;
 	}void fix_angle_v(float angl){
 		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+		set_Status(NOPID);
 		float now=0;
 		float siki=1;//C³‚·‚éè‡’l
 		now=motor_gyro.read_angle();
 		if(abs(now-angl)>siki){
 			lcd_clear();
 			lcd_putstr("fix_ag_v");
-			if(now-angl>0){
+			if(now>angl){
 				if(abs(now-angl)<=180){
 					forward(MOTOR_LEFT);
 					back(MOTOR_RIGHT);
@@ -1507,7 +1514,7 @@ namespace motor{
 					} while (abs(now-angl)>siki);
 				}
 			}
-			else if(now-angl<0){
+			else if(now<angl){
 				if(abs(now-angl)<=180){
 					forward(MOTOR_RIGHT);
 					back(MOTOR_LEFT);
@@ -1538,7 +1545,7 @@ namespace motor{
 		if(abs(now-ang)>siki){
 			lcd_clear();
 			lcd_putstr("set_ag_v");
-			if(now-ang>0){
+			if(now>ang){
 				if(abs(now-ang)<=180){
 					forward(MOTOR_LEFT);
 					back(MOTOR_RIGHT);
@@ -1556,7 +1563,7 @@ namespace motor{
 					} while (abs(now-ang)>siki);
 				}
 			}
-			else if(now-ang<0){
+			else if(now<ang){
 				if(abs(now-ang)<=180){
 					forward(MOTOR_RIGHT);
 					back(MOTOR_LEFT);
@@ -1584,27 +1591,29 @@ namespace motor{
 
 void enkaigei(void){
 	float first=motor_gyro.read_angle(), now=0;
+	motor::set_Status(motor::NOPID);
+	motor::set_pwm(300);
 	while(1){
 		now=motor_gyro.read_angle();
 		if(abs(now-first)>1){
 			if(now-first>0){
 				if(abs(now-first)<=180){
-					motor::forward(motor::MOTOR_RIGHT);
-					motor::back(motor::MOTOR_LEFT);
-				}
-				else if(abs(now-first)>180){
 					motor::forward(motor::MOTOR_LEFT);
 					motor::back(motor::MOTOR_RIGHT);
+				}
+				else if(abs(now-first)>180){
+					motor::forward(motor::MOTOR_RIGHT);
+					motor::back(motor::MOTOR_LEFT);
 				}
 			}
 			else if(now-first<0){
 				if(abs(now-first)<=180){
-					motor::back(motor::MOTOR_RIGHT);
-					motor::forward(motor::MOTOR_LEFT);
+					motor::back(motor::MOTOR_LEFT);
+					motor::forward(motor::MOTOR_RIGHT);
 				}
 				else if(abs(now-first)>180){
-					motor::forward(motor::MOTOR_RIGHT);
-					motor::back(motor::MOTOR_LEFT);
+					motor::forward(motor::MOTOR_LEFT);
+					motor::back(motor::MOTOR_RIGHT);
 				}
 			}
 		}
@@ -1612,5 +1621,10 @@ void enkaigei(void){
 			motor::brake(motor::MOTOR_LEFT);
 			motor::brake(motor::MOTOR_RIGHT);
 		}
+		xbee.string("First:");
+		xbee.putfloat(first);
+		xbee.string(",Now:");
+		xbee.putfloat(now);
+		xbee.string("\n\r");
 	}
 }

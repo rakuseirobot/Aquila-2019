@@ -1,5 +1,8 @@
 #MicroXplorer Configuration settings - do not modify
 File.Version=6
+I2C2.ClockSpeed=250000
+I2C2.I2C_Mode=I2C_Fast
+I2C2.IPParameters=I2C_Mode,ClockSpeed
 I2C3.IPParameters=NoStretchMode
 I2C3.NoStretchMode=I2C_NOSTRETCH_ENABLE
 KeepUserPlacement=false
@@ -499,7 +502,7 @@ TIM13.IPParameters=Prescaler,Period
 TIM13.Period=500
 TIM13.Prescaler=5000
 TIM2.IPParameters=Prescaler,Period
-TIM2.Period=70000
+TIM2.Period=71000
 TIM2.Prescaler=1
 TIM3.IPParameters=Prescaler,Period
 TIM3.Period=65535

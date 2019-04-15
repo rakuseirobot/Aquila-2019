@@ -15,8 +15,8 @@
 #include "uart_control.hpp"
 #define ping_flag true //trueなら2マス先も見る
 
-extern uart serial;
-uart iris_serial = serial;
+extern uart xbee;
+uart iris_serial = xbee;
 
 void make_nodes(){
 	iris_serial.string("make_nodes\n");
@@ -134,10 +134,10 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
 		iris_serial.putint((int)ta.r_now()->z);
 		iris_serial.string(",");
 		iris_serial.putint((int)ta.r_now()->type);
-		iris_serial.string("\n");
+		iris_serial.string("\n\r");
 		iris_serial.string("find :");
 		iris_serial.putint((int)ta.find(ta.r_now()->x,ta.r_now()->y,ta.r_now()->z));
-		iris_serial.string("\n");
+		iris_serial.string("\n\r");
 		//ta.stk.pop();//????its test.
 	}
 	return true;
@@ -224,7 +224,7 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
 	iris_serial.putint(ta.r_now()->type);
 	iris_serial.string(" : ");
 	iris_serial.putint(ta.r_now()->color);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
 	black_tile();
 	if(num==v::back){ nachylenie2(v::back); }else{ nachylenie2(v::front); }
@@ -262,14 +262,14 @@ void move_toa(node* a){//move to (node*)a
 	bl fg;
 	iris_serial.string("m_a:a=");
 	iris_serial.putint((int)a);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.putint(a->x);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.putint(a->y);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.putint(a->z);
-	iris_serial.string("\n");
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
+	iris_serial.string("\n\r");
 	while(ta.r_now()!=a && a->type!=v::black && a->type!=v::slope){
 		fg = false;
 		rep(i,4){
@@ -289,13 +289,13 @@ void move_toa(node* a){//move to (node*)a
 void stack_dfs(){	
 	iris_serial.string("start: ");
 	iris_serial.putint((int)ta.r_now());
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.putint(ta.r_now()->x);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.putint(ta.r_now()->y);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.putint(ta.r_now()->z);
-	iris_serial.string("\n");
+	iris_serial.string("\n\r");
 	iris_serial.string("-------------\n");
 	ta.stk.push(ta.r_start());
 	ta.r_start()->color=color::gray;
@@ -349,7 +349,7 @@ void stack_dfs(){
 			if(ta.stk.top()->color!=color::black && !ta.stk.empty() && ta.stk.top()!=np){
 				iris_serial.string("dfs2 : ");
 				iris_serial.putint((int)ta.stk.top());
-				iris_serial.string("\n");
+				iris_serial.string("\n\r");
 				move_toa(ta.stk.top());
 				lcd_clear();
 				lcd_putstr("dfs2");

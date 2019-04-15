@@ -14,6 +14,7 @@
 
 #define LCD1_SLvADD 0x7c
 
+void lcd_putstr2(const char *data);
 void lcd_putstr(const char *data);
 void lcd_putmath(uint16_t num);
 void lcd_putdec(uint16_t num);

@@ -27,6 +27,28 @@ void init_lcd(void){
 
 	return;
 }
+void lcd_putstr2(const char *data)
+{
+	//twi lcd_twi(&TWID,400000);
+	uint8_t i=0;
+	uint16_t datalong=strlen(data);
+	uint8_t tx[datalong][2];
+	for(i=0; i<datalong; i++)
+	{
+		if(i==datalong-1){
+			tx[i][0]=0x40;
+		}
+		else{
+			tx[i][0]=0x80;
+		}
+		tx[i][1]=*data;
+		data++;
+		HAL_I2C_Master_Transmit(lcd_i2c, LCD1_SLvADD,tx[i],2,10000);
+		_delay_us(10);
+	}
+	//_delay_us(500);
+	return;
+}
 void lcd_putstr(const char *data)
 {
 	//twi lcd_twi(&TWID,400000);

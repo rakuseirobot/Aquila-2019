@@ -76,17 +76,18 @@ namespace motor{
 		BRAKE
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=5000,
-		TWO_BLOCK=10000,
+		ONE_BLOCK=2500,
+		TWO_BLOCK=5000,
 		TURN=6000,
-		HALF_BLOCK=2000,
+		HALF_BLOCK=1500,
 	};
 
 	typedef enum{
 		FREE=0,
 		BUSY=1,
 		PAUSE=2,
-		RESTART=3
+		RESTART=3,
+		NOPID=4,
 	}task_status_t;
 	void stm_studio();
 	void pid();
@@ -125,11 +126,8 @@ namespace motor{
 	void fix_angle(void);
 	void fix_angle_v(float angl);
 	void set_angle(float ang);
-	#define m_speed 7
-	#define m_turnspeed 6
 }
 
-void Save_angle(void);
 void init_motor(void);
 int16_t smaller_s(int16_t x,int16_t y);
 void enkaigei(void);

@@ -23,6 +23,7 @@
 #include "ping_control.hpp"
 #include "mv_control.hpp"
 #include "action.hpp"
+#include "iris.hpp"
 uart serial(&huart2);
 uart xbee(&huart1);
 spi spi_t(&hspi1);
@@ -40,8 +41,10 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	finded_victim(1,3);
+	//finded_victim(1,3);
+	stack_dfs();
 	while(1){
+		buzzer();
 	}
 }
 

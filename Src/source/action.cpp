@@ -18,7 +18,7 @@ kit_drop_status_t KIT_DROP_Status=FREE;
 #warning Program isnt finished
 void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 	if(lr=DROP_RIGHT){
-		if((8000>=num&&num>7000)||(6000>=num&&num>4000)||(1000>=num)){
+		if((10000>=num&&num>8000)||(6000>=num&&num>4000)||(1000>=num)){
 			switch(num%4){
 				case 0:
 					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
@@ -40,7 +40,7 @@ void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 					break;
 			}
 		}
-		else if((7000>=num&&num>6000)||(4000>=num&&num>1000)){
+		else if((8000>=num&&num>6000)||(4000>=num&&num>1000)){
 			switch(num%4){
 				case 3:
 					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
@@ -95,7 +95,7 @@ void Drop_kit(kit_drop_status_t lr,uint16_t num){ //lr:1:?E 0:??
 	else if(lr==DROP_RIGHT){
 		KIT_DROP_Status=DROP_RIGHT;
 	}
-	KIT_DROP_COUNT=8000;
+	KIT_DROP_COUNT=10000;
 	HAL_TIM_Base_Start_IT(&htim2);
 	return;
 }

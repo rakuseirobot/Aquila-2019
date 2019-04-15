@@ -59,6 +59,7 @@ uint16_t ping_check (GPIO_TypeDef* port,uint16_t pin){
 	HAL_TIM_Base_Start(&htim6);
 	while(HAL_GPIO_ReadPin(port,pin)==GPIO_PIN_SET  && __HAL_TIM_GET_COUNTER(&htim6)<9500);
 	HAL_TIM_Base_Stop(&htim6);
+	HAL_Delay(3);
 	return __HAL_TIM_GET_COUNTER(&htim6);
 }
 uint8_t c_p(int x){
