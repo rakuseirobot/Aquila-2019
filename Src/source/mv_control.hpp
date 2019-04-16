@@ -23,6 +23,7 @@ typedef enum{
 void mv_cap(mv_ch_t di,bool st);
 uint8_t mv_spi_send(mv_ch_t i,uint8_t val);
 bool check_sig(bool check = true);
+void int_task_check_mv(uint16_t GPIO_Pin);
 uint8_t check_mv(mv_ch_t dir);
 
 

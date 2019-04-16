@@ -118,8 +118,18 @@ void Drop_kit(kit_drop_status_t lr,uint16_t num){ //lr:1:?E 0:??
 	else if(lr==DROP_RIGHT){
 		KIT_DROP_Status=DROP_RIGHT;
 	}
-	KIT_DROP_COUNT=10000;
-	HAL_TIM_Base_Start_IT(&htim2);
+	if(num==2){
+		KIT_DROP_COUNT=10000;
+	}
+	else if(num==1){
+		KIT_DROP_COUNT=6000;
+	}
+	else{
+		KIT_DROP_COUNT=0;
+	}
+	if(num!=0){
+		HAL_TIM_Base_Start_IT(&htim2);
+	}
 	return;
 }
 

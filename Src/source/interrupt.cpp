@@ -14,6 +14,17 @@
 extern uart xbee;
 extern uint16_t KIT_DROP_COUNT;
 extern kit_drop_status_t KIT_DROP_Status;
+void GPIO_interrupt_callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case MVS1_Pin:
+		case MVS2_Pin:
+		case MVS3_Pin:
+			int_task_check_mv(GPIO_Pin);
+			break;
+		default:
+			break;
+	}
+}
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2){

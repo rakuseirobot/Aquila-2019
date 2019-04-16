@@ -33,6 +33,7 @@ MV
 #include "ui_control.hpp"
 #include "lcd_control.hpp"
 #include "motor_control.hpp"
+#include "ping_control.hpp"
 
 spi mv_spi(&hspi2);
 extern uart xbee;
@@ -190,6 +191,25 @@ bool check_sig(bool check){
 	}
 	else{}
 	return true;
+}
+void int_task_check_mv(uint16_t GPIO_Pin){
+	uint8_t res=0;
+	switch(GPIO_Pin){
+		case MVS1_Pin:
+			res=mv_spi_send(MV_LEFT,0);
+			break;
+		case MVS2_Pin:
+			res=mv_spi_send(MV_FRONT,0);
+			break;
+		case MVS3_Pin:
+			res=mv_spi_send(MV_RIGHT,0);
+			break;
+	}
+	if(GPIO_Pin==MVS2_Pin){
+		if(ping(FRONT)<Sikiti&&){
+
+		}
+	}
 }
 uint8_t check_mv(mv_ch_t dir){ //0:return???,1:????,2:??????
 	//mv_sig(dir,false);

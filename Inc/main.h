@@ -52,10 +52,13 @@
 
 #define MVS3_Pin GPIO_PIN_2
 #define MVS3_GPIO_Port GPIOE
+#define MVS3_EXTI_IRQn EXTI2_IRQn
 #define MVS2_Pin GPIO_PIN_3
 #define MVS2_GPIO_Port GPIOE
+#define MVS2_EXTI_IRQn EXTI3_IRQn
 #define MVS1_Pin GPIO_PIN_4
 #define MVS1_GPIO_Port GPIOE
+#define MVS1_EXTI_IRQn EXTI4_IRQn
 #define RAM_CS_Pin GPIO_PIN_5
 #define RAM_CS_GPIO_Port GPIOE
 #define SS_R_Pin GPIO_PIN_6
