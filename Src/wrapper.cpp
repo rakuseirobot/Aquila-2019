@@ -41,7 +41,10 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	//finded_victim(1,3);
+	while(1){
+		xbee.putfloat(gyro.read_angle_y());
+		xbee.string("\n\r");
+	}
 	stack_dfs();
 	while(1){
 		buzzer();

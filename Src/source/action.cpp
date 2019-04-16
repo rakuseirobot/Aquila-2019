@@ -62,28 +62,51 @@ void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 					break;
 			}
 		}
-
 	}
 	else if(lr=DROP_LEFT){
-		switch(num%4){
-			case 3:
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
-				break;
-			case 2:
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
-				break;
-			case 1:
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
-				break;
-			case 0:
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
-				HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
-				break;
-			default:
-				break;
+		if((10000>=num&&num>8000)||(6000>=num&&num>4000)||(1000>=num)){
+			switch(num%4){
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((8000>=num&&num>6000)||(4000>=num&&num>1000)){
+			switch(num%4){
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
 		}
 	}
 	return;
