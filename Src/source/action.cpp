@@ -13,13 +13,8 @@
 
 extern uart xbee;
 
-uint32_t Servo_count = 750; //1.5ms  2ms:1000 1ms:500
-bool Victim_front = false;
-uint8_t Victim_front_kit = 0;
 uint32_t KIT_DROP_COUNT=0;
 kit_drop_status_t KIT_DROP_Status=FREE;
-#warning Program isnt finished
-uint8_t KIT_FRONT_flag[2]={0,0};
 void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 	if(lr==DROP_RIGHT){
 		if((10000>=num&&num>8000)||(6000>=num&&num>4000)||(1000>=num)){

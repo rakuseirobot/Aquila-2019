@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 
-extern uint8_t KIT_FRONT_flag[2];
 
 typedef enum{
     FREE,
@@ -21,7 +20,6 @@ typedef enum{
 
 
 extern kit_drop_status_t KIT_DROP_Status;
-extern uint8_t KIT_FRONT_flag[2];
 extern uint32_t KIT_DROP_COUNT;
 
 void init_Servo();
