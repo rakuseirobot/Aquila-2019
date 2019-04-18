@@ -11,8 +11,10 @@
 #include "ui_control.hpp"
 #include "uart_control.hpp"
 #include "action.hpp"
+#include "mv_control.hpp"
+
 extern uart xbee;
-extern uint16_t KIT_DROP_COUNT;
+extern uint32_t KIT_DROP_COUNT;
 extern kit_drop_status_t KIT_DROP_Status;
 void GPIO_interrupt_callback(uint16_t GPIO_Pin){
 	switch(GPIO_Pin){
@@ -28,6 +30,7 @@ void GPIO_interrupt_callback(uint16_t GPIO_Pin){
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2){
+		xbee.string("TIM2\n\r");
 		if(KIT_DROP_COUNT>0){
 			ST_Motor_Move(KIT_DROP_Status,KIT_DROP_COUNT);
 			KIT_DROP_COUNT-=1;

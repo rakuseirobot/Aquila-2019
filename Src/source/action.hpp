@@ -10,11 +10,20 @@
 #define ACTION_H_
 #include <stdint.h>
 
+
+extern uint8_t KIT_FRONT_flag[2];
+
 typedef enum{
     FREE,
     DROP_RIGHT,
     DROP_LEFT,
 }kit_drop_status_t;
+
+
+extern kit_drop_status_t KIT_DROP_Status;
+extern uint8_t KIT_FRONT_flag[2];
+extern uint32_t KIT_DROP_COUNT;
+
 void init_Servo();
 void ST_Motor_Move(kit_drop_status_t lr,uint16_t num);
 void Drop_kit(kit_drop_status_t lr,uint16_t num);

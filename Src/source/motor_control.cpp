@@ -25,6 +25,7 @@ PB2,PB3 --SS
 //#include "core.hpp"
 #include <stdint.h>
 #include <math.h>
+#include "action.hpp"
 
 extern jy901 gyro;
 jy901 motor_gyro = gyro;
@@ -74,6 +75,7 @@ int16_t smaller_s(int16_t x,int16_t y){
 namespace motor{
 	float b_angle=0.0;
 	std::queue<move_t> Motor_task;
+	move_t Task_Before,Task_Save;
 	int32_t Motor_target;
 	int32_t Right_count,Left_count;
 	int32_t MOTOR_SPEED[4]={0,0,800,400},MOTOR_COUNT[2][2]={{0,0},{0,0}};
@@ -103,6 +105,72 @@ namespace motor{
 		else if(s==RESTART){
 			set_pwm(MOTOR_RIGHT,SAVE_PWM[SPEED_RIGHT_MOTOR]);
 			set_pwm(MOTOR_LEFT,SAVE_PWM[SPEED_LEFT_MOTOR]);
+			set_Status(BUSY);
+		}
+		else if(s==RETURN){
+			motor::move(Task_Save);
+			Task_Save=BRAKE;
+		}
+		else if(s==BACK){
+			brake(MOTOR_LEFT);
+			brake(MOTOR_RIGHT);
+			Task_Save=Task_Before;
+			switch(Task_Before){
+				case ONE_ADVANCE:
+				case ONE_BACK:
+					Motor_target=ONE_BLOCK;
+					break;
+				case TWO_ADVANCE:
+				case TWO_BACK:
+					Motor_target=TWO_BLOCK;
+					break;
+				case HALF_ADVANCE:
+				case HALF_BACK:
+					Motor_target=HALF_BLOCK;
+					break;
+				case RIGHT_TURN_NO_GYRO:
+				case LEFT_TURN_NO_GYRO:
+					Motor_target=TURN;
+					break;
+				case BRAKE:
+				case RIGHT_TURN:
+				case LEFT_TURN:
+					break;
+				default:
+					break;
+			switch(Task_Before){
+				case ONE_ADVANCE:
+				case TWO_ADVANCE:
+				case HALF_ADVANCE:
+					Right_count=(Motor_target-Right_count)*-1;
+					Left_count=(Motor_target-Left_count)*-1;
+					break;
+				case ONE_BACK:
+				case TWO_BACK:
+				case HALF_BACK:
+					Right_count=(Motor_target-Right_count);
+					Left_count=(Motor_target-Left_count);
+					break;
+				case RIGHT_TURN:
+					move(RIGHT_TURN);
+					break;
+				case LEFT_TURN:
+					move(LEFT_TURN);
+					break;
+				case BRAKE:
+					break;
+				case RIGHT_TURN_NO_GYRO:
+					Right_count=(Motor_target-Right_count);
+					Left_count=(Motor_target-Left_count)*-1;
+					break;
+				case LEFT_TURN_NO_GYRO:
+					Right_count=(Motor_target-Right_count)*-1;
+					Left_count=(Motor_target-Left_count);
+					break;
+				default:
+					break;
+				}
+			}
 			set_Status(BUSY);
 		}
 		Right_Motor_Status=s;
@@ -281,6 +349,7 @@ namespace motor{
 			}
 
 		}
+		return 400;
 	}
 	void brake(ch_t x){
 		if(x==MOTOR_RIGHT){
@@ -367,9 +436,28 @@ namespace motor{
 		}
 	}
 	void wait(bool check){
-		while(check_task()!=FREE||abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre){
-			check_sig(check);
+		while(check_task()!=FREE||(abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre)){
+			if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
+				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==TWO_BACK||Task_Before==TWO_BACK))){
+					mv_task_check();
+				}
+			}
+			if(abs(Right_count)<=Motor_thre){
+				motor::brake(motor::MOTOR_RIGHT);
+				HAL_TIM_Encoder_Stop_IT(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+			}
+			if(abs(Left_count)<=Motor_thre){
+				motor::brake(motor::MOTOR_LEFT);
+				HAL_TIM_Encoder_Stop_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+			}
 		}
+		motor::start_encoder();
+		if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
+			mv_after_stop_task_check();
+		}
+		HAL_NVIC_EnableIRQ(MVS1_EXTI_IRQn);
+		HAL_NVIC_EnableIRQ(MVS2_EXTI_IRQn);
+		HAL_NVIC_EnableIRQ(MVS3_EXTI_IRQn);
 		return;
 	}
 	void move(move_t x){// x = 0:1 block Advance 1:2 blocks Advance 2:Right Turn with Gyro 3:Left Turn with Gyro 4:1 block Back 5:2 block Back 6:Half block Advance 7:Half block Back 8:right Turn without Compass 9:left Turn without Compass 
@@ -387,6 +475,7 @@ namespace motor{
 		mv_cap(MV_FRONT,true);
 		mv_cap(MV_RIGHT,true);
 		motor::wait();
+		Task_Before=x;
 		switch(x){
 			case ONE_ADVANCE: //1block advance
 				task_add(x);

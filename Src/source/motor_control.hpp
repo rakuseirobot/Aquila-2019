@@ -88,7 +88,11 @@ namespace motor{
 		PAUSE=2,
 		RESTART=3,
 		NOPID=4,
+		BACK=5,
+		RETURN=6,
 	}task_status_t;
+
+	extern move_t Task_Before,Task_Save;
 	void stm_studio();
 	void pid();
 	void start_timer();
