@@ -80,7 +80,7 @@ namespace motor{
 	move_t Task_Before,Task_Save;
 	int32_t Motor_target;
 	int32_t Right_count,Left_count;
-	int32_t MOTOR_SPEED[4]={0,0,800,400},MOTOR_COUNT[2][2]={{0,0},{0,0}};
+	int32_t MOTOR_SPEED[4]={0,0,800,300},MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t MOTOR_PID_var[2][3];
 	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
