@@ -439,24 +439,30 @@ namespace motor{
 	}
 	void wait(bool check){
 		while(check_task()!=FREE||(abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre)){
-			/*if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
+			if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){		
+				HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
+				HAL_NVIC_DisableIRQ(MVS2_EXTI_IRQn);
+				HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);
 				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==TWO_BACK||Task_Before==TWO_BACK))){
 					mv_task_check();
 				}
-			}*/
-			/*if(abs(Right_count)<=Motor_thre){
+			}
+			if(abs(Right_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_RIGHT);
-				HAL_TIM_Encoder_Stop_IT(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+				HAL_TIM_Encoder_Stop(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
 			}
 			if(abs(Left_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_LEFT);
-				HAL_TIM_Encoder_Stop_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
-			}*/
+				HAL_TIM_Encoder_Stop(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+			}
+			if(abs(Right_count)<=Motor_thre&&abs(Left_count)<=Motor_thre){
+				break;
+			}
 		}
 		motor::start_encoder();
-		/*if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
+		if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
 			mv_after_stop_task_check();
-		}*/
+		}
 		HAL_NVIC_EnableIRQ(MVS1_EXTI_IRQn);
 		HAL_NVIC_EnableIRQ(MVS2_EXTI_IRQn);
 		HAL_NVIC_EnableIRQ(MVS3_EXTI_IRQn);
@@ -819,7 +825,7 @@ namespace motor{
 		}
 		else{return 0;}
 			
-	return 0;
+		return 0;
 	}
 	
 	

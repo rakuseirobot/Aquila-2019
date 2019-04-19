@@ -26,6 +26,7 @@ void GPIO_interrupt_callback(uint16_t GPIO_Pin){
 		default:
 			break;
 	}
+	return;
 }
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {

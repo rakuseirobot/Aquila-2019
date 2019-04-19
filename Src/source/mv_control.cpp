@@ -236,10 +236,10 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 		MV_RECIEVED_DATA[MV_DATA_PING]=FIND_FRONT_WALL;
 		xbee.string(">WALL\n\r");
 	}
-	MV_RECIEVED_DATA[MV_DATA_TYPE]=dir;
+	MV_RECIEVED_DATA[MV_DATA_TYPE]=dir;/*
 	HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
 	HAL_NVIC_DisableIRQ(MVS2_EXTI_IRQn);
-	HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);
+	HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);*/
 	mv_cap(MV_LEFT,false);
 	mv_cap(MV_FRONT,false);
 	mv_cap(MV_RIGHT,false);

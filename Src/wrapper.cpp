@@ -37,11 +37,13 @@ void cpploop(void) {
 	led(Greenled,1);
 	led(Blueled,1);
 	init_motor();
-	motor::start_encoder();
 	lcd_clear();
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
+	while(1){
+		ping_debug();
+	}
 	stack_dfs();
 	while(1){
 		buzzer();
