@@ -37,6 +37,7 @@ void cpploop(void) {
 	led(Greenled,1);
 	led(Blueled,1);
 	init_motor();
+	motor::start_encoder();
 	lcd_clear();
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
