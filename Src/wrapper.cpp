@@ -42,8 +42,9 @@ void cpploop(void) {
 	xbee.string("Hello!");
 	led_count_set(77);
 	while(1){
-		xbee.putfloat(gyro.read_angle_y());
-		xbee.string("\n\r");
+		motor::move(motor::ONE_ADVANCE);
+		HAL_Delay(100);
+		buzzer();
 	}
 	stack_dfs();
 	while(1){

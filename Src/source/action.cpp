@@ -8,6 +8,7 @@
 #include "ui_control.hpp"
 #include "motor_control.hpp"
 #include "stm32f429xx.h"
+#include "stm32f4xx.h"
 #include "../peripheral.hpp"
 
 uint32_t Servo_count = 750; //1.5ms  2ms:1000 1ms:500

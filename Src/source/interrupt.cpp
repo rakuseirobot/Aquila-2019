@@ -6,6 +6,7 @@
  */
 
 #include "interrupt.hpp"
+#include "stm32f4xx.h"
 #include "../peripheral.hpp"
 #include "motor_control.hpp"
 #include "ui_control.hpp"
