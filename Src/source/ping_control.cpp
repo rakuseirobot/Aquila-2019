@@ -32,7 +32,7 @@ uint16_t ping(ping_ch_t no){
 		case FRONT:ping_data=ping_check(PING3_GPIO_Port,PING3_Pin);break;
 		case RIGHT_FRONT:ping_data=ping_check(PING4_GPIO_Port,PING4_Pin);break;
 		case RIGHT_BACK:ping_data=ping_check(PING5_GPIO_Port,PING5_Pin);break;
-		case BACK:ping_data=ping_check(PING6_GPIO_Port,PING6_Pin);break;
+		case PING_BACK:ping_data=ping_check(PING6_GPIO_Port,PING6_Pin);break;
 		default:break;
 	}
 	return ping_data;

@@ -19,7 +19,7 @@ typedef enum{
     FRONT=3,
     RIGHT_FRONT=4,
     RIGHT_BACK=5,
-    BACK=6
+    PING_BACK=6
 }ping_ch_t;
 
 

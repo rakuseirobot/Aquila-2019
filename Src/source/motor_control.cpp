@@ -33,6 +33,8 @@ jy901 motor_gyro = gyro;
 extern uart xbee;
 uart motor_serial = xbee;
 
+extern uart serial;
+
 
 const int rose=700;
 const int16_t longway = 4500;
@@ -437,11 +439,11 @@ namespace motor{
 	}
 	void wait(bool check){
 		while(check_task()!=FREE||(abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre)){
-			if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
+			/*if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
 				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==TWO_BACK||Task_Before==TWO_BACK))){
 					mv_task_check();
 				}
-			}
+			}*/
 			/*if(abs(Right_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_RIGHT);
 				HAL_TIM_Encoder_Stop_IT(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
@@ -452,9 +454,9 @@ namespace motor{
 			}*/
 		}
 		motor::start_encoder();
-		if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
+		/*if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
 			mv_after_stop_task_check();
-		}
+		}*/
 		HAL_NVIC_EnableIRQ(MVS1_EXTI_IRQn);
 		HAL_NVIC_EnableIRQ(MVS2_EXTI_IRQn);
 		HAL_NVIC_EnableIRQ(MVS3_EXTI_IRQn);
@@ -476,6 +478,8 @@ namespace motor{
 		mv_cap(MV_RIGHT,true);
 		motor::wait();
 		Task_Before=x;
+		serial.putint(x);
+		serial.string("<<\n\r");
 		switch(x){
 			case ONE_ADVANCE: //1block advance
 				task_add(x);
@@ -625,7 +629,7 @@ namespace motor{
 		set_Status(NOPID);
 		int16_t dis[3];
 		dis[0]=ping(FRONT);//Forward
-		dis[1]=ping(BACK);//Back
+		dis[1]=ping(PING_BACK);//Back
 		float ang=motor_gyro.read_angle_y();
 		if(ang<=Ang_slope_Norm-Ang_slope_thre*1.5){
 			motor::move(HALF_BACK);
@@ -636,7 +640,7 @@ namespace motor{
 		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		set_Status(NOPID);
 		dis[0]=ping(FRONT);//Forward
-		dis[1]=ping(BACK);//Back
+		dis[1]=ping(PING_BACK);//Back
 		if(Sikiti>=dis[0]){//‘O‚Ì•ÇŠî€
 			HAL_Delay(1);
 			dis[0]=ping(FRONT);
@@ -674,7 +678,7 @@ namespace motor{
 		}
 		else if(Sikiti>=dis[1]){
 			HAL_Delay(1);
-			dis[1]=ping(BACK);
+			dis[1]=ping(PING_BACK);
 			if(!(Sikiti>=dis[1])){
 				return;
 			}
@@ -687,7 +691,7 @@ namespace motor{
 					if(dis[1]>=longway){
 						break;
 					}
-					dis[1]=ping(BACK);
+					dis[1]=ping(PING_BACK);
 				}
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
@@ -700,7 +704,7 @@ namespace motor{
 					if(dis[1]>=longway){
 						break;
 					}
-					dis[1]=ping(BACK);
+					dis[1]=ping(PING_BACK);
 				}
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
@@ -1056,7 +1060,7 @@ namespace motor{
 				return 2;
 			}
 			else if(ac<=Acc_thre_d){//‰º‚è
-				if(longway/2<=ping(BACK)){
+				if(longway/2<=ping(PING_BACK)){
 					ac=motor_gyro.read_acc_x();
 					if(ac<=Acc_thre_d){
 						if(buz==true){
@@ -1233,7 +1237,7 @@ namespace motor{
 				return 1;
 			}
 			else if(ac<=Acc_thre_d){//¸‚è
-				if(longway<=ping(BACK)){
+				if(longway<=ping(PING_BACK)){
 					ac=motor_gyro.read_acc_x();
 					if(ac<=Acc_thre_d){
 						if(buz==true){

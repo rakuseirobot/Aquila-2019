@@ -17,6 +17,7 @@
 
 extern uart xbee;
 uart iris_serial = xbee;
+extern uart serial;
 
 void make_nodes(){
 	iris_serial.string("make_nodes\n");
@@ -37,7 +38,7 @@ void black_tile(){
 	if(color_check()==1 || ta.r_now()->type==v::black){
 		ta.r_now()->type=v::black;
 		ta.r_now()->color=v::black;
-		motor::move(motor::ONE_ADVANCE);
+		motor::move(motor::ONE_BACK);
 		motor::fix_position(v::back);
 		ta.turn_l();
 		ta.turn_l();
@@ -167,6 +168,8 @@ bool blind_alley(int x){
 
 void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:back(turn),3:back(usiro)
 	motor::wait();
+	serial.putint(num);
+	serial.string("\n\r");
 	switch(num){
 		case 0:
 			ta.turn_l();
