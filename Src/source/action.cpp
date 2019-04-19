@@ -8,6 +8,7 @@
 #include "ui_control.hpp"
 #include "motor_control.hpp"
 #include "stm32f429xx.h"
+#include "stm32f4xx.h"
 #include "../peripheral.hpp"
 #include "uart_control.hpp"
 

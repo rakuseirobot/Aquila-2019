@@ -12,6 +12,7 @@
 #include "uart_control.hpp"
 #include "action.hpp"
 #include "mv_control.hpp"
+#include "stm32f4xx.h"
 
 extern uart xbee;
 extern uint32_t KIT_DROP_COUNT;
