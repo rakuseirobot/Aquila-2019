@@ -42,10 +42,7 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	while(1){
-		motor::move(motor::ONE_ADVANCE);
-		HAL_Delay(100);
-	}
+	stack_dfs();
 	while(1){
 		buzzer();
 	}

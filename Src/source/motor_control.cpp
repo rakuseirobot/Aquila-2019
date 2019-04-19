@@ -442,14 +442,14 @@ namespace motor{
 					mv_task_check();
 				}
 			}
-			if(abs(Right_count)<=Motor_thre){
+			/*if(abs(Right_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_RIGHT);
 				HAL_TIM_Encoder_Stop_IT(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
 			}
 			if(abs(Left_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_LEFT);
 				HAL_TIM_Encoder_Stop_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
-			}
+			}*/
 		}
 		motor::start_encoder();
 		if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
