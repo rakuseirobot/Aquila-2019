@@ -36,7 +36,7 @@
 #include "stm32f4xx_it.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "peripheral.hpp"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -69,10 +69,14 @@ void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
+	char *da;
+	da = "hard fault\n\r";
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
+		HAL_UART_Transmit(&huart1, (uint8_t*)da, strlen(da), 0xFFFF);
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
   /* USER CODE BEGIN HardFault_IRQn 1 */
@@ -87,6 +91,9 @@ void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
 
+	char *da;
+	da = "MemManage fault\n\r";
+	HAL_UART_Transmit(&huart1, (uint8_t*)da, strlen(da), 0xFFFF);
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
@@ -232,8 +239,7 @@ void EXTI4_IRQHandler(void)
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
-
-  /* USER CODE END EXTI4_IRQn 1 */
+ /* USER CODE END EXTI4_IRQn 1 */
 }
 
 /**

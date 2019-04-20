@@ -78,12 +78,12 @@ namespace motor{
 	float b_angle=0.0;
 	std::queue<move_t> Motor_task;
 	move_t Task_Before,Task_Save;
-	int32_t Motor_target;
+	int32_t Motor_target,mtasksize;
 	int32_t Right_count,Left_count;
-	int32_t MOTOR_SPEED[4]={0,0,800,300},MOTOR_COUNT[2][2]={{0,0},{0,0}};
+	int32_t MOTOR_SPEED[4]={0,0,800,400},MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t MOTOR_PID_var[2][3];
 	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
-	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE;
+	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE,mstatus;
 	uint16_t SAVE_PWM[2]={0,0};
 	void start_timer(void){
 		HAL_TIM_Base_Start_IT(&htim13);
@@ -179,6 +179,8 @@ namespace motor{
 		Left_Motor_Status=s;
 	}
 	void stm_studio(void){
+		mtasksize=Motor_task.size();
+		mstatus=status();
 		ldevn=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
 		rdevn=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW];
 		ldevp=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST];
@@ -189,8 +191,29 @@ namespace motor{
 		lpwm=__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1);
 	}
 	void pid(){
-		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]=Get_Encoder(MOTOR_LEFT);
-		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=Get_Encoder(MOTOR_RIGHT);
+		int32_t LC=Get_Encoder(MOTOR_LEFT),RC=Get_Encoder(MOTOR_RIGHT);
+		Left_count-=LC;
+		Right_count+=RC;
+		if(Left_count<0){
+			back(MOTOR_LEFT);
+		}
+		else if(Left_count>0){
+			forward(MOTOR_LEFT);
+		}
+		else{
+			brake(MOTOR_LEFT);
+		}
+		if(Right_count<0){
+			back(MOTOR_RIGHT);
+		}
+		else if(Right_count>0){
+			forward(MOTOR_RIGHT);
+		}
+		else{
+			brake(MOTOR_RIGHT);
+		}
+		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]=LC;
+		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=RC;
 		//if(abs(Left_count)>=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN){//目標地点までの偏差が一周期に進むべきカウント数以上の場合
 		if(MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]<0){
 		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]*-1;
@@ -216,10 +239,10 @@ namespace motor{
 		
 		MOTOR_SPEED[SPEED_LEFT_MOTOR]+=P_GAIN*MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]+I_GAIN*MOTOR_PID_var[PID_LEFT_MOTOR][PID_KASAN]+D_GAIN*(MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]-MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST]);
 		MOTOR_SPEED[SPEED_RIGHT_MOTOR]+=P_GAIN*MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]+I_GAIN*MOTOR_PID_var[PID_RIGHT_MOTOR][PID_KASAN]+D_GAIN*(MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]-MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_PAST]);
-		
-		set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)+MOTOR_SPEED[SPEED_LEFT_MOTOR]*0.1);
-		set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)+MOTOR_SPEED[SPEED_RIGHT_MOTOR]*0.1);
-
+		if(motor::status()==motor::BUSY){
+			set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)+MOTOR_SPEED[SPEED_LEFT_MOTOR]*0.1);
+			set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)+MOTOR_SPEED[SPEED_RIGHT_MOTOR]*0.1);
+		}
 		MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_PAST]=MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW];
 		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_PAST]=MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
 		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST]=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
@@ -298,29 +321,6 @@ namespace motor{
 			Motor_task.pop();
 			set_Status(BUSY);
 		}
-	}
-	void check_Enocoder(void){
-		 Left_count-=Get_Encoder(MOTOR_LEFT);
-		 Right_count+=Get_Encoder(MOTOR_RIGHT);
-		 if(Left_count<0){
-			 back(MOTOR_LEFT);
-		 }
-		 else if(Left_count>0){
-			 forward(MOTOR_LEFT);
-		 }
-		 else{
-			 brake(MOTOR_LEFT);
-		 }
-		 if(Right_count<0){
-			 back(MOTOR_RIGHT);
-		 }
-		 else if(Right_count>0){
-			 forward(MOTOR_RIGHT);
-		 }
-		 else{
-			 brake(MOTOR_RIGHT);
-		 }
-		 return;
 	}
 	void task_add(move_t ta){
 		Motor_task.push(ta);
@@ -446,7 +446,7 @@ namespace motor{
 				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==TWO_BACK||Task_Before==TWO_BACK))){
 					mv_task_check();
 				}
-			}
+			}/*
 			if(abs(Right_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_RIGHT);
 				HAL_TIM_Encoder_Stop(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
@@ -457,9 +457,10 @@ namespace motor{
 			}
 			if(abs(Right_count)<=Motor_thre&&abs(Left_count)<=Motor_thre){
 				break;
-			}
+			}*/
 		}
 		motor::start_encoder();
+
 		if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){
 			mv_after_stop_task_check();
 		}
@@ -472,6 +473,8 @@ namespace motor{
 		b_angle=motor_gyro.read_angle();
 		if((x!=LEFT_TURN&&x!=RIGHT_TURN)&&x!=BRAKE){
 			set_Status(BUSY);
+			Right_count=0;
+			Left_count=0;
 		}
 		MOTOR_SPEED[SPEED_LEFT_MOTOR]=0;
 		MOTOR_SPEED[SPEED_RIGHT_MOTOR]=0;
@@ -483,7 +486,9 @@ namespace motor{
 		mv_cap(MV_FRONT,true);
 		mv_cap(MV_RIGHT,true);
 		motor::wait();
-		Task_Before=x;
+		if(x!=BRAKE){
+			Task_Before=x;
+		}
 		serial.putint(x);
 		serial.string("<<\n\r");
 		switch(x){
@@ -589,11 +594,14 @@ namespace motor{
 			break;
 		}
 		motor::wait();
+		motor::brake(MOTOR_LEFT);
+		motor::brake(MOTOR_RIGHT);
 		set_Status(FREE);
 		if(st_f==true){
 			HAL_Delay(500);
 			fix_angle_v(b_angle);
 		}
+		set_Status(FREE);
 		motor::brake(MOTOR_LEFT);
 		motor::brake(MOTOR_RIGHT);
 		mv_cap(MV_LEFT,true);
@@ -631,8 +639,8 @@ namespace motor{
 	const int gbbest=175;//185
 	uint32_t tbest = 600;
 	void gb_fix(void){
-		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		set_Status(NOPID);
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		int16_t dis[3];
 		dis[0]=ping(FRONT);//Forward
 		dis[1]=ping(PING_BACK);//Back
@@ -722,8 +730,8 @@ namespace motor{
 	}
 	const int32_t turnvalue = 5;
 	void turn_fix(uint8_t force){
-		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		set_Status(NOPID);
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		int val=0;
 		ping_ch_t chk[2]={};
 		if (!force&&smaller_s(ping(LEFT_BACK),ping(LEFT_FRONT))>=Sikiti&&smaller_s(ping(RIGHT_FRONT),ping(RIGHT_BACK))>=Sikiti){
@@ -1524,8 +1532,8 @@ namespace motor{
 	// 	return e;
 	// }
 	void fix_position(uint8_t x){
-		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		set_Status(NOPID);
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		turn_fix();
 		set_Status(NOPID);
 		notify_half(x);
@@ -1538,6 +1546,7 @@ namespace motor{
 	}
 	
 	void fix_angle(void){
+		set_Status(NOPID);
 		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		float now=0;
 		float siki=1;//修正する閾値
@@ -1587,8 +1596,8 @@ namespace motor{
 		motor::brake(MOTOR_RIGHT);
 		return;
 	}void fix_angle_v(float angl){
-		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		set_Status(NOPID);
+		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		float now=0;
 		float siki=1;//修正する閾値
 		now=motor_gyro.read_angle();

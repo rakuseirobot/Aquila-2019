@@ -32,7 +32,6 @@ void GPIO_interrupt_callback(uint16_t GPIO_Pin){
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2){
-		xbee.string("TIM2\n\r");
 		if(KIT_DROP_COUNT>0){
 			ST_Motor_Move(KIT_DROP_Status,KIT_DROP_COUNT);
 			KIT_DROP_COUNT-=1;
@@ -48,7 +47,6 @@ void interrupt_callback(TIM_HandleTypeDef *htim)
 	{
 		motor::check_job();
 		if(motor::status()==motor::BUSY){
-			motor::check_Enocoder();
 			motor::pid();
 		}
 		motor::stm_studio();

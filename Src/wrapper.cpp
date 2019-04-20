@@ -23,7 +23,7 @@
 #include "mv_control.hpp"
 #include "action.hpp"
 #include "iris.hpp"
-
+#include <string.h>
 uart serial(&huart2);
 uart xbee(&huart1);
 spi spi_t(&hspi1);
@@ -35,16 +35,11 @@ void cpploop(void) {
 	init_lcd();
 	led_count_set(20);
 	buzzer();
-	led(Greenled,1);
-	led(Blueled,1);
 	init_motor();
 	lcd_clear();
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	while(1){
-		ping_debug();
-	}
 	stack_dfs();
 	while(1){
 		buzzer();

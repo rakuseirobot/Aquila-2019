@@ -33,7 +33,7 @@ extern float P_GAIN,I_GAIN,D_GAIN;
 #define SPEED_LEFT_MOTOR 0
 #define SPEED_RIGHT_MOTOR 1
 #define SPEED_TARGET 2
-#define SPEED_FIX_TARGET 2
+#define SPEED_FIX_TARGET 3
 
 #define PID_COUNT_PAST 1
 #define PID_COUNT_NOW 0
@@ -63,8 +63,8 @@ namespace motor{
 		MOTOR_BRAKE,
 	}move_sig_t;
 	typedef enum{
-		ONE_ADVANCE,
-		TWO_ADVANCE,
+		ONE_ADVANCE=1,
+		TWO_ADVANCE=2,
 		RIGHT_TURN,
 		LEFT_TURN,
 		ONE_BACK,
@@ -73,11 +73,11 @@ namespace motor{
 		HALF_BACK,
 		RIGHT_TURN_NO_GYRO,
 		LEFT_TURN_NO_GYRO,
-		BRAKE
+		BRAKE=0
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=2500,
-		TWO_BLOCK=5000,
+		ONE_BLOCK=2600,
+		TWO_BLOCK=5200,
 		TURN=6000,
 		HALF_BLOCK=1500,
 	};
@@ -100,7 +100,6 @@ namespace motor{
 	void start_encoder();
 	void stop_encoder();
 	void check_job();
-	void check_Enocoder(void);
 	void task_add(move_t right,move_t left);
 	void set_Status(task_status_t s);
 	task_status_t check_task();
