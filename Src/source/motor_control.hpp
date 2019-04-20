@@ -34,6 +34,7 @@ extern float P_GAIN,I_GAIN,D_GAIN;
 #define SPEED_RIGHT_MOTOR 1
 #define SPEED_TARGET 2
 #define SPEED_FIX_TARGET 3
+#define SPEED_SLOPE_FIX_DEV 4
 
 #define PID_COUNT_PAST 1
 #define PID_COUNT_NOW 0

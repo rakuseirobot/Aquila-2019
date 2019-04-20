@@ -80,7 +80,7 @@ namespace motor{
 	move_t Task_Before,Task_Save;
 	int32_t Motor_target,mtasksize;
 	int32_t Right_count,Left_count;
-	int32_t MOTOR_SPEED[4]={0,0,800,400},MOTOR_COUNT[2][2]={{0,0},{0,0}};
+	int32_t MOTOR_SPEED[5]={0,0,800,400,300},MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t MOTOR_PID_var[2][3];
 	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE,mstatus;
@@ -1405,12 +1405,14 @@ namespace motor{
 		float anx=motor_gyro.read_angle_x();
 		if(x==v::front){//前進中
 			if(ang<=Ang_slope_Norm-Ang_slope_thre){//上り
+				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!U");
 				buzzer(400);
 				buzzer(800);
 				forward(MOTOR_RIGHT);
 				forward(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 				while(ang<=Ang_slope_Norm-Ang_slope_thre){
 					ang=motor_gyro.read_angle_y();
 					anx=motor_gyro.read_angle_x();
@@ -1418,7 +1420,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							#warning Not yet
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do 
 							{
@@ -1428,15 +1430,14 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							#warning Not yet
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
 							} while (anx<Ang_x_Norm);
 						}
-						#warning Not yet
-						//速度戻す
+						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 					}
 					else{
 						error_led(2,0);
@@ -1446,6 +1447,7 @@ namespace motor{
 				return 2;
 			}
 			else if(ang>=Ang_slope_Norm+Ang_slope_thre){//下り
+				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!D");
 				buzzer(800);
@@ -1459,7 +1461,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							#warning Not yet
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do 
 							{
@@ -1469,14 +1471,14 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							#warning Not yet
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
 							} while (anx<Ang_x_Norm);
 						}
-						#warning Not yet
+						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 						//速度戻す
 					}
 					else{
@@ -1488,6 +1490,7 @@ namespace motor{
 			}
 		}else if(x==v::back){//後進中
 			if(ang>=Ang_slope_Norm+Ang_slope_thre){//下り
+				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!U");
 				back(MOTOR_LEFT);
@@ -1501,7 +1504,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							#warning Not yet
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do 
 							{
@@ -1511,14 +1514,14 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							#warning Not yet
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
 							} while (anx<Ang_x_Norm);
 						}
-						#warning Not yet
+						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 						//速度戻す
 					}
 					else{
@@ -1529,6 +1532,7 @@ namespace motor{
 				return 1;
 			}
 			else if(ang<=Ang_slope_Norm-Ang_slope_thre){//昇り
+				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!U");
 				back(MOTOR_LEFT);
@@ -1542,7 +1546,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							#warning Not yet
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do 
 							{
@@ -1552,14 +1556,14 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							#warning Not yet
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do
 							{
 								anx=motor_gyro.read_angle_x();
 							} while (anx<Ang_x_Norm);
 						}
-						#warning Not yet
+						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 						//速度戻す
 					}
 					else{
