@@ -110,7 +110,63 @@ namespace motor{
 			set_Status(BUSY);
 		}
 		else if(s==RETURN){
-			motor::move(Task_Save);
+			switch(Task_Save){
+				case ONE_ADVANCE:
+				case ONE_BACK:
+					Motor_target=ONE_BLOCK;
+					break;
+				case TWO_ADVANCE:
+				case TWO_BACK:
+					Motor_target=TWO_BLOCK;
+					break;
+				case HALF_ADVANCE:
+				case HALF_BACK:
+					Motor_target=HALF_BLOCK;
+					break;
+				case RIGHT_TURN_NO_GYRO:
+				case LEFT_TURN_NO_GYRO:
+					Motor_target=TURN;
+					break;
+				case BRAKE:
+				case RIGHT_TURN:
+				case LEFT_TURN:
+					break;
+				default:
+					break;
+			switch(Task_Save){
+				case ONE_ADVANCE:
+				case TWO_ADVANCE:
+				case HALF_ADVANCE:
+					Right_count=Motor_target;
+					Left_count=Motor_target;
+					break;
+				case ONE_BACK:
+				case TWO_BACK:
+				case HALF_BACK:
+					Right_count=Motor_target*-1;
+					Left_count=Motor_target*-1;
+					break;
+				case RIGHT_TURN:
+					//move(RIGHT_TURN);
+					break;
+				case LEFT_TURN:
+					//move(LEFT_TURN);
+					break;
+				case BRAKE:
+					break;
+				case RIGHT_TURN_NO_GYRO:
+					Right_count=Motor_target*-1;
+					Left_count=Motor_target;
+					break;
+				case LEFT_TURN_NO_GYRO:
+					Right_count=Motor_target;
+					Left_count=Motor_target*-1;
+					break;
+				default:
+					break;
+				}
+			}
+			set_Status(BUSY);
 			Task_Save=BRAKE;
 		}
 		else if(s==BACK){
@@ -154,10 +210,10 @@ namespace motor{
 					Left_count=(Motor_target-Left_count);
 					break;
 				case RIGHT_TURN:
-					move(RIGHT_TURN);
+					//move(RIGHT_TURN);
 					break;
 				case LEFT_TURN:
-					move(LEFT_TURN);
+					//move(LEFT_TURN);
 					break;
 				case BRAKE:
 					break;
@@ -438,12 +494,12 @@ namespace motor{
 		}
 	}
 	void wait(bool check){
-		while(check_task()!=FREE||(abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre)){
+		do{
 			if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){		
 				HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
 				HAL_NVIC_DisableIRQ(MVS2_EXTI_IRQn);
 				HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);
-				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==TWO_BACK||Task_Before==TWO_BACK))){
+				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==ONE_BACK||Task_Before==TWO_BACK))){
 					mv_task_check();
 				}
 			}/*
@@ -458,7 +514,7 @@ namespace motor{
 			if(abs(Right_count)<=Motor_thre&&abs(Left_count)<=Motor_thre){
 				break;
 			}*/
-		}
+		}while(check_task()!=FREE||(abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre));
 		motor::start_encoder();
 
 		if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){

@@ -313,7 +313,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 						Drop_kit(DROP_RIGHT,kit_need);
 					}
 					else{
-						return;
+						Drop_kit(DROP_LEFT,kit_need);
 					}
 					motor::set_Status(motor::PAUSE);//モーター止める
 					led(Redled,0);
@@ -343,7 +343,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 					motor::set_Status(motor::RETURN);
 					return;
 				}
-				else{//本来あり得ない
+				else{//誤検知可能性大
 					MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
 					lcd_clear();
 					return;
@@ -380,8 +380,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			Drop_kit(DROP_RIGHT,kit_need);
 		}
 		else{
-			lcd_clear();
-			return;
+			Drop_kit(DROP_LEFT,kit_need);
 		}
 		motor::set_Status(motor::PAUSE);//モーター止める
 		led(Redled,0);
@@ -465,7 +464,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 			return;
 		}
 	}
-#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
+	#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		//一個前の座標記録
 	}
@@ -487,8 +486,8 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		Drop_kit(DROP_RIGHT,kit_need);
 	}
 	else{
-		lcd_clear();
-		return;
+		motor::set_Status(motor::PAUSE);//モーター止める
+		Drop_kit(DROP_LEFT,kit_need);
 	}
 	led(Redled,0);
 	led(Blueled,0);
