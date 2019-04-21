@@ -4,7 +4,6 @@
  *  Author: emile
  */ 
 #include "iris.hpp"
-//#include "initializing.hpp"
 #include "color_control.hpp"
 #include "motor_control.hpp"
 #include "lcd_control.hpp"
@@ -156,6 +155,15 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
  * ・現在地をnode_bに変更
  */
 
+void send_serial_node_data(node* n){
+	serial.putint((int)n);
+	serial.string(" :: ");
+	serial.putint(n->x);
+	serial.string(" , ");	
+	serial.putint(n->y);
+	serial.string(" , ");
+}
+
 bool blind_alley(int x){
 	if(x!=v::back)return false;
 	node* t = ta.r_now();
@@ -204,11 +212,9 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
 			motor::fix_position();
 			break;
         case 3:
-			ta.turn_l();
-			ta.turn_l();
+			ta.turn_l(); ta.turn_l();
 			ta.go_st();
-			ta.turn_l();
-			ta.turn_l();
+			ta.turn_l(); ta.turn_l();
 			motor::move(motor::ONE_BACK);
 			motor::fix_position(v::back);
 			break;
@@ -232,30 +238,22 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
 	black_tile();
 	if(num==v::back){ nachylenie2(v::back); }else{ nachylenie2(v::front); }
 	make_nodes();
-// 	if(blind_alley(num)){
-// 		ta.turn_r();
-// 		motor::move(motor::RIGHT_TURN);
-// 		motor::fix_position();
-// 		ta.turn_l();
-// 		motor::move(motor::LEFT_TURN);
-// 		motor::fix_position();
-// 	}
 	if(ta.r_now()->type==v::unknown){ta.r_now()->type = v::normal;}
 	motor::wait();
 }
 
 void move_n(node* n){//move to neighborhood((node*)n)
 	if(n!=np){
-		iris_serial.string("m_n");
-        rep(i,4)if(ta.ac_next(i,1)==n && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->type!=v::black){
-	        move(i);
-			lcd_clear();
-			lcd_putstr("m_n");
-			iris_serial.string("-a");
-			break;
-		}
+		iris_serial.string("m_n:");
+		iris_serial.putint((int)n);
+		iris_serial
+    	rep(i,4)if(ta.ac_next(i,1)==n && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->type!=v::black){
+	    	move(i);
+				iris_serial.string("-a");
+				break;
+			}
 		iris_serial.string("mn-end\n");
-    }
+  }
 }
 
 void move_toa(node* a){//move to (node*)a
@@ -344,9 +342,8 @@ void stack_dfs(){
 			ta.ac_next(tmp[0],1)->color=color::gray;
 		}
 		//node追加部分ここまで
-		*/iris_serial.string("n");
-		lcd_clear();
-		lcd_putstr("dfs");
+		*/
+		iris_serial.string("n");
 		fg=false;
 		while(!fg){
 			if(ta.stk.top()->color!=color::black && !ta.stk.empty() && ta.stk.top()!=np){
