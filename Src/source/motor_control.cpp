@@ -1417,6 +1417,7 @@ namespace motor{
 				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!U");
+				xbee.string("\x1b[43mNotify Long Up! Go ahead!\n\r\x1b[49m");
 				buzzer(400);
 				buzzer(800);
 				forward(MOTOR_RIGHT);
@@ -1453,12 +1454,14 @@ namespace motor{
 						error_led(1,0);
 					}
 				}
+				lcd_clear();
 				return 2;
 			}
 			else if(ang>=Ang_slope_Norm+Ang_slope_thre){//â∫ÇË
 				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!D");
+				xbee.string("\x1b[43mNotify Long Down! Go ahead!\n\r\x1b[49m");
 				buzzer(800);
 				buzzer(400);
 				forward(MOTOR_LEFT);
@@ -1495,6 +1498,7 @@ namespace motor{
 						error_led(1,0);
 					}
 				}
+				lcd_clear();
 				return 1;
 			}
 		}else if(x==v::back){//å„êiíÜ
@@ -1502,6 +1506,7 @@ namespace motor{
 				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!U");
+				xbee.string("\x1b[43mNotify Long Up! Go back!\n\r\x1b[49m");
 				back(MOTOR_LEFT);
 				back(MOTOR_RIGHT);
 				buzzer(400);
@@ -1538,12 +1543,14 @@ namespace motor{
 						error_led(1,0);
 					}
 				}
+				lcd_clear();
 				return 1;
 			}
 			else if(ang<=Ang_slope_Norm-Ang_slope_thre){//è∏ÇË
 				set_Status(NOPID);
 				lcd_clear();
 				lcd_putstr("NotiL!U");
+				xbee.string("\x1b[43mNotify Long Up! Go back!\n\r\x1b[49m");
 				back(MOTOR_LEFT);
 				back(MOTOR_RIGHT);
 				buzzer(800);
@@ -1580,6 +1587,7 @@ namespace motor{
 						error_led(1,0);
 					}
 				}
+				lcd_clear();
 				return 2;
 			}
 		}
