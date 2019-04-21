@@ -198,7 +198,7 @@ bool check_sig(bool check){
 }
 void  int_task_check_mv(uint16_t GPIO_Pin){
 	uint8_t res=0,dir=0;
-	xbee.string("VictimFind! >>");
+	xbee.string("\x1b[41mVictimFind! >>");
 	switch(GPIO_Pin){
 		case MVS1_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_LEFT;
@@ -221,24 +221,25 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 	}
 	xbee.putint(res);
 	if(res==0){
+		xbee.string("\x1b[49m \x1b[33m invalid response \x1b[39m\n\r");
 		return;
 	}
 	if(!(ping(FRONT)<Sikiti)&&MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		if(motor::Task_Before==motor::LEFT_TURN||motor::Task_Before==motor::RIGHT_TURN){
 			MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
-			xbee.string(">NOT_WALL\n\r");
+			xbee.string(">NOT_WALL\x1b[49m\n\r");
 		}
 		else if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
-			xbee.string(">NOT_NEED_WALL\n\r");
+			xbee.string(">NOT_NEED_WALL\x1b[49m\n\r");
 			return;
 		}
 	}
 	else if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		MV_RECIEVED_DATA[MV_DATA_PING]=FIND_FRONT_WALL;
-		xbee.string(">WALL\n\r");
+		xbee.string(">WALL\x1b[49m\n\r");
 	}
 	else{
-		xbee.string("\n\r");
+		xbee.string("\x1b[49m\n\r");
 	}
 	MV_RECIEVED_DATA[MV_DATA_TYPE]=res;/*
 	HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);

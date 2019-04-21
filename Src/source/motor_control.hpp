@@ -51,7 +51,7 @@ extern float P_GAIN,I_GAIN,D_GAIN;
 namespace motor{
 	extern int32_t Motor_target;
 	extern int32_t Right_count,Left_count;
-	extern int32_t MOTOR_SPEED[4],MOTOR_COUNT[2][2];
+	extern int32_t MOTOR_SPEED[5],MOTOR_COUNT[2][2];
 	extern int32_t MOTOR_PID_var[2][3];
 	extern int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	typedef enum{

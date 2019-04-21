@@ -20,6 +20,7 @@ PB2,PB3 --SS
 //#include "initializing.hpp"
 #include <stdlib.h>
 #include "main.h"
+#include "../peripheral.hpp"
 #include "stm32f4xx.h"
 #include <queue>
 //#include "core.hpp"
@@ -527,10 +528,10 @@ namespace motor{
 	}
 	void move(move_t x){// x = 0:1 block Advance 1:2 blocks Advance 2:Right Turn with Gyro 3:Left Turn with Gyro 4:1 block Back 5:2 block Back 6:Half block Advance 7:Half block Back 8:right Turn without Compass 9:left Turn without Compass 
 		b_angle=motor_gyro.read_angle();
+		Right_count=0;
+		Left_count=0;
 		if((x!=LEFT_TURN&&x!=RIGHT_TURN)&&x!=BRAKE){
 			set_Status(BUSY);
-			Right_count=0;
-			Left_count=0;
 		}
 		MOTOR_SPEED[SPEED_LEFT_MOTOR]=0;
 		MOTOR_SPEED[SPEED_RIGHT_MOTOR]=0;
@@ -649,6 +650,8 @@ namespace motor{
 				brake(MOTOR_LEFT);
 			break;
 		}
+		motor::Right_count=0;
+		motor::Left_count=0;
 		motor::wait();
 		motor::brake(MOTOR_LEFT);
 		motor::brake(MOTOR_RIGHT);
@@ -670,7 +673,8 @@ namespace motor{
 		forward(MOTOR_LEFT);
 		forward(MOTOR_RIGHT);
 		while(ping(FRONT)>=3);
-		motor::move();
+		motor::brake(MOTOR_RIGHT);
+		motor::brake(MOTOR_LEFT);
 		return;
 	}	void fix(uint8_t x,uint8_t ping1,uint8_t ping2,int no){//x=right,left ping1,ping2:Compare ping number no:Sikiiti
 		int val=0;
@@ -688,7 +692,8 @@ namespace motor{
 				break;
 			}
 		}
-		motor::move();
+		motor::brake(MOTOR_RIGHT);
+		motor::brake(MOTOR_LEFT);
 		return;
 	}
 	#define fixno 5 //gb_fix Sikiiti
@@ -712,7 +717,7 @@ namespace motor{
 		dis[0]=ping(FRONT);//Forward
 		dis[1]=ping(PING_BACK);//Back
 		if(Sikiti>=dis[0]){//前の壁基準
-			HAL_Delay(1);
+			HAL_Delay(3);
 			dis[0]=ping(FRONT);
 			if(!(Sikiti>=dis[0])){
 				return;
@@ -747,7 +752,7 @@ namespace motor{
 			lcd_clear();
 		}
 		else if(Sikiti>=dis[1]){
-			HAL_Delay(1);
+			HAL_Delay(3);
 			dis[1]=ping(PING_BACK);
 			if(!(Sikiti>=dis[1])){
 				return;
@@ -922,7 +927,7 @@ namespace motor{
 		}if(i==1){
 			lcd_clear();
 			lcd_putstr("NotifyHA");
-			motor_serial.string("NotifyHalf");
+			motor_serial.string("\x1b[42mNotifyHalf\x1b[49m");
 			motor_serial.string("\n\r");
 			if (x == v::front){
 				motor::move(HALF_ADVANCE);
@@ -1119,7 +1124,8 @@ namespace motor{
 				if(ac>=Acc_thre_u){
 					notify_long_acc(x,false);
 				}
-				motor::move();
+				motor::brake(MOTOR_RIGHT);
+				motor::brake(MOTOR_LEFT);
 				ac=motor_gyro.read_acc_x();
 				if(ac>=Acc_thre_u){
 					notify_long_acc(x,false);
@@ -1209,7 +1215,8 @@ namespace motor{
 				if(ac<=Acc_thre_d){
 					notify_long_acc(x,false);
 				}
-				motor::move();
+				motor::brake(MOTOR_RIGHT);
+				motor::brake(MOTOR_LEFT);
 				ac=motor_gyro.read_acc_x();
 				if(ac<=Acc_thre_d){
 					notify_long_acc(x,false);
@@ -1296,7 +1303,8 @@ namespace motor{
 				if(ac>=Acc_thre_u){
 					notify_long_acc(x,false);
 				}
-				motor::move();
+				motor::brake(MOTOR_RIGHT);
+				motor::brake(MOTOR_LEFT);
 				ac=motor_gyro.read_acc_x();
 				if(ac>=Acc_thre_u){
 					notify_long_acc(x,false);
@@ -1382,7 +1390,8 @@ namespace motor{
 				if(ac<=Acc_thre_d){
 					notify_long_acc(x,false);
 				}
-				motor::move();
+				motor::brake(MOTOR_RIGHT);
+				motor::brake(MOTOR_LEFT);
 				ac=motor_gyro.read_acc_x();
 				if(ac<=Acc_thre_d){
 					notify_long_acc(x,false);
@@ -1420,7 +1429,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do 
 							{
@@ -1430,7 +1439,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do
 							{
@@ -1461,7 +1470,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do 
 							{
@@ -1471,7 +1480,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do
 							{
@@ -1504,7 +1513,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do 
 							{
@@ -1514,7 +1523,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do
 							{
@@ -1546,7 +1555,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do 
 							{
@@ -1556,7 +1565,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do
 							{

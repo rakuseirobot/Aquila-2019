@@ -20,7 +20,7 @@ uart iris_serial = xbee;
 extern uart serial;
 
 void make_nodes(){
-	iris_serial.string("make_nodes\n");
+	iris_serial.string("make_nodes\n\r");
     if(!ta.r_now()->ac){
 		rep(i,4){
 			if(check_ping(i)>1){
@@ -167,6 +167,8 @@ bool blind_alley(int x){
 }
 
 void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:back(turn),3:back(usiro)
+	motor::Right_count=0;
+	motor::Left_count=0;
 	motor::wait();
 	serial.putint(num);
 	serial.string("\n\r");
@@ -254,7 +256,7 @@ void move_n(node* n){//move to neighborhood((node*)n)
 			iris_serial.string("-a");
 			break;
 		}
-		iris_serial.string("mn-end\n");
+		iris_serial.string("mn-end\n\r");
     }
 }
 
@@ -285,7 +287,7 @@ void move_toa(node* a){//move to (node*)a
 	iris_serial.string("-b");
 	ta.clear_dist();
 	lcd_clear();
-	iris_serial.string("ma-end\n");
+	iris_serial.string("ma-end\n\r");
 	lcd_putstr("end");
 }
 
@@ -299,7 +301,7 @@ void stack_dfs(){
 	iris_serial.string("\n\r");
 	iris_serial.putint(ta.r_now()->z);
 	iris_serial.string("\n\r");
-	iris_serial.string("-------------\n");
+	iris_serial.string("-------------\n\r");
 	ta.stk.push(ta.r_start());
 	ta.r_start()->color=color::gray;
 	make_nodes();
@@ -356,7 +358,7 @@ void stack_dfs(){
 				move_toa(ta.stk.top());
 				lcd_clear();
 				lcd_putstr("dfs2");
-				iris_serial.string("s_dfs\n");
+				iris_serial.string("s_dfs\n\r");
 				fg=true;
 			}else{ ta.stk.pop(); }
 		}
