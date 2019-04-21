@@ -515,6 +515,9 @@ namespace motor{
 			if(abs(Right_count)<=Motor_thre&&abs(Left_count)<=Motor_thre){
 				break;
 			}*/
+			if(motor::status()!=BUSY){
+				break;
+			}
 		}while(check_task()!=FREE||(abs(Right_count)>=Motor_thre||abs(Left_count)>=Motor_thre));
 		motor::start_encoder();
 
