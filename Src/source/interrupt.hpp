@@ -13,6 +13,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void GPIO_interrupt_callback(uint16_t GPIO_Pin);
 void interrupt_callback(TIM_HandleTypeDef *htim);
 #ifdef __cplusplus
 };

@@ -12,9 +12,24 @@
 #include "ui_control.hpp"
 #include "uart_control.hpp"
 #include "action.hpp"
+#include "mv_control.hpp"
+#include "stm32f4xx.h"
+
 extern uart xbee;
-extern uint16_t KIT_DROP_COUNT;
+extern uint32_t KIT_DROP_COUNT;
 extern kit_drop_status_t KIT_DROP_Status;
+void GPIO_interrupt_callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case MVS1_Pin:
+		case MVS2_Pin:
+		case MVS3_Pin:
+			int_task_check_mv(GPIO_Pin);
+			break;
+		default:
+			break;
+	}
+	return;
+}
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2){
@@ -33,7 +48,6 @@ void interrupt_callback(TIM_HandleTypeDef *htim)
 	{
 		motor::check_job();
 		if(motor::status()==motor::BUSY){
-			motor::check_Enocoder();
 			motor::pid();
 		}
 		motor::stm_studio();
