@@ -6,12 +6,14 @@
  */
 
 #include "interrupt.hpp"
+#include "stm32f4xx.h"
 #include "../peripheral.hpp"
 #include "motor_control.hpp"
 #include "ui_control.hpp"
 #include "uart_control.hpp"
 #include "action.hpp"
 #include "mv_control.hpp"
+#include "stm32f4xx.h"
 
 extern uart xbee;
 extern uint32_t KIT_DROP_COUNT;
@@ -26,11 +28,11 @@ void GPIO_interrupt_callback(uint16_t GPIO_Pin){
 		default:
 			break;
 	}
+	return;
 }
 void interrupt_callback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2){
-		xbee.string("TIM2\n\r");
 		if(KIT_DROP_COUNT>0){
 			ST_Motor_Move(KIT_DROP_Status,KIT_DROP_COUNT);
 			KIT_DROP_COUNT-=1;
@@ -46,7 +48,6 @@ void interrupt_callback(TIM_HandleTypeDef *htim)
 	{
 		motor::check_job();
 		if(motor::status()==motor::BUSY){
-			motor::check_Enocoder();
 			motor::pid();
 		}
 		motor::stm_studio();

@@ -8,6 +8,7 @@
 #include "ui_control.hpp"
 #include "motor_control.hpp"
 #include "stm32f429xx.h"
+#include "stm32f4xx.h"
 #include "../peripheral.hpp"
 #include "uart_control.hpp"
 
@@ -16,7 +17,7 @@ extern uart xbee;
 uint32_t KIT_DROP_COUNT=0;
 kit_drop_status_t KIT_DROP_Status=FREE;
 void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
-	if(lr==DROP_RIGHT){
+	if(lr==DROP_LEFT){
 		if((10000>=num&&num>8000)||(6000>=num&&num>4000)||(1000>=num)){
 			switch(num%4){
 				case 0:
@@ -62,7 +63,7 @@ void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 			}
 		}
 	}
-	else if(lr==DROP_LEFT){
+	else if(lr==DROP_RIGHT){
 		if((10000>=num&&num>8000)||(6000>=num&&num>4000)||(1000>=num)){
 			switch(num%4){
 				case 3:
@@ -126,9 +127,7 @@ void Drop_kit(kit_drop_status_t lr,uint16_t num){ //lr:1:?E 0:??
 	else{
 		KIT_DROP_COUNT=0;
 	}
-	if(num!=0){
-		HAL_TIM_Base_Start_IT(&htim2);
-	}
+	HAL_TIM_Base_Start_IT(&htim2);
 	xbee.string("Drop_kit!!");
 	return;
 }

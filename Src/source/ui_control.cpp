@@ -6,6 +6,9 @@
  */ 
 #include "ui_control.hpp"
 #include "delay.hpp"
+#include "uart_control.hpp"
+
+extern uart xbee;
 
 void led_one_count(void){
 	HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_SET);
@@ -35,7 +38,7 @@ void buzzer(uint16_t t){
 }
 
 
-void led(uint16_t ledkind,uint8_t ledmode){//0:消灯1:点灯3:TGL4:全部消灯
+void led(uint16_t ledkind,uint8_t ledmode){//0:效灯1:点灯3:TGL4:全部效灯
 	if(ledmode==1){
 		HAL_GPIO_WritePin(FLED_BLUE_GPIO_Port,ledkind,GPIO_PIN_RESET);
 	}

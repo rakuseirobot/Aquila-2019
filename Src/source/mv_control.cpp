@@ -196,9 +196,9 @@ bool check_sig(bool check){
 	else{}
 	return true;
 }
-void int_task_check_mv(uint16_t GPIO_Pin){
+void  int_task_check_mv(uint16_t GPIO_Pin){
 	uint8_t res=0,dir=0;
-	xbee.string("VictimFind! >>");
+	xbee.string("\x1b[41mVictimFind! >>");
 	switch(GPIO_Pin){
 		case MVS1_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_LEFT;
@@ -221,25 +221,30 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 	}
 	xbee.putint(res);
 	if(res==0){
+		xbee.string("\x1b[49m \x1b[33m invalid response \x1b[39m\n\r");
 		return;
 	}
 	if(!(ping(FRONT)<Sikiti)&&MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		if(motor::Task_Before==motor::LEFT_TURN||motor::Task_Before==motor::RIGHT_TURN){
 			MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
-			xbee.string(">NOT_WALL\n\r");
+			xbee.string(">NOT_WALL\x1b[49m\n\r");
 		}
 		else if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+			xbee.string(">NOT_NEED_WALL\x1b[49m\n\r");
 			return;
 		}
 	}
 	else if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		MV_RECIEVED_DATA[MV_DATA_PING]=FIND_FRONT_WALL;
-		xbee.string(">WALL\n\r");
+		xbee.string(">WALL\x1b[49m\n\r");
 	}
-	MV_RECIEVED_DATA[MV_DATA_TYPE]=dir;
+	else{
+		xbee.string("\x1b[49m\n\r");
+	}
+	MV_RECIEVED_DATA[MV_DATA_TYPE]=res;/*
 	HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
 	HAL_NVIC_DisableIRQ(MVS2_EXTI_IRQn);
-	HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);
+	HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);*/
 	mv_cap(MV_LEFT,false);
 	mv_cap(MV_FRONT,false);
 	mv_cap(MV_RIGHT,false);
@@ -247,6 +252,10 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 }
 
 void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
+	if(MV_RECIEVED_DATA[MV_DATA_TYPE]==FIND_NOTHING){
+		return;
+	}
+	xbee.string("enter mv_after_stop_task_check!!");
 	uint8_t kit_need=0;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
@@ -305,13 +314,21 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 						Drop_kit(DROP_RIGHT,kit_need);
 					}
 					else{
-						return;
+						Drop_kit(DROP_LEFT,kit_need);
 					}
 					motor::set_Status(motor::PAUSE);//モーター止める
 					led(Redled,0);
 					led(Blueled,0);
 					led(Greenled,0);
 					error_led(1,1);
+					if(kit_need==0){
+						for(int co=0;co<2;co++){
+							error_led(1,3);
+							error_led(2,4);
+							buzzer();
+							HAL_Delay(300);
+						}
+					}
 					while(KIT_DROP_Status!=FREE){
 						error_led(1,3);
 						error_led(2,4);
@@ -327,7 +344,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 					motor::set_Status(motor::RETURN);
 					return;
 				}
-				else{//本来あり得ない
+				else{//誤検知可能性大
 					MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
 					lcd_clear();
 					return;
@@ -364,14 +381,21 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			Drop_kit(DROP_RIGHT,kit_need);
 		}
 		else{
-			lcd_clear();
-			return;
+			Drop_kit(DROP_LEFT,kit_need);
 		}
 		motor::set_Status(motor::PAUSE);//モーター止める
 		led(Redled,0);
 		led(Blueled,0);
 		led(Greenled,0);
 		error_led(1,1);
+		if(kit_need==0){
+			for(int co=0;co<2;co++){
+				error_led(1,3);
+				error_led(2,4);
+				buzzer();
+				HAL_Delay(300);
+			}
+		}
 		while(KIT_DROP_Status!=FREE){
 			error_led(1,3);
 			error_led(2,4);
@@ -391,10 +415,14 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 	else{//前以外のタスク(本来あり得ない)
 		mv_task_check();
 	}
-	
+	motor::set_Status(motor::RESTART);
 }
 
 void mv_task_check(void){//waitのループ内の停止を求められるキット投下
+	if(MV_RECIEVED_DATA[MV_DATA_TYPE]==FIND_NOTHING){
+		return;
+	}
+	xbee.string("enter mv_task_check!\n\r");
 	uint8_t kit_need=0;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
@@ -419,7 +447,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 				break;
 			default:
 				break;
-		}
+	}
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		if(MV_RECIEVED_DATA[MV_DATA_PING]==FIND_FRONT_WALL){
 			if(motor::Task_Before==motor::ONE_BACK||motor::Task_Before==motor::TWO_BACK||motor::Task_Before==motor::HALF_BACK){
@@ -437,7 +465,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 			return;
 		}
 	}
-#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
+	#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		//一個前の座標記録
 	}
@@ -451,24 +479,33 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	led(Blueled,1);
 	led(Greenled,1);
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT){
+		motor::set_Status(motor::PAUSE);//モーター止める
 		Drop_kit(DROP_LEFT,kit_need);
 	}
 	else if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT){
+		motor::set_Status(motor::PAUSE);//モーター止める
 		Drop_kit(DROP_RIGHT,kit_need);
 	}
 	else{
-		lcd_clear();
-		return;
+		motor::set_Status(motor::PAUSE);//モーター止める
+		Drop_kit(DROP_LEFT,kit_need);
 	}
-	motor::set_Status(motor::PAUSE);//モーター止める
 	led(Redled,0);
 	led(Blueled,0);
 	led(Greenled,0);
 	error_led(1,1);
+	if(kit_need==0){
+		for(int co=0;co<20;co++){
+			error_led(1,3);
+			error_led(2,4);
+			buzzer();
+			HAL_Delay(300);
+		}
+	}
 	while(KIT_DROP_Status!=FREE){
 		error_led(1,3);
 		error_led(2,4);
-		buzzer();
+		//buzzer();
 		HAL_Delay(300);
 		xbee.putint(KIT_DROP_COUNT);
 		xbee.string("\n\r");
@@ -480,6 +517,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	if(motor::Task_Save!=motor::BRAKE){//BACKに入っていた場合はこの条件に入って元のマスに戻る。
 		motor::set_Status(motor::RETURN);
 	}
+	motor::set_Status(motor::RESTART);
 	return;
 }
 /*
