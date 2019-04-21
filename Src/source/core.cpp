@@ -5,7 +5,6 @@
  */ 
 #include "core.hpp"
 
-
 core::core(){
     now=mall.make(100,100,10,1);
 	at.insert(now);
@@ -13,7 +12,7 @@ core::core(){
     ans = np;
     start=now;
     dir=0;
-	set.at(10)->write(100,100,100,100);//10階の(x,y)の(min,max)がすべて100で初期化
+	set.at(10)->write(100,100,100,100);//10髫弱�ｮ(x,y)縺ｮ(min,max)縺後☆縺ｹ縺ｦ100縺ｧ蛻晄悄蛹�
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };
@@ -45,14 +44,14 @@ node* core::find(int x,int y,int z){
     return at.find(x,y,z);
 }
 void core::ins_node(node* x){at.insert(x);}
-void core::cn_graph(node* v, node* u){//Connect Nodes on Graph ::vとuをgraph(next[])に関してつなげる
+void core::cn_graph(node* v, node* u){//Connect Nodes on Graph ::v縺ｨu繧暖raph(next[])縺ｫ髢｢縺励※縺､縺ｪ縺偵ｋ
     at.insert(u);
     if(v!=np && u!=np){
         rep(i,4)if(v->next[i]==np){ v->next[i]=u; break; }else if(v->next[i]==u){break;}
         rep(i,4)if(u->next[i]==np){ u->next[i]=v; break; }else if(u->next[i]==v){break;}
     }
 }
-void core::cn_tree(node* par,node* v){//connect nodes on Tree ::par(ent)とvをtree(back)に関してつなげる
+void core::cn_tree(node* par,node* v){//connect nodes on Tree ::par(ent)縺ｨv繧稚ree(back)縺ｫ髢｢縺励※縺､縺ｪ縺偵ｋ
     at.insert(v);
     if(v!=np && par!=np)if(v->back==np)v->back=par;
 }
@@ -60,7 +59,7 @@ void core::ap_node(node* t,int dire){//append node (cn_graph)
     dire = (dire+dir+3)%4;
     node* u = find(t->x+v::vv[dire][0],t->y+v::vv[dire][1],t->z);
     if(u==np)u = mall.make(t->x+v::vv[dire][0],t->y+v::vv[dire][1],t->z,(flg+1)%2);
-	set.at(u->z)->update(u->x,t->y);//範囲算出用
+	set.at(u->z)->update(u->x,t->y);//遽�蝗ｲ邂怜�ｺ逕ｨ
     cn_graph(t,u);
 }
 node* core::ac_next(node* t,int now_dir,int dire,int dist){//(node*,int,int,int)->node* | nullptr(error) 
@@ -102,7 +101,7 @@ void core::clear_dist(){
 }
 
 
-void core::bfs(node* s,node* t){//sを始点にしてtを検索する�?
+void core::bfs(node* s,node* t){//s繧貞ｧ狗せ縺ｫ縺励※t繧呈､懃ｴ｢縺吶ｋ�ｿｽ?
     q.push(s);
     s->dist=0;
     while(!q.empty()){
@@ -160,6 +159,4 @@ float core::range_size(node* u,int dire){
 	}
 	return ans;
 }
-
 core ta;
-

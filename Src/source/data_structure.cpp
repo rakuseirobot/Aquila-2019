@@ -102,10 +102,28 @@ bl queue::empty(){if(siz==0){return true;}else{return false;}}
 
 ////////////////////////////////////////////////////////////////queue/////////////////////
 
-void stack::init(){siz=0;rep(i,max_size)box[i]=np;}
+void stack::init(){t_ans = 0;siz=0;rep(i,max_size)box[i]=np;}
 int stack::size(){return siz;}
 node* stack::top(){return box[siz-1];}
+node* stack::t_top(){/*return t { t ∈ box | min(t->dist) } ,and use ta.clear_bfs(); ta.bfs(ta.r_now(),ta.r_start); */
+	if(siz==1){ t_ans = siz-1; return box[siz-1];}
+	node* ans = np;
+	uint8_t tmp = 255;
+	for(int i=1;i<siz;i++){
+		if(tmp>=box[i]->dist){
+			ans = box[i]; t_ans = i;
+			tmp = ans->dist;
+		}
+	}
+	return ans;
+}
 void stack::pop(){box[siz-1]=np;siz--;}
+void stack::t_pop(){
+	siz--;
+	for(int i = t_ans;i<siz;i++){
+		box[i] = box[i+1];
+	}
+}
 void stack::push(node* x){box[siz]=x;siz++;}
 bl stack::empty(){if(siz==0){return true;}else{return false;}}
 

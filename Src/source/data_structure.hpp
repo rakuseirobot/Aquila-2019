@@ -5,7 +5,7 @@
  *  this is functions for mapping,algorithms,and so on. It's core of this robot.
  *  Author: Emile
  */ 
- #include <stdint.h>
+#include <stdint.h>
 #define np nullptr
 #define rep(i,N) for(int i=0;i<N;i++)
 using ll = long long int;
@@ -47,7 +47,7 @@ struct node{
     uint8_t x=100,y=100,z=10;//coordinate
 	uint8_t flag,type;//for bfs,search
 	uint8_t color;//for real bfs
-    uint8_t depth=1000,dist=1000;//
+    uint8_t depth=255,dist=255;//
 	bl ac=false;//already checked?
     node* next[4]={np};
     node* back=np;
@@ -98,11 +98,14 @@ public:
 class stack{
     int siz;
     node* box[max_size];
+    int t_ans;
 public:
     void init();
     int size();
     node* top();
+    node* t_top();
     void pop();
+    void t_pop();
     void push(node* x);
     bl empty();
 };
