@@ -8,7 +8,7 @@
 #include "delay.hpp"
 #include "uart_control.hpp"
 
-extern uart xbee;
+extern uart xbee; // @suppress("ファイル・スコープ内の未使用変数宣言")
 
 void led_one_count(void){
 	HAL_GPIO_WritePin(CL_GPIO_Port,CL_Pin,GPIO_PIN_SET);
