@@ -27,11 +27,9 @@ void _delay_ms(uint32_t time){
 }
 
 void _delay_us(uint32_t time){
-
 	htim7.Instance->CNT = 0;
 	HAL_TIM_Base_Start(&htim7);
-	while(htim7.Instance->CNT < time && HAL_TIM_Base_GetState(&htim7)==HAL_OK){
-	}
+	while(htim7.Instance->CNT < time && HAL_TIM_Base_GetState(&htim7)==HAL_OK);
 	HAL_TIM_Base_Stop(&htim7);
 	return;
 }
