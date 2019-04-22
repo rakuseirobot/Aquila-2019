@@ -55,18 +55,6 @@ struct node{
 	uint8_t height=0;
 };
 
-struct tuple_four{
-	uint8_t x_min,x_max,y_min,y_max;
-	//tuple_four(uint8_t x_m,uint8_t x_M,uint8_t y_m,uint8_t y_M);
-	void update(uint8_t x,uint8_t y);
-	void write(uint8_t x_m,uint8_t x_M,uint8_t y_m,uint8_t y_M);
-};
-
-struct range_set{
-	tuple_four set[20];
-	tuple_four* at(int n);
-};
-
 class AVLtree{
 	node* root;
 	public:
@@ -98,7 +86,7 @@ public:
 class stack{
     int siz;
     node* box[max_size];
-    int t_ans;
+    int t_ans;//-1 -> none
 public:
     void init();
     int size();
@@ -119,6 +107,15 @@ public:
     node* make(int x,int y,int z,int flag);
     bl full();
 };
+/*
+ * (node*)nodes::make(int x,int y,int z,int flag) -> (node*) n
+ * n :: (x,y,z) = (x,y,z) (#input)
+ *      type = unknown
+ *      color = white
+ *		flag = flag (#input)
+ *		dist,depth = 255
+ *      ac = false
+ */
 
 int max(int x,int y);
 int min(int x,int y);

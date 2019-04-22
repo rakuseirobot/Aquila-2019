@@ -20,7 +20,7 @@ public:
 	AVLtree at;
 	nodes mall;
 	stack stk;
-	range_set set;
+	//range_set set;
     core();
     void turn_r();
     void turn_l();
@@ -41,8 +41,8 @@ public:
     void cl_dist(node* t,int d);
     void clear_dist();
     void bfs(node* s,node* t);
-	int range_size_helper(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2,uint8_t z);//helper for range_size
-	float range_size(node* u,int dir);//return num of vertex(unknown)
+	//int range_size_helper(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2,uint8_t z);//helper for range_size
+	//float range_size(node* u,int dir);//return num of vertex(unknown)
 };
 
 extern core ta;

@@ -16,28 +16,35 @@
 #include <stdint.h>
 #define ping_flag true //true‚È‚ç2ƒ}ƒXæ‚àŒ©‚é
 
+uint16_t box[1025][10];
+
 extern uart xbee;
 uart iris_serial = xbee;
 extern uart serial;
 
 void serial_send_node(node* n){
+    iris_serial.string("--------------------");
+    iris_serial.string("\n\r");
+    iris_serial.string("*[adress] : ");
     iris_serial.putint((int)n);
-    iris_serial.string("::");
+    iris_serial.string("\n\r");
+    iris_serial.string("*[x,y,z] = ");
     iris_serial.putint((int)n->x);
     iris_serial.string(",");
     iris_serial.putint((int)n->y);
     iris_serial.string(",");
     iris_serial.putint((int)n->z);
     iris_serial.string("\n\r");
-    iris_serial.string("type :: ");
+    iris_serial.string("*[type] : ");
     iris_serial.putint((int)n->type);
     iris_serial.string("\n\r");
-    iris_serial.string("flag :: ");
+    iris_serial.string("*[flag] : ");
     iris_serial.putint((int)n->flag);
     iris_serial.string("\n\r");
-    iris_serial.string("color :: ");
+    iris_serial.string("*[color] : ");
     iris_serial.putint((int)n->color);
     iris_serial.string("\n\r");
+    iris_serial.string("--------------------");
     iris_serial.string("\n\r");
 }
 
@@ -272,6 +279,7 @@ void move_toa(node* a){//move to (node*)a
     lcd_putstr("end");
 }
 
+/*
 void stack_dfs(){	
     iris_serial.string("start: ");
     serial_send_node(ta.r_now());
@@ -279,7 +287,8 @@ void stack_dfs(){
     ta.stk.push(ta.r_start());
     ta.r_start()->color=color::gray;
     make_nodes();
-    bl fg;/*for ??*/ float range_tmp[4]={0.0};//for node tuika
+    bl fg;/*for ??*/ //float range_tmp[4]={0.0};//for node tuika
+    /*
     uint8_t tmp2;uint8_t tmp[4]={0,1,2,3};//for node tuika
     while(!ta.stk.empty()){
         if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
@@ -311,7 +320,7 @@ void stack_dfs(){
             ta.ac_next(tmp[0],1)->color=color::gray;
         }
         //node’Ç‰Á•”•ª‚±‚±‚Ü‚Å
-        */
+        *//*
         iris_serial.string("n");
         fg=false;
         while(!fg){
@@ -335,4 +344,42 @@ void stack_dfs(){
         }
         iris_serial.string("end");
     }
+}
+*/
+
+void stack_dfs(){	
+	iris_serial.string("dfs_start: ");
+    serial_send_node(ta.r_now());
+    iris_serial.string("-------------\n\r");
+	ta.stk.push(ta.r_start());
+	ta.r_start()->color=color::gray;
+	make_nodes();
+	bl fg;/*for ??*/ //float range_tmp[4]={0.0};//for node tuika
+	//uint8_t tmp2;//uint8_t tmp[4]={0,1,2,3};//for node tuika
+	while(!ta.stk.empty()){
+		if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
+		//node’Ç‰Á normal ver
+        for(int i=3;i>=0;i--){
+			if(ta.ac_next(i,1)!=np && ta.ac_next(i,1)->color==color::white && ta.ck_conect(ta.r_now(),ta.ac_next(i,1))){
+				ta.stk.push(ta.ac_next(i,1));
+				ta.ac_next(i,1)->color=color::gray;
+			}
+		}//node’Ç‰Á•”•ª‚±‚±‚Ü‚Å
+		lcd_clear(); lcd_putstr("dfs");
+		fg=false;
+		while(!fg){
+			if(ta.stk.top()->color!=color::black && !ta.stk.empty() && ta.stk.top()!=np){
+				iris_serial.string("*dfs : stk_top : ");
+				iris_serial.putint((int)ta.stk.top());
+				iris_serial.string("\n\r");
+				move_toa(ta.stk.top());
+				lcd_clear(); lcd_putstr("dfs");
+                iris_serial.string("\n\r");
+                iris_serial.string("__now_in_dfs_loop__\n\r");
+				fg=true;
+			}else{ ta.stk.pop(); }
+		}//sub loop
+	}//main loop
+	iris_serial.string("dfs_end \n\r");
+	lcd_clear(); lcd_putstr("end_dfs");
 }
