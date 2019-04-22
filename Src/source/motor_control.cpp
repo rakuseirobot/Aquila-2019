@@ -916,10 +916,29 @@ namespace motor{
 			i=0;
 		}
 		if(i==2){
+			HAL_Delay(100);
+			xbee.string("\n\r\x1b[7mLEFT_BACK:");
+			xbee.putint(dis[0]);
+			xbee.string("LEFT_FRONT:");
+			xbee.putint(dis[1]);
+			xbee.string("RIGHT_FRONT:");
+			xbee.putint(dis[2]);
+			xbee.string("RIGHT_BACK:");
+			xbee.putint(dis[3]);
+			xbee.string("\n\r");
 			dis[0] = ping(LEFT_BACK);
 			dis[1] = ping(LEFT_FRONT);
 			dis[2] = ping(RIGHT_FRONT);
 			dis[3] = ping(RIGHT_BACK);
+			xbee.string("[‚Q‰ñ–Ú]LEFT_BACK:");
+			xbee.putint(dis[0]);
+			xbee.string("LEFT_FRONT:");
+			xbee.putint(dis[1]);
+			xbee.string("RIGHT_FRONT:");
+			xbee.putint(dis[2]);
+			xbee.string("RIGHT_BACK:");
+			xbee.putint(dis[3]);
+			xbee.string("\x1b[0m\n\r");
 			if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
 				i=1;
 			}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
