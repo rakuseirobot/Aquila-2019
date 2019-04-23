@@ -4,8 +4,9 @@
  * core.hpp
  * Created: 2018/12/20 12:00:00
  *  Author: Emile
- */ 
+ */
 #include "data_structure.hpp"
+#include <stdint.h>
 #define M_V_SIZE 9 //max vertex size
 
 class core{

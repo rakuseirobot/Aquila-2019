@@ -15,7 +15,7 @@ core::core(){
     ans = np;
     start=now;
     dir=0;
-	//set.at(10)->write(100,100,100,100);//10階の(x,y)の(min,max)がすべて100で初期化
+    vertex_size=0;
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };

@@ -4,6 +4,7 @@
  *  Author: emile
  */
 #include "data_structure.hpp"
+#include <stdint.h>
 extern const int max_size;
 
 #define ht(t) (t ? t->height : 0)
