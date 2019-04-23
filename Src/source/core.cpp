@@ -5,6 +5,9 @@
  */ 
 #include "core.hpp"
 
+template<class T,class T2>bool chmax(T &former, const T2 &b) { if (former<=b) { former=b; return true; } return false; }
+template<class T,class T2>bool chmin(T &former, const T2 &b) { if (b<former) { former=b; return true; } return false; }
+
 core::core(){
     now=mall.make(100,100,10,1);
 	at.insert(now);
@@ -121,42 +124,74 @@ void core::bfs(node* s,node* t){//sを始点にしてtを検索する
     flg=(flg+1)%2;
 }
 
-//int core::range_size_helper(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2,uint8_t z){
-//	ll ans = 0;
-//	for(uint8_t y = y1;y<=y2;y++){
-//		for(uint8_t x = x1;x<=x2;x++){
-//			if(ta.find(x,y,z) && ta.find(x,y,z)->type!=v::unknown)ans++;
-//		}
-//	}
-//	return ans;
-//};
+bool core::dp_init(){
+    if(stk.size()>M_V_SIZE+1)return false;
+    int jj;
+    if(now->z!=start->z){//階がstack内で違う
+        jj=0;
+        for(int i=0;stk.box[i]!=np;i++){
+            if(stk.box[i]->z==now->z){
+                vertex[jj]=stk.box[i];jj++;
+            }
+        }
+    }else{//階がstack内で同じ
+        rep(i,M_V_SIZE)vertex[i]=np;
+        vertex[0]=start;
+        jj=1;//jj:=suffix
+        for(int i=0;stk.box[i]!=np;i++){/*start と now 以外のstkの中身を書き込む*/
+            if(stk.box[i]!=start && stk.box[i]!=now && stk.box[i]!=np){vertex[jj]=stk.box[i];jj++; }
+        }
+        vertex[jj]=now;jj++;
+        /* vertex[0]=start , [1...k-1]=(node*) , [k]=now */
+    }/* ここまでvertexのinit */
+    //*jjは頂点数*
+    vertex_size = jj;
+    rep(i,jj){
+        clear_dist();
+        bfs(vertex[i],start);//startは何でもいいはず
+        rep(j,jj){
+            dist[i][j] = vertex[j]->dist; dist[j][i] = vertex[j]->dist;
+        }
+    }//init dist
+    rep(i,1<<(M_V_SIZE+2))rep(j,M_V_SIZE+2){
+        dp[i][j]=256;
+        prev[i][j]=-1;
+    }//init dp , init prev
+    return true;
+}
 
-//float core::range_size(node* u,int dire){
-//	dire = (dire+dir)%4;
-//	tuple_four* tp = set.at(u->z);
-//	int num = 0;float ans = 0;
-//	switch(dire){
-//		case 0:
-//			num += range_size_helper(tp->x_min,tp->y_min,tp->x_max,u->y-1,u->z);
-//			ans = num / ((tp->x_max - tp->x_min +1)*(u->y - tp->y_min));
-//			break;
-//		case 1:
-//			num += range_size_helper(tp->x_min,tp->y_min,u->x-1,tp->y_max,u->z);
-//			ans = num / ((u->x - tp->x_min)*(tp->y_max - tp->y_min +1));
-//			break;
-//		case 2:
-//			num += range_size_helper(tp->x_min,u->y+1,tp->x_max,tp->y_max,u->z);
-//			ans = num / ((tp->x_max - tp->x_min +1)*(tp->y_max - u->y));
-//			break;
-//		case 3:
-//			num += range_size_helper(u->x+1,tp->y_min,tp->x_max,tp->y_max,u->z);
-//			ans = num / ((tp->x_max - u->x)*(tp->y_max - tp->y_min +1));
-//			break;
-//		default:
-//			num = -1;
-//			ans = -1.0;
-//			break;
-//	}
-//	return ans;
-//}
+node* core::vertex_calc(int set,int i,int v_size){
+    if(v_size==1)return ans_v[v_size-1]=vertex[v_size-1];
+    else{
+        uint8_t pre_v=prev[set][i];
+        vertex_calc(set&~(1<<i) , pre_v , v_size-1);
+        return ans_v[v_size-1]=vertex[i];
+    }
+}
+
+bool core::dp_calc(){
+    if(!dp_init())return false;
+    int mask=(1<<0);//bit set ,(now)mask = {0}
+    dp[mask][0]=0;
+    //vertex[0]=startとvertex[vertex_size]=nowの要素は固定
+    for(mask=1;mask<(1<<(vertex_size-1));mask++)rep(i,vertex_size-1)if(mask&(1<<i))rep(j,vertex_size-1){
+        if(!(mask&(1<<0)))continue;
+        if(chmin(dp[mask|(1<<j)][j],dp[mask][i]+dist[i][j])){
+            prev[mask|(1<<j)][j]=i;
+        }
+    }
+    uint16_t anss=260;
+    mask--;//need!
+    for(int i=1;i<vertex_size-1;i++){
+        if(chmin(dp[mask|(1<<(vertex_size-1))][vertex_size-1],dp[mask][i]+dist[i][vertex_size-1])){
+            if(chmin(anss,dp[mask|(1<<(vertex_size-1))][vertex_size-1])){
+                prev[mask|(1<<(vertex_size-1))][vertex_size-1]=i;
+            }
+        }
+    }
+    vertex_calc(mask|(1<<(vertex_size-1)),vertex_size-1,vertex_size);
+    return true;
+}
+
+
 core ta;

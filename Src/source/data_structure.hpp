@@ -85,9 +85,9 @@ public:
 
 class stack{
     int siz;
-    node* box[max_size];
     int t_ans;//-1 -> none
 public:
+    node* box[max_size];
     void init();
     int size();
     node* top();
