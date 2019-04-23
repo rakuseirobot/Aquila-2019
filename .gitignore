@@ -8,3 +8,4 @@
 /.vscode/ipch/
 /NUCLEO-F411RE.xml
 wrapper.cpp
+/build/
