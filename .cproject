@@ -241,26 +241,20 @@
 		<configuration configurationName="Release"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.release.60657709;fr.ac6.managedbuild.config.gnu.cross.exe.release.60657709.;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.428969562;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.404077407">
+		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.release.1864479509;fr.ac6.managedbuild.config.gnu.cross.exe.release.1864479509.;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.958214594;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.52749652">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.release.60657709;fr.ac6.managedbuild.config.gnu.cross.exe.release.60657709.;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.1198303531;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.1462282764">
+		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.release.1864479509;fr.ac6.managedbuild.config.gnu.cross.exe.release.1864479509.;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.826544993;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.1034344030">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.toolchain.gnu.cross.base.316930322;fr.ac6.managedbuild.toolchain.gnu.cross.base.316930322.180569771;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.250358637;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.1693740731">
+		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.debug.121124173;fr.ac6.managedbuild.config.gnu.cross.exe.debug.121124173.;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.826544993;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.1034344030">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.debug.1828499297;fr.ac6.managedbuild.config.gnu.cross.exe.debug.1828499297.;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.1198303531;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.1462282764">
+		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.debug.121124173;fr.ac6.managedbuild.config.gnu.cross.exe.debug.121124173.;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.958214594;fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.52749652">
 			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.toolchain.gnu.cross.base.316930322;fr.ac6.managedbuild.toolchain.gnu.cross.base.316930322.180569771;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1045035899;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.1550258395">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="fr.ac6.managedbuild.config.gnu.cross.exe.debug.1828499297;fr.ac6.managedbuild.config.gnu.cross.exe.debug.1828499297.;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.428969562;fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.404077407">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
