@@ -8,4 +8,5 @@
 /.vscode/ipch/
 /NUCLEO-F411RE.xml
 /build/
-.cproject
+*.ipch
+*.cproject
