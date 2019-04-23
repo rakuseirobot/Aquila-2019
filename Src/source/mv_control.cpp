@@ -515,7 +515,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	while(KIT_DROP_Status!=FREE){
 		error_led(1,3);
 		error_led(2,4);
-		//buzzer();
+		buzzer();
 		HAL_Delay(300);
 		xbee.putint(KIT_DROP_COUNT);
 		xbee.string("\n\r");
