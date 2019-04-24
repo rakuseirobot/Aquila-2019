@@ -20,4 +20,5 @@ void move_n(node* n);
 void move_toa(node* a);
 void stack_dfs();
 void _stack_dfs();
+void h_stack_dfs();
 #endif

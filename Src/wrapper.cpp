@@ -39,7 +39,13 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	stack_dfs();
+	//stack_dfs();
+	h_stack_dfs();
+	while(1){
+		//color_check();
+		xbee.putint(red+green+blue);
+		xbee.string("\n\r");
+	}
 	while(1){
 		buzzer();
 	}

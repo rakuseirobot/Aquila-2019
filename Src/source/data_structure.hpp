@@ -11,7 +11,7 @@
 using ll = long long int;
 using ci = const int;
 using bl = bool;
-ci max_size=250;
+ci max_size=200;
 namespace v{
     //for all ,such as wall,move,and so on...
     ci left =0;
@@ -83,11 +83,12 @@ public:
     bl empty();
 };
 
+ci max_size_stack=90;
 class stack{
     int siz;
     int t_ans;//-1 -> none
 public:
-    node* box[max_size];
+    node* box[max_size_stack];
     void init();
     int size();
     node* top();
@@ -96,6 +97,7 @@ public:
     void t_pop();
     void push(node* x);
     bl empty();
+    void clear();
 };
 
 class nodes{

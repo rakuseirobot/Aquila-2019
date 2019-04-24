@@ -16,6 +16,9 @@ core::core(){
     start=now;
     dir=0;
     vertex_size=0;
+    hamilton = false;
+    ans_v.init();
+    stk.init();
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };
@@ -124,9 +127,12 @@ void core::bfs(node* s,node* t){//sを始点にしてtを検索する
     flg=(flg+1)%2;
 }
 
+/*test*/
+
 bool core::dp_init(){
     if(stk.size()>M_V_SIZE+1)return false;
-    int jj;
+    if(stk.size()<2)return false;
+    int jj;vertex_size=0;
     if(now->z!=start->z){//階がstack内で違う
         jj=0;
         for(int i=0;stk.box[i]!=np;i++){
@@ -161,16 +167,22 @@ bool core::dp_init(){
 }
 
 node* core::vertex_calc(int set,int i,int v_size){
-    if(v_size==1)return ans_v[v_size-1]=vertex[v_size-1];
-    else{
+    if(v_size==1){
+        ans_v.push(vertex[v_size-1]);
+        return vertex[v_size-1];
+    }else{
         uint8_t pre_v=prev[set][i];
         vertex_calc(set&~(1<<i) , pre_v , v_size-1);
-        return ans_v[v_size-1]=vertex[i];
+        ans_v.push(vertex[i]);
+        //return ans_v[v_size-1]=vertex[i];
+        return vertex[i];
     }
 }
 
 bool core::dp_calc(){
-    if(!dp_init())return false;
+    stk.push(np);
+    if(now==start)return hamilton = false;
+    if(!dp_init())return hamilton = false;
     int mask=(1<<0);//bit set ,(now)mask = {0}
     dp[mask][0]=0;
     //vertex[0]=startとvertex[vertex_size]=nowの要素は固定
@@ -180,7 +192,7 @@ bool core::dp_calc(){
             prev[mask|(1<<j)][j]=i;
         }
     }
-    uint16_t anss=260;
+    int anss=260;
     mask--;//need!
     for(int i=1;i<vertex_size-1;i++){
         if(chmin(dp[mask|(1<<(vertex_size-1))][vertex_size-1],dp[mask][i]+dist[i][vertex_size-1])){
@@ -189,9 +201,10 @@ bool core::dp_calc(){
             }
         }
     }
+    ans_v.clear();
     vertex_calc(mask|(1<<(vertex_size-1)),vertex_size-1,vertex_size);
-    return true;
+    if(ans_v.size()!=vertex_size)return hamilton = false;
+    else return hamilton = true;
 }
-
 
 core ta;
