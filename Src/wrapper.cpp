@@ -39,7 +39,9 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	stack_dfs();
+	while(1){
+		ping_debug();
+	}
 	while(1){
 		buzzer();
 	}
