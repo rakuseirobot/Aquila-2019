@@ -40,18 +40,7 @@ void cpploop(void) {
 	xbee.string("Hello!");
 	led_count_set(77);
 	while(1){
-		if(SW1){
-			buzzer();
-			Drop_kit(DROP_LEFT,2);
-			while(KIT_DROP_Status!=FREE);
-			buzzer();
-		}
-		else if(SW2){
-			buzzer();
-			Drop_kit(DROP_RIGHT,2);
-			while(KIT_DROP_Status!=FREE);
-			buzzer();
-		}
+		motor::move(motor::ONE_ADVANCE);
 	}
 	while(1){
 		ping_debug();
