@@ -20,11 +20,9 @@ uint16_t box[1025][10];
 
 extern uart xbee;
 uart iris_serial = xbee;
-
-void IRIS_string(const char * s){
-    iris_serial.string(s);
-}
 extern uart serial;
+
+void IRIS_string(const char * s){ if(serial_send_node_suru)iris_serial.string(s); }
 
 void serial_send_node(node* n){
     if(serial_send_node_suru){
@@ -425,9 +423,14 @@ void h_stack_dfs(){
                 IRIS_string("dfs::[**_]\n\r");
 				fg=true;
 			}else{ sstk.pop(); }
+            if(ta.stk.empty()){//new...
+                move_toa(ta.r_start());
+                break;
+            }
 		}//sub loop
         IRIS_string("dfs::[***]\n\r");
 	}//main loop
 	IRIS_string("dfs [END] \n\r");
+    IRIS_string("Thank you! :) \n\r");
 	lcd_clear(); lcd_putstr("end_dfs");
 }
