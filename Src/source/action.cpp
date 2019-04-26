@@ -180,6 +180,9 @@ void finded_victim(uint8_t co,uint8_t lr){//How many kits does victim need? and 
 		HAL_Delay(300);
 	}
 	while(KIT_DROP_Status!=FREE){
+		error_led(1,3);
+		error_led(2,4);
+		buzzer();
 		xbee.putint(KIT_DROP_COUNT);
 		xbee.string("\n\r");
 	}

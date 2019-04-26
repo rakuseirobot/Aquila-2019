@@ -56,6 +56,7 @@
         * Output
         * EVENT_OUT
         * EXTI
+     PE6   ------> S_TIM9_CH2
 */
 void MX_GPIO_Init(void)
 {
@@ -71,9 +72,8 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, RAM_CS_Pin|SS_R_Pin|M1_EN_Pin|M1_INB_Pin 
-                          |M1_CS_Pin|M2_EN_Pin|M2_INA_Pin|M2_INB_Pin 
-                          |M2_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, RAM_CS_Pin|M1_EN_Pin|M1_INB_Pin|M1_CS_Pin 
+                          |M2_EN_Pin|M2_INA_Pin|M2_INB_Pin|M2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, FLED_BLUE_Pin|FLED_GREEN_Pin|FLED_RED_Pin|CL_Pin 
@@ -100,15 +100,21 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin 
-                           PEPin PEPin PEPin PEPin 
-                           PEPin */
-  GPIO_InitStruct.Pin = RAM_CS_Pin|SS_R_Pin|M1_EN_Pin|M1_INB_Pin 
-                          |M1_CS_Pin|M2_EN_Pin|M2_INA_Pin|M2_INB_Pin 
-                          |M2_CS_Pin;
+                           PEPin PEPin PEPin PEPin */
+  GPIO_InitStruct.Pin = RAM_CS_Pin|M1_EN_Pin|M1_INB_Pin|M1_CS_Pin 
+                          |M2_EN_Pin|M2_INA_Pin|M2_INB_Pin|M2_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = ESC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF3_TIM9;
+  HAL_GPIO_Init(ESC_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin PCPin */
   GPIO_InitStruct.Pin = FLED_BLUE_Pin|FLED_GREEN_Pin|FLED_RED_Pin;

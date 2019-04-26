@@ -14,7 +14,9 @@ PF3:DOUT
 #include <stdint.h>
 #include "delay.hpp"
 #include "main.h"
-
+#include "uart_control.hpp"
+extern uart xbee;
+uart color_serial = xbee;
 uint16_t red=0, green=0, blue=0;	//値
 uint16_t high=800, low=500;	//しきい値 白>800  700<銀<=800
 
@@ -54,10 +56,11 @@ uint8_t color_check(void){	//カラーチェック 0:白 1:クロ 2:銀（チェックポイント）
 	//if(blue+green+red>700){
 		//return 2;
 	//}
-	if(blue+green+red>=80){
+	if(blue+green+red>=80){//??
 		return 0;
 	}
 	else{
+		color_serial.string("\x1b[31mBlack!!\x1b[39m\n\r");
 		return 1;
 	}
 }

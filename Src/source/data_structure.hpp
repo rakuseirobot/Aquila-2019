@@ -5,13 +5,13 @@
  *  this is functions for mapping,algorithms,and so on. It's core of this robot.
  *  Author: Emile
  */ 
- #include <stdint.h>
+#include <stdint.h>
 #define np nullptr
 #define rep(i,N) for(int i=0;i<N;i++)
 using ll = long long int;
 using ci = const int;
 using bl = bool;
-ci max_size=250;
+ci max_size=200;
 namespace v{
     //for all ,such as wall,move,and so on...
     ci left =0;
@@ -47,24 +47,12 @@ struct node{
     uint8_t x=100,y=100,z=10;//coordinate
 	uint8_t flag,type;//for bfs,search
 	uint8_t color;//for real bfs
-    uint8_t depth=1000,dist=1000;//
+    uint8_t depth=255,dist=255;//
 	bl ac=false;//already checked?
     node* next[4]={np};
     node* back=np;
 	node* child[2]={np,np};
 	uint8_t height=0;
-};
-
-struct tuple_four{
-	uint8_t x_min,x_max,y_min,y_max;
-	//tuple_four(uint8_t x_m,uint8_t x_M,uint8_t y_m,uint8_t y_M);
-	void update(uint8_t x,uint8_t y);
-	void write(uint8_t x_m,uint8_t x_M,uint8_t y_m,uint8_t y_M);
-};
-
-struct range_set{
-	tuple_four set[20];
-	tuple_four* at(int n);
 };
 
 class AVLtree{
@@ -95,16 +83,21 @@ public:
     bl empty();
 };
 
+ci max_size_stack=90;
 class stack{
     int siz;
-    node* box[max_size];
+    int t_ans;//-1 -> none
 public:
+    node* box[max_size_stack];
     void init();
     int size();
     node* top();
+    node* t_top();
     void pop();
+    void t_pop();
     void push(node* x);
     bl empty();
+    void clear();
 };
 
 class nodes{
@@ -116,6 +109,15 @@ public:
     node* make(int x,int y,int z,int flag);
     bl full();
 };
+/*
+ * (node*)nodes::make(int x,int y,int z,int flag) -> (node*) n
+ * n :: (x,y,z) = (x,y,z) (#input)
+ *      type = unknown
+ *      color = white
+ *		flag = flag (#input)
+ *		dist,depth = 255
+ *      ac = false
+ */
 
 int max(int x,int y);
 int min(int x,int y);
