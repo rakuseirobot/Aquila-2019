@@ -15,7 +15,212 @@
 extern uart xbee;
 
 uint32_t KIT_DROP_COUNT=0;
-kit_drop_status_t KIT_DROP_Status=FREE;
+#define DP_TWO_PRE 10000
+#define DP_TWO_EXT 8000
+#define DP_ONE_PRE 6000
+#define DP_ONE_EXT 4000
+#define DP_GO_HOME 1000
+#define DP_P_GAIN 40
+kit_drop_status_t KIT_DROP_Status=FREE;void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
+	if(lr==DROP_LEFT){
+		if((DP_TWO_PRE-DP_P_GAIN>=num&&num>DP_TWO_EXT)||(DP_ONE_PRE-DP_P_GAIN>=num&&num>DP_ONE_EXT)||(DP_GO_HOME-DP_P_GAIN>=num)){
+			switch(num%4){
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((DP_TWO_PRE>=num&&num>DP_TWO_PRE-DP_P_GAIN)||(DP_ONE_PRE>=num&&num>DP_ONE_PRE-DP_P_GAIN)||(DP_GO_HOME>=num&&num>DP_GO_HOME-DP_P_GAIN)){
+			switch(num%8){
+				case 0:
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 4:
+				case 5:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 6:
+				case 7:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((DP_TWO_EXT-DP_P_GAIN>=num&&num>DP_ONE_PRE)||(DP_ONE_EXT-DP_P_GAIN>=num&&num>DP_GO_HOME)){
+			switch(num%4){
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((DP_TWO_EXT>=num&&num>DP_TWO_EXT-DP_P_GAIN)||(DP_ONE_EXT>=num&&num>DP_ONE_EXT-DP_P_GAIN)){
+			switch(num%8){
+				case 7:
+				case 6:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 5:
+				case 4:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 3:
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	else if(lr==DROP_RIGHT){
+		if((DP_TWO_PRE-DP_P_GAIN>=num&&num>DP_TWO_EXT)||(DP_ONE_PRE-DP_P_GAIN>=num&&num>DP_ONE_EXT)||(DP_GO_HOME-DP_P_GAIN>=num)){
+			switch(num%4){
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((DP_TWO_PRE>=num&&num>DP_TWO_PRE-DP_P_GAIN)||(DP_ONE_PRE>=num&&num>DP_ONE_PRE-DP_P_GAIN)||(DP_GO_HOME>=num&&num>DP_GO_HOME-DP_P_GAIN)){
+			switch(num%8){
+				case 7:
+				case 6:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 5:
+				case 4:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 3:
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((DP_TWO_EXT-DP_P_GAIN>=num&&num>DP_ONE_PRE)||(DP_ONE_EXT-DP_P_GAIN>=num&&num>DP_GO_HOME)){
+			switch(num%4){
+				case 0:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+		else if((DP_TWO_EXT>=num&&num>DP_TWO_EXT-DP_P_GAIN)||(DP_ONE_EXT>=num&&num>DP_ONE_EXT-DP_P_GAIN)){
+			switch(num%8){
+				case 0:
+				case 1:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
+					break;
+				case 2:
+				case 3:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+					break;
+				case 4:
+				case 5:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+					break;
+				case 6:
+				case 7:
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH4_Pin|ST_MOTOR_CH1_Pin,GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	return;
+}
+/*
 void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 	if(lr==DROP_LEFT){
 		if((10000>=num&&num>8000)||(6000>=num&&num>4000)||(1000>=num)){
@@ -111,6 +316,7 @@ void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 	}
 	return;
 }
+*/
 void Drop_kit(kit_drop_status_t lr,uint16_t num){ //lr:1:?E 0:??
 	if(lr==DROP_LEFT){
 		KIT_DROP_Status=DROP_LEFT;

@@ -1,17 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "Src"
+			"path": "."
 		}
 	],
-	"settings": {
-		"editor.fontFamily": "\"Source Han Code JP N\"",
-		"editor.fontSize": 13,
-		"editor.renderWhitespace": "boundary",
-		"markdown.preview.fontSize": 13,
-		"debug.console.fontSize": 12,
-		"terminal.integrated.fontSize": 11,
-		"editor.wordWrap": "on",
-		"editor.wordWrapColumn": 120
-	}
+	"settings": {}
 }
