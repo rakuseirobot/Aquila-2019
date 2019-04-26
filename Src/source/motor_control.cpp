@@ -48,9 +48,9 @@ const int16_t longway = 4500;
 
 const int gbno=120;
 
-float P_GAIN=3;
+float P_GAIN=1;
 float I_GAIN=0;
-float D_GAIN=1;
+float D_GAIN=0.4;
 
 
 uint8_t data=000;
@@ -81,7 +81,7 @@ namespace motor{
 	move_t Task_Before,Task_Save;
 	int32_t Motor_target,mtasksize;
 	int32_t Right_count,Left_count;
-	int32_t MOTOR_SPEED[5]={0,0,800,400,300},MOTOR_COUNT[2][2]={{0,0},{0,0}};
+	int32_t MOTOR_SPEED[5]={0,0,800,300,300},MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t MOTOR_PID_var[2][3];
 	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE,mstatus;
@@ -273,10 +273,20 @@ namespace motor{
 		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]=RC;
 		//if(abs(Left_count)>=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN){//目標地点までの偏差が一周期に進むべきカウント数以上の場合
 		if(MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]<0){
-		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]*-1;
+			if(abs(Right_count)<MOTOR_SLOW_COUNT){
+				MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*MOTOR_SLOW_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]*-1;
+			}
+			else{
+				MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW]*-1;
+			}
 		}
 		else{
-		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW];
+			if(abs(Right_count)<MOTOR_SLOW_COUNT){
+				MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*MOTOR_SLOW_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW];
+			}
+			else{
+				MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_LEFT_MOTOR][PID_COUNT_NOW];
+			}
 		}
 		MOTOR_PID_var[PID_LEFT_MOTOR][PID_KASAN]+=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
 		
@@ -284,10 +294,20 @@ namespace motor{
 		//else{}
 		//if(abs(Right_count)>=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN){//目標地点までの偏差が一周期に進むべきカウント数以上の場合
 		if(MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]<0){
-		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]*-1;
+			if(abs(Left_count)<MOTOR_SLOW_COUNT){
+				MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*MOTOR_SLOW_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]*-1;
+			}
+			else{
+				MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW]*-1;
+			}
 		}
 		else{
-		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
+			if(abs(Left_count)<MOTOR_SLOW_COUNT){
+				MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*MOTOR_SLOW_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
+			}
+			else{
+				MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW]=MOTOR_SPEED[SPEED_TARGET]*SPEED_GAIN-MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
+			}
 		}
 		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_KASAN]+=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW];
 		
@@ -304,6 +324,11 @@ namespace motor{
 		MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_PAST]=MOTOR_COUNT[PID_RIGHT_MOTOR][PID_COUNT_NOW];
 		MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_PAST]=MOTOR_PID_var[PID_LEFT_MOTOR][PID_DEV_NOW];
 		MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_PAST]=MOTOR_PID_var[PID_RIGHT_MOTOR][PID_DEV_NOW];
+		if(__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)<80){
+			set_pwm(MOTOR_LEFT,MOTOR_SPEED[SPEED_FIX_TARGET]);
+		}if(__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)<80){
+			set_pwm(MOTOR_RIGHT,MOTOR_SPEED[SPEED_FIX_TARGET]);
+		}
 	}
 	void start_encoder(void){
 		HAL_TIM_Encoder_Start_IT(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
@@ -393,18 +418,18 @@ namespace motor{
 	int32_t Get_Encoder(ch_t x){
 		if(x==MOTOR_LEFT){
 			if(M1_Encoder_COUNT<32767){
-				return (32767-M1_Encoder_COUNT)*-1;
+				return (32767-M1_Encoder_COUNT);
 			}
 			else{
-				return (M1_Encoder_COUNT-32767);
+				return (M1_Encoder_COUNT-32767)*-1;
 			}
 		}
 		else if (x==MOTOR_RIGHT){
 			if(M2_Encoder_COUNT<32767){
-				return (32767-M2_Encoder_COUNT)*-1;
+				return (32767-M2_Encoder_COUNT);
 			}
 			else{
-				return (M2_Encoder_COUNT-32767);
+				return (M2_Encoder_COUNT-32767)*-1;
 			}
 
 		}
@@ -421,7 +446,7 @@ namespace motor{
 		}
 		return;
 	}
-	void forward(ch_t x){
+	void back(ch_t x){
 		if(x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_RESET);
@@ -434,7 +459,7 @@ namespace motor{
 		}
 		return;
 	}
-	void back(ch_t x){
+	void forward(ch_t x){
 		if(x==MOTOR_LEFT){
 			HAL_GPIO_WritePin(M1_INA_GPIO_Port,M1_INA_Pin,GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(M1_INB_GPIO_Port,M1_INB_Pin,GPIO_PIN_SET);
@@ -507,10 +532,12 @@ namespace motor{
 			if(abs(Right_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_RIGHT);
 				HAL_TIM_Encoder_Stop(M2_TIM_CHANNEL,TIM_CHANNEL_ALL);
+				Right_count=0;
 			}
 			if(abs(Left_count)<=Motor_thre){
 				motor::brake(motor::MOTOR_LEFT);
 				HAL_TIM_Encoder_Stop(M1_TIM_CHANNEL,TIM_CHANNEL_ALL);
+				Left_count=0;
 			}
 			if(abs(Right_count)<=Motor_thre&&abs(Left_count)<=Motor_thre){
 				break;
