@@ -44,7 +44,7 @@ extern float P_GAIN,I_GAIN,D_GAIN;
 #define PID_DEV_PAST 2
 
 #define MOTOR_SLOW_COUNT 600
-#define MOTOR_SLOW_GAIN 0.001
+#define MOTOR_SLOW_GAIN 0.0001
 
 #define M1_TIM_CHANNEL &htim5
 #define M2_TIM_CHANNEL &htim3
@@ -80,10 +80,10 @@ namespace motor{
 		BRAKE=0
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=1300,
-		TWO_BLOCK=2600,
-		TURN=300,
-		HALF_BLOCK=750,
+		ONE_BLOCK=2400,
+		TWO_BLOCK=5200,
+		TURN=600,
+		HALF_BLOCK=1200,
 	};
 
 	typedef enum{
