@@ -41,7 +41,7 @@ const int rose=700;
 const int16_t longway = 4500;
 
 #if rose>Sikiti*2
-#error "Rose's value is wrong!"
+#error "Rose's value is wronggit git !"
 //rose=(Sikiti/2)*3
 #else
 #endif
