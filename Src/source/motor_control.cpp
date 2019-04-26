@@ -717,10 +717,14 @@ namespace motor{
 		dis[1]=ping(PING_BACK);//Back
 		float ang=motor_gyro.read_angle_y();
 		if(ang<=Ang_slope_Norm-Ang_slope_thre*1.5){
-			motor::move(HALF_BACK);
+			if(ping(PING_BACK)<=Sikiti/2){
+				motor::move(HALF_BACK);
+			}
 		}
 		else if(ang>=Ang_slope_Norm+Ang_slope_thre*1.5){
-			motor::move(HALF_ADVANCE);
+			if(ping(FRONT)<=Sikiti/2){
+				motor::move(HALF_ADVANCE);
+			}
 		}
 		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		set_Status(NOPID);
