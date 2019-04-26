@@ -5,22 +5,6 @@
  */
 #include "data_structure.hpp"
 extern const int max_size;
-void tuple_four::update(uint8_t x,uint8_t y){
-	x_min = min(x_min,x); x_max = max(x_max,x);
-	y_min = min(y_min,y); y_max = max(y_max,y);
-}
-
-void tuple_four::write(uint8_t x_m,uint8_t x_M,uint8_t y_m,uint8_t y_M){
-	x_min = x_m; x_max = x_M; y_min = y_m; y_max = y_M;
-}
-
-// void range_set::write(int n,uint8_t x_m,uint8_t x_M,uint8_t y_m,uint8_t y_M){
-// 	set[n].write(x_m,x_M,y_m,y_M);
-// }
-
-tuple_four* range_set::at(int n){
-	return &set[n];
-}
 
 #define ht(t) (t ? t->height : 0)
 uint8_t lorr(node* t,int x,int y,int z){
@@ -89,7 +73,6 @@ node* AVLtree::move_down(node *t, node *rhs) {
 
 /////////////////////////////////////////////////////////////////AVLtree///////////////////////
 
-
 void queue::init(){siz=0;rep(i,max_size)box[i]=np;}
 int queue::size(){return siz;}
 node* queue::front(){ return box[0]; }
@@ -102,10 +85,34 @@ bl queue::empty(){if(siz==0){return true;}else{return false;}}
 
 ////////////////////////////////////////////////////////////////queue/////////////////////
 
-void stack::init(){siz=0;rep(i,max_size)box[i]=np;}
+void stack::init(){t_ans = -1;siz=0;rep(i,max_size)box[i]=np;}
 int stack::size(){return siz;}
 node* stack::top(){return box[siz-1];}
+node* stack::t_top(){/*return t { t 竏� box | min(t->dist) } ,and use ta.clear_bfs(); ta.bfs(ta.r_now(),ta.r_start); */
+	//if(t_ans==-1)return np;
+	if(siz==1){ t_ans = siz-1; return box[siz-1];}
+	node* ans = np;
+	uint8_t tmp = 255;
+	for(int i=1;i<siz;i++){
+		if(tmp>=box[i]->dist){
+			ans = box[i]; t_ans = i;
+			tmp = ans->dist;
+		}
+	}
+	return ans;
+}
 void stack::pop(){box[siz-1]=np;siz--;}
+void stack::t_pop(){
+	if(t_ans == -1){
+		//no action
+	}else{
+		for(int i = t_ans;i<siz;i++){
+			box[i] = box[i+1];
+		}
+		siz--;
+		t_ans=-1;
+	}
+}
 void stack::push(node* x){box[siz]=x;siz++;}
 bl stack::empty(){if(siz==0){return true;}else{return false;}}
 
@@ -114,7 +121,7 @@ bl stack::empty(){if(siz==0){return true;}else{return false;}}
 nodes::nodes(){size=0;now=0;};
 node* nodes::make(int x,int y,int z,int flag){
     if(now>=max_size-1){ return np; }else{
-        now++;mal[now].dist=1000;mal[now].depth=1000;//init
+        now++;mal[now].dist=255;mal[now].depth=255;//init
         mal[now].x=x; mal[now].y=y; mal[now].z=z; mal[now].flag=flag;
         mal[now].color=color::white;
         mal[now].ac=false;
@@ -122,6 +129,15 @@ node* nodes::make(int x,int y,int z,int flag){
 		return &mal[now];
     }
 }
+/*
+ * (node*)nodes::make(int x,int y,int z,int flag) -> (node*) n
+ * n :: (x,y,z) = (x,y,z) (#input)
+ *      type = unknown
+ *      color = white
+ *		flag = flag (#input)
+ *		dist,depth = 255
+ *      ac = false
+ */
 bl nodes::full(){ if(now>=max_size-1){ return true; }else{ return false; } }
 
 //////////////////////////////////////////////////////nodes//////////////////////////////////////////////////

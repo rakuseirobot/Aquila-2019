@@ -37,6 +37,44 @@
 
 /* USER CODE BEGIN 0 */
 #include "peripheral.hpp"
+#include <string.h>
+void uart_string(const char *s){
+  HAL_UART_Transmit(&huart1, (uint8_t*)s, strlen(s), 0xFFFF);
+}
+void delay_us(uint32_t time){
+	while(time>0){
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");
+		time--;
+	}
+	return;
+}
+
+void buzzer_it(uint16_t t){
+	for(int i=0;i<=1000-t;i++){
+		HAL_GPIO_WritePin(BUZZER_GPIO_Port,BUZZER_Pin,GPIO_PIN_SET);
+		delay_us(t);
+		HAL_GPIO_WritePin(BUZZER_GPIO_Port,BUZZER_Pin,GPIO_PIN_RESET);
+		delay_us(t);
+	}
+}
+
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -69,14 +107,12 @@ void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
-	char *da;
-	da = "hard fault\n\r";
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-
-		HAL_UART_Transmit(&huart1, (uint8_t*)da, strlen(da), 0xFFFF);
+    uart_string("hard fault\n\r");
+    buzzer_it(100);
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
   /* USER CODE BEGIN HardFault_IRQn 1 */
@@ -90,14 +126,13 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-
-	char *da;
-	da = "MemManage fault\n\r";
-	HAL_UART_Transmit(&huart1, (uint8_t*)da, strlen(da), 0xFFFF);
+  uart_string("MemMabage fault\n\r");
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+    HAL_GPIO_TogglePin(DP1_GPIO_Port,DP1_Pin);
+    buzzer_it(100);
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
   /* USER CODE BEGIN MemoryManagement_IRQn 1 */
@@ -116,6 +151,8 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+    uart_string("Bus fault\n\r");
+    buzzer_it(100);
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
   /* USER CODE BEGIN BusFault_IRQn 1 */
@@ -134,6 +171,8 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+    uart_string("Usage fault\n\r");
+    buzzer_it(100);
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
   /* USER CODE BEGIN UsageFault_IRQn 1 */
