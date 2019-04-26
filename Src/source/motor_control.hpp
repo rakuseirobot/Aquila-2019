@@ -21,7 +21,7 @@ extern float P_GAIN,I_GAIN,D_GAIN;
 #define Acc_thre_d -4
 #define Acc_slope_thre 0.1
 #define Ang_slope_Norm 178
-#define Ang_slope_thre 15
+#define Ang_slope_thre 12
 #define Ang_x_Norm 180
 #define Ang_x_thre 3
 
@@ -80,10 +80,10 @@ namespace motor{
 		BRAKE=0
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=2400,
+		ONE_BLOCK=2500,
 		TWO_BLOCK=5200,
 		TURN=600,
-		HALF_BLOCK=1200,
+		HALF_BLOCK=1100,
 	};
 
 	typedef enum{

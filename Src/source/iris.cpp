@@ -75,8 +75,8 @@ void black_tile(){
         IRIS_string("\x1b[37m \n\r");
         ta.r_now()->type=v::black;
         ta.r_now()->color=v::black;
-        if(ta.ac_next(v::front,1)!=ta.r_pre())motor::move(motor::ONE_BACK);
-        else motor::move(motor::ONE_ADVANCE);
+        if(ta.ac_next(v::front,1)!=ta.r_pre())motor::move(motor::ONE_BACK); //new
+        else motor::move(motor::ONE_ADVANCE); //new
         motor::fix_position(v::back);
         ta.turn_l();
         ta.turn_l();
