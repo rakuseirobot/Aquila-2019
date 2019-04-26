@@ -116,7 +116,7 @@ void stack::t_pop(){
 }
 //void stack::push(node* x){box[siz]=x;siz++;}
 void stack::push(node* x){
-	while(stack::top()!=np && stack::top()->type!=v::unknown && stack::top()->type!=v::start){
+	while(stack::top()!=np && stack::top()->type!=v::unknown && stack::top()->type!=v::start ){
 		stack::pop();
 	}
 	if(x!=np){

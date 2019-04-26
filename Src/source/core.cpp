@@ -50,14 +50,14 @@ node* core::find(int x,int y,int z){
     return at.find(x,y,z);
 }
 void core::ins_node(node* x){at.insert(x);}
-void core::cn_graph(node* v, node* u){//Connect Nodes on Graph ::vとuをgraph(next[])に関してつなげる
+void core::cn_graph(node* v, node* u){//Connect Nodes on Graph ::v縺ｨu繧暖raph(next[])縺ｫ髢｢縺励※縺､縺ｪ縺偵ｋ
     at.insert(u);
     if(v!=np && u!=np){
         rep(i,4)if(v->next[i]==np){ v->next[i]=u; break; }else if(v->next[i]==u){break;}
         rep(i,4)if(u->next[i]==np){ u->next[i]=v; break; }else if(u->next[i]==v){break;}
     }
 }
-void core::cn_tree(node* par,node* v){//connect nodes on Tree ::par(ent)とvをtree(back)に関してつなげる
+void core::cn_tree(node* par,node* v){//connect nodes on Tree ::par(ent)縺ｨv繧稚ree(back)縺ｫ髢｢縺励※縺､縺ｪ縺偵ｋ
     at.insert(v);
     if(v!=np && par!=np)if(v->back==np)v->back=par;
 }
@@ -65,7 +65,7 @@ void core::ap_node(node* t,int dire){//append node (cn_graph)
     dire = (dire+dir+3)%4;
     node* u = find(t->x+v::vv[dire][0],t->y+v::vv[dire][1],t->z);
     if(u==np)u = mall.make(t->x+v::vv[dire][0],t->y+v::vv[dire][1],t->z,(flg+1)%2);
-	//set.at(u->z)->update(u->x,t->y);//範囲算出用
+	//set.at(u->z)->update(u->x,t->y);//遽�蝗ｲ邂怜�ｺ逕ｨ
     cn_graph(t,u);
 }
 node* core::ac_next(node* t,int now_dir,int dire,int dist){//(node*,int,int,int)->node* | nullptr(error) 
@@ -107,7 +107,7 @@ void core::clear_dist(){
 }
 
 
-void core::bfs(node* s,node* t){//sを始点にしてtを検索する
+void core::bfs(node* s,node* t){//s繧貞ｧ狗せ縺ｫ縺励※t繧呈､懃ｴ｢縺吶ｋ
     q.push(s);
     s->dist=0;
     while(!q.empty()){
@@ -133,28 +133,28 @@ bool core::dp_init(){
     if(stk.size()>M_V_SIZE+1)return false;
     if(stk.size()<2)return false;
     int jj;vertex_size=0;
-    if(now->z!=start->z){//階がstack内で違う
+    if(now->z!=start->z){//髫弱′stack蜀�縺ｧ驕輔≧
         jj=0;
         for(int i=0;stk.box[i]!=np;i++){
             if(stk.box[i]->z==now->z){
                 vertex[jj]=stk.box[i];jj++;
             }
         }
-    }else{//階がstack内で同じ
+    }else{//髫弱′stack蜀�縺ｧ蜷後§
         rep(i,M_V_SIZE)vertex[i]=np;
         vertex[0]=start;
         jj=1;//jj:=suffix
-        for(int i=0;stk.box[i]!=np;i++){/*start と now 以外のstkの中身を書き込む*/
+        for(int i=0;stk.box[i]!=np;i++){/*start 縺ｨ now 莉･螟悶�ｮstk縺ｮ荳ｭ霄ｫ繧呈嶌縺崎ｾｼ繧�*/
             if(stk.box[i]!=start && stk.box[i]!=now && stk.box[i]!=np){vertex[jj]=stk.box[i];jj++; }
         }
         vertex[jj]=now;jj++;
         /* vertex[0]=start , [1...k-1]=(node*) , [k]=now */
-    }/* ここまでvertexのinit */
-    //*jjは頂点数*
+    }/* 縺薙％縺ｾ縺ｧvertex縺ｮinit */
+    //*jj縺ｯ鬆らせ謨ｰ*
     vertex_size = jj;
     rep(i,jj){
         clear_dist();
-        bfs(vertex[i],start);//startは何でもいいはず
+        bfs(vertex[i],start);//start縺ｯ菴輔〒繧ゅ＞縺�縺ｯ縺�
         rep(j,jj){
             dist[i][j] = vertex[j]->dist; dist[j][i] = vertex[j]->dist;
         }
@@ -180,12 +180,12 @@ node* core::vertex_calc(int set,int i,int v_size){
 }
 
 bool core::dp_calc(){
-    stk.push(np);
     if(now==start)return hamilton = false;
+    stk.push(np);
     if(!dp_init())return hamilton = false;
     int mask=(1<<0);//bit set ,(now)mask = {0}
     dp[mask][0]=0;
-    //vertex[0]=startとvertex[vertex_size]=nowの要素は固定
+    //vertex[0]=start縺ｨvertex[vertex_size]=now縺ｮ隕∫ｴ�縺ｯ蝗ｺ螳�
     for(mask=1;mask<(1<<(vertex_size-1));mask++)rep(i,vertex_size-1)if(mask&(1<<i))rep(j,vertex_size-1){
         if(!(mask&(1<<0)))continue;
         if(chmin(dp[mask|(1<<j)][j],dp[mask][i]+dist[i][j])){

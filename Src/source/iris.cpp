@@ -381,7 +381,7 @@ void h_stack_dfs(){
     bl fg;/*for ??*/ 
     bool hm_flag = true;//‚à‚µA’¼‘O‚Éstack‚Énode“Ë‚Áž‚ñ‚Å‚½‚çhamilton‚µ‚È‚¢.
 	while(!ta.stk.empty()){
-        IRIS_string("dfs::[___]\n\r");
+        IRIS_string("dfs[______]\n\r");
 		if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
 		//node’Ç‰Á normal ver
         hm_flag = true;
@@ -392,11 +392,14 @@ void h_stack_dfs(){
                 hm_flag = false;
 			}
 		}//node’Ç‰Á•”•ª‚±‚±‚Ü‚Å
-		lcd_clear(); lcd_putstr("dfs");
-        while(ta.stk.top()->type!=v::unknown && ta.stk.top()->type!=v::start){
+		IRIS_string("dfs[*_____]\n\r");
+        lcd_clear(); lcd_putstr("dfs");
+		if(ta.stk.empty()){ta.stk.push(ta.r_start());}
+        while(!ta.stk.empty() && ta.stk.top()->type!=v::unknown && ta.stk.top()!=ta.r_start() && ta.r_now()!=ta.r_start()){
             ta.stk.pop();
             ta.hamilton = false;
         }
+        IRIS_string("dfs[**____]\n\r");
 		fg=false;
         if(!ta.hamilton && hm_flag){
         	ta.dp_calc();
@@ -410,25 +413,26 @@ void h_stack_dfs(){
             IRIS_string("_hami_");
             IRIS_string("\x1b[37m \n\r");
         }else{ sstk = ta.stk; }
+        IRIS_string("dfs[***___]\n\r");
 		while(!fg){
-            if(sstk.top()==ta.r_now())sstk.pop();
+			if(ta.stk.empty()){//new...
+			    move_toa(ta.r_start());
+			    break;
+			}
+            if(sstk.top()==ta.r_now()&&ta.r_now()!=ta.r_start())sstk.pop();
 			if(sstk.top()->color!=color::black && !sstk.empty() && sstk.top()!=np){
-				IRIS_string("*dfs : stk_top ===");
+				IRIS_string("*dfs : stk_top ");
 				iris_serial.putint((int)sstk.top());
 				IRIS_string("\n\r");
-				IRIS_string("dfs::[*__]\n\r");
+				IRIS_string("dfs[****__]\n\r");
                 move_toa(sstk.top());
 				lcd_clear(); lcd_putstr("dfs");
                 IRIS_string("\n\r");
-                IRIS_string("dfs::[**_]\n\r");
+                IRIS_string("dfs[*****_]\n\r");
 				fg=true;
 			}else{ sstk.pop(); }
-            if(ta.stk.empty()){//new...
-                move_toa(ta.r_start());
-                break;
-            }
 		}//sub loop
-        IRIS_string("dfs::[***]\n\r");
+        IRIS_string("dfs[******]\n\r");
 	}//main loop
 	IRIS_string("dfs [END] \n\r");
     IRIS_string("Thank you! :) \n\r");

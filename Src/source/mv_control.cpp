@@ -207,6 +207,7 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 			xbee.string("LEFT>");
 			break;
 		case MVS2_Pin:
+			return;
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_FRONT;
 			res=mv_spi_send(MV_FRONT,0);
 			dir=2;
