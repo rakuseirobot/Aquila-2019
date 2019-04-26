@@ -89,7 +89,7 @@ bl queue::empty(){if(siz==0){return true;}else{return false;}}
 void stack::init(){t_ans = -1;siz=0;rep(i,max_size_stack)box[i]=np;}
 int stack::size(){return siz;}
 node* stack::top(){if(siz>0){return box[siz-1];}else{return np;}}
-node* stack::t_top(){/*return t { t ç«ï¿½ box | min(t->dist) } ,and use ta.clear_bfs(); ta.bfs(ta.r_now(),ta.r_start); */
+node* stack::t_top(){/*return t { t âˆ? box | min(t->dist) } ,and use ta.clear_bfs(); ta.bfs(ta.r_now(),ta.r_start); */
 	//if(t_ans==-1)return np;
 	if(siz==1){ t_ans = siz-1; return box[siz-1];}
 	node* ans = np;

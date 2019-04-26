@@ -15,7 +15,7 @@
 #include "mv_control.hpp"
 #include "stm32f4xx.h"
 
-extern uart xbee;
+//extern uart xbee;
 extern uint32_t KIT_DROP_COUNT;
 extern kit_drop_status_t KIT_DROP_Status;
 void GPIO_interrupt_callback(uint16_t GPIO_Pin){

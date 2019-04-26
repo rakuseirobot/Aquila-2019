@@ -16,18 +16,15 @@
 #include <stdint.h>
 #define ping_flag true //trueなら2マス先も見る
 #define serial_send_node_suru true //suru ?
-uint16_t box[1025][10];
 
 extern uart xbee;
 uart iris_serial = xbee;
-extern uart serial;
 
 void IRIS_string(const char * s){ if(serial_send_node_suru)iris_serial.string(s); }
 
 void serial_send_node(node* n){
     if(serial_send_node_suru){
-        IRIS_string("\n\r--------------------");
-        IRIS_string("\n\r");
+        IRIS_string("\n\r--------------------\n\r");
         //IRIS_string("*[adress] : ");
         //iris_serial.putint((int)n);
         //IRIS_string("\n\r");
@@ -46,9 +43,7 @@ void serial_send_node(node* n){
         IRIS_string("\n\r");
         IRIS_string("*[color] ");
         iris_serial.putint((int)n->color);
-        IRIS_string("\n\r");
-        IRIS_string("--------------------");
-        IRIS_string("\n\r");
+        IRIS_string("\n\r--------------------\n\r");
     }
 }
 
@@ -60,9 +55,9 @@ void make_nodes(){
                 if(ta.ac_next(i,1)==np){ 
                     ta.ap_node(ta.r_now(),i);
                     IRIS_string("\n\rmake!\n\r");
-                    ta.hamilton=false; 
+                    ta.hamilton=false;
                 }else{ ta.cn_graph(ta.r_now(),ta.ac_next(i,1)); }
-                
+
                 if(check_ping(i)>2 && ping_flag){//2マス先も見る.
                     if(ta.ac_next(i,2)==np){ 
                         ta.ap_node(ta.ac_next(i,1),i);
@@ -172,7 +167,7 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
         }
         ta.w_now(t);t->type=v::slope;
         ta.go_st();/*node_b*/
-        IRIS_string("\n\r NAC2[END]\n\r");
+        IRIS_string("\n\rNAC2[END]\n\r");
         serial_send_node(ta.r_now());
     }
     return true;
@@ -272,22 +267,22 @@ void move_toa(node* a){//move to (node*)a
     ta.clear_dist();
     ta.bfs(a,ta.r_now());
     bl fg;
-    IRIS_string("\n\r m_a[START]\n\r");
+    IRIS_string("\n\r M_a[START]\n\r");
     //IRIS_string("= (node*)a = ");
     serial_send_node(ta.r_now());
     while(ta.r_now()!=a && a->type!=v::black && a->type!=v::slope){
         fg = false;
         rep(i,4){
-            IRIS_string("m_a[*_] \n\r");
+            IRIS_string("M_a[*_] \n\r");
             iris_serial.putint((int)a);
             if(!fg && ta.ac_next(i,1)!=np && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->dist<ta.r_now()->dist && ta.ac_next(i,1)->type!=v::black){ move_n(ta.ac_next(i,1)); fg=true; }
             if(ta.find(a->x,a->y,a->z)->type==v::slope)fg=true;
         }
     }
-    IRIS_string("m_a[**]\n\r");
+    IRIS_string("M_a[**]\n\r");
     ta.clear_dist();
     lcd_clear();
-    IRIS_string("m_a[END]\n\r");
+    IRIS_string("M_a[END]\n\r");
     lcd_putstr("end");
 }
 
@@ -364,7 +359,7 @@ void _stack_dfs(){
 		}//sub loop
         IRIS_string("dfs::[***]\n\r");
 	}//main loop
-	IRIS_string("dfs [END]\n\r");
+	IRIS_string("dfs[END]\n\r");
     IRIS_string("END ALL PROCEDURE.\n\r");
     IRIS_string("Thank you!! :) \n\r");
 	lcd_clear(); lcd_putstr("end_dfs");
@@ -421,7 +416,7 @@ void h_stack_dfs(){
 			}
             if(sstk.top()==ta.r_now()&&ta.r_now()!=ta.r_start())sstk.pop();
 			if(sstk.top()->color!=color::black && !sstk.empty() && sstk.top()!=np){
-				IRIS_string("dfs:stk_top ");
+				IRIS_string("stk_top ");
 				serial_send_node(sstk.top());
 				IRIS_string("\n\r");
 				IRIS_string("dfs[****__]\n\r");
@@ -434,7 +429,7 @@ void h_stack_dfs(){
 		}//sub loop
         IRIS_string("dfs[******]\n\r");
 	}//main loop
-	IRIS_string("dfs [END] \n\r");
+	IRIS_string("dfs[END] \n\r");
     IRIS_string("Thank you! :) \n\r");
 	lcd_clear(); lcd_putstr("end_dfs");
 }

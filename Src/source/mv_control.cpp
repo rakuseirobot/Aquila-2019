@@ -38,8 +38,11 @@ MV
 
 spi mv_spi(&hspi2);
 extern uart xbee;
+extern core ta;
 uart mv_serial = xbee;
 ;
+
+#define koredeiino_ true //falseにするとemileの更新が止まる
 
 uint8_t MV_RECIEVED_DATA[3]={0,0,0};
 
@@ -253,7 +256,7 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 }
 
 void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
-	if(MV_RECIEVED_DATA[MV_DATA_TYPE]==FIND_NOTHING){
+	if(MV_RECIEVED_DATA[MV_DATA_TYPE]==FIND_NOTHING  ){
 		return;
 	}
 	xbee.string("enter mv_after_stop_task_check!!");
@@ -261,22 +264,30 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
+				if(ta.r_pre()->type == v::H && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::H;
 				lcd_clear();
 				lcd_putstr("Find H!");
 				break;
 			case 4://S  1kits
 				kit_need=1;
+				if(ta.r_pre()->type == v::S && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::S;
 				lcd_clear();
 				lcd_putstr("Find S!");
 				break;
 			case 5://U 0kits
 				kit_need=0;
 				lcd_clear();
+				if(ta.r_pre()->type == v::U && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::U;
 				lcd_putstr("Find U!");
 				break;
 			case 6:
 				kit_need=1;
 				lcd_clear();
+				if(ta.r_pre()->type == v::sermo && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::sermo;
 				lcd_putstr("Find Sermo!");
 				break;
 			case 7:
@@ -433,18 +444,26 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
+				if(ta.r_pre()->type == v::H && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::H;
 				lcd_putstr("Find H!");
 				break;
 			case 4://S  1kits
 				kit_need=1;
+				if(ta.r_pre()->type == v::S && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::S;
 				lcd_putstr("Find S!");
 				break;
 			case 5://U 0kits
 				kit_need=0;
+				if(ta.r_pre()->type == v::U && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::U;
 				lcd_putstr("Find U!");
 				break;
 			case 6:
 				kit_need=1;
+				if(ta.r_pre()->type == v::sermo && koredeiino_){ return; }
+				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type == v::sermo;
 				lcd_putstr("Find Sermo!");
 				break;
 			case 7:
