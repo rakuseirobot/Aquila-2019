@@ -6,3 +6,6 @@
 *.elf
 /.vs/
 /NUCLEO-F411RE.xml
+*.ipch
+*.cproject
+/.vscode/
