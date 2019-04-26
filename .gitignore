@@ -10,5 +10,5 @@
 /build/
 *.ipch
 *.cproject
-*.project
-/Src/.vscode/
+/.vscode/
+/.settings/
