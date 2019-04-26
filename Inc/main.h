@@ -61,8 +61,8 @@
 #define MVS1_EXTI_IRQn EXTI4_IRQn
 #define RAM_CS_Pin GPIO_PIN_5
 #define RAM_CS_GPIO_Port GPIOE
-#define SS_R_Pin GPIO_PIN_6
-#define SS_R_GPIO_Port GPIOE
+#define ESC_Pin GPIO_PIN_6
+#define ESC_GPIO_Port GPIOE
 #define FLED_BLUE_Pin GPIO_PIN_13
 #define FLED_BLUE_GPIO_Port GPIOC
 #define FLED_GREEN_Pin GPIO_PIN_14

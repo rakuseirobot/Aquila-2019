@@ -4,8 +4,10 @@
  * core.hpp
  * Created: 2018/12/20 12:00:00
  *  Author: Emile
- */ 
+ */
 #include "data_structure.hpp"
+#include <stdint.h>
+#define M_V_SIZE 10 //max vertex size
 
 class core{
     node* now;
@@ -20,7 +22,7 @@ public:
 	AVLtree at;
 	nodes mall;
 	stack stk;
-	range_set set;
+	//range_set set;
     core();
     void turn_r();
     void turn_l();
@@ -41,8 +43,26 @@ public:
     void cl_dist(node* t,int d);
     void clear_dist();
     void bfs(node* s,node* t);
-	int range_size_helper(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2,uint8_t z);//helper for range_size
-	float range_size(node* u,int dir);//return num of vertex(unknown)
+    /*test ver*/
+    bool hamilton;//trueならans_vとvertex_size見て,最適化
+    stack ans_v;
+    node* vertex[M_V_SIZE+2];//vertexs
+    int8_t vertex_size;
+    //v[i]->v[i-1]->...(i=|v|,|v|-1,,1,0)
+    uint8_t dist[M_V_SIZE+2][M_V_SIZE+2];
+    //dist[s][t]:=distance(s->t)
+    uint16_t dp[1<<(M_V_SIZE+2)][M_V_SIZE+2];
+    //集合(set)のiで終わる最短ハミルトン路の長さを算出
+    //ただし、始点v[0]と終点v[vertex_size]は固定
+    //dp[(set)][i] :=ans(dp_calc)
+    
+    int8_t prev[1<<(M_V_SIZE+2)][M_V_SIZE+2];
+    //prev[(set)][i]:~dp[(Set)][i]の解をとる時の,前の頂点
+    node* vertex_calc(int set,int i,int v_size);
+    bool dp_init();
+    bool dp_calc();
 };
+
 extern core ta;
+
 #endif

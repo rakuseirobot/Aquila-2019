@@ -51,7 +51,7 @@ float jy901::read_acc_z(void){
 	HAL_I2C_Mem_Read(jy_i2c,addr,0x36,I2C_MEMADD_SIZE_8BIT,(uint8_t*) ret,2,0xFFFF);
 	return ((float)((ret[1] << 8) | ret[0])  / 32768 * 16 * 9.8);
 }
-
+/*
 float jy901::read_moving_angle(void){
 	float x=jy901::read_acc_x(),y=jy901::read_acc_y();
 	float s = acosf(fabsf(y)/hypotf(x,y)*M_PI);
@@ -64,4 +64,4 @@ float jy901::read_moving_angle(void){
 	else{
 		return (s)*180;
 	}
-}
+}*/

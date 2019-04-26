@@ -287,6 +287,11 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 		}
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		#warning Nakao should write here >> Save mapping  >>　マッピングされていたらフラグを初期化してreturn!  >>4こ
+		if(ta.r_now()->type==v::unknown){/*こっちも同様に自信がない by Emile */
+			MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
+			MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
+			return;
+		}
 		switch(motor::Task_Before){
 			case motor::ONE_ADVANCE:
 			case motor::TWO_ADVANCE:
@@ -466,6 +471,11 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		}
 	}
 	#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
+	if(ta.r_now()->type!=v::unknown){/*多分これでいいはずだけど,自身が無い. by Emile */
+		MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
+		MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
+		return;
+	}
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		//一個前の座標記録
 	}
@@ -505,7 +515,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	while(KIT_DROP_Status!=FREE){
 		error_led(1,3);
 		error_led(2,4);
-		//buzzer();
+		buzzer();
 		HAL_Delay(300);
 		xbee.putint(KIT_DROP_COUNT);
 		xbee.string("\n\r");
