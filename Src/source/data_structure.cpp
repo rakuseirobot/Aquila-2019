@@ -4,6 +4,7 @@
  *  Author: emile
  */
 #include "data_structure.hpp"
+#include <stdint.h>
 extern const int max_size;
 
 #define ht(t) (t ? t->height : 0)
@@ -80,14 +81,14 @@ void queue::pop(){
     rep(i,siz){box[i]=box[i+1];}
     siz--;
 }
-void queue::push(node* x){ box[siz]=x; siz++; }
+void queue::push(node* x){ if(x!=np){ box[siz]=x; siz++; } }
 bl queue::empty(){if(siz==0){return true;}else{return false;}}
 
 ////////////////////////////////////////////////////////////////queue/////////////////////
 
-void stack::init(){t_ans = -1;siz=0;rep(i,max_size)box[i]=np;}
+void stack::init(){t_ans = -1;siz=0;rep(i,max_size_stack)box[i]=np;}
 int stack::size(){return siz;}
-node* stack::top(){return box[siz-1];}
+node* stack::top(){if(siz>0){return box[siz-1];}else{return np;}}
 node* stack::t_top(){/*return t { t 竏� box | min(t->dist) } ,and use ta.clear_bfs(); ta.bfs(ta.r_now(),ta.r_start); */
 	//if(t_ans==-1)return np;
 	if(siz==1){ t_ans = siz-1; return box[siz-1];}
@@ -101,7 +102,7 @@ node* stack::t_top(){/*return t { t 竏� box | min(t->dist) } ,and use ta.clea
 	}
 	return ans;
 }
-void stack::pop(){box[siz-1]=np;siz--;}
+void stack::pop(){if(siz>0){box[siz-1]=np;siz--;}}
 void stack::t_pop(){
 	if(t_ans == -1){
 		//no action
@@ -113,9 +114,22 @@ void stack::t_pop(){
 		t_ans=-1;
 	}
 }
-void stack::push(node* x){box[siz]=x;siz++;}
+//void stack::push(node* x){box[siz]=x;siz++;}
+void stack::push(node* x){
+	while(stack::top()!=np && stack::top()->type!=v::unknown && stack::top()->type!=v::start){
+		stack::pop();
+	}
+	if(x!=np){
+		box[siz]=x;
+		siz++;
+	}
+}
 bl stack::empty(){if(siz==0){return true;}else{return false;}}
-
+void stack::clear(){
+	t_ans = -1;
+	siz=0;
+	rep(i,max_size_stack)box[i]=np;
+}
 /////////////////////////////////////////////////////////////stack//////////////////////////////////
 
 nodes::nodes(){size=0;now=0;};

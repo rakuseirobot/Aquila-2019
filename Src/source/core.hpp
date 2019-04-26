@@ -4,9 +4,10 @@
  * core.hpp
  * Created: 2018/12/20 12:00:00
  *  Author: Emile
- */ 
+ */
 #include "data_structure.hpp"
-#define M_V_SIZE 9 //max vertex size
+#include <stdint.h>
+#define M_V_SIZE 10 //max vertex size
 
 class core{
     node* now;
@@ -43,7 +44,8 @@ public:
     void clear_dist();
     void bfs(node* s,node* t);
     /*test ver*/
-    node* ans_v[M_V_SIZE+2];
+    bool hamilton;//trueならans_vとvertex_size見て,最適化
+    stack ans_v;
     node* vertex[M_V_SIZE+2];//vertexs
     int8_t vertex_size;
     //v[i]->v[i-1]->...(i=|v|,|v|-1,,1,0)
