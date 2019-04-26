@@ -20,6 +20,7 @@ core::core(){
     ans_v.init();
     stk.init();
     pre = np;
+    rep(i,20)start_f[i]=np;
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };
@@ -137,18 +138,22 @@ bool core::dp_init(){
     if(stk.size()<2)return false;
     int jj;vertex_size=0;
     if(now->z!=start->z){//ŠK‚ªstack“à‚Åˆá‚¤
-        jj=0;
+        rep(i,M_V_SIZE+2)vertex[i]=np;
+        vertex[0]=start_f[now->z];
+        jj=1;
         for(int i=0;stk.box[i]!=np;i++){
-            if(stk.box[i]->z==now->z){
+            if(stk.box[i]!=np && stk.box[i]->z==now->z && stk.box[i]!=now && stk.box[i] != start_f[now->z]){//new
                 vertex[jj]=stk.box[i];jj++;
             }
         }
+        vertex[jj]=now;//new
+        jj++;//new 
     }else{//ŠK‚ªstack“à‚Å“¯‚¶
-        rep(i,M_V_SIZE)vertex[i]=np;
+        rep(i,M_V_SIZE+2)vertex[i]=np;
         vertex[0]=start;
         jj=1;//jj:=suffix
         for(int i=0;stk.box[i]!=np;i++){/*start ‚Æ now ˆÈŠO‚Ìstk‚Ì’†g‚ğ‘‚«‚Ş*/
-            if(stk.box[i]!=start && stk.box[i]!=now && stk.box[i]!=np){vertex[jj]=stk.box[i];jj++; }
+            if(stk.box[i]!=np && stk.box[i]!=start && stk.box[i]!=now){vertex[jj]=stk.box[i];jj++; }
         }
         vertex[jj]=now;jj++;
         /* vertex[0]=start , [1...k-1]=(node*) , [k]=now */

@@ -75,7 +75,8 @@ void black_tile(){
         IRIS_string("\x1b[37m \n\r");
         ta.r_now()->type=v::black;
         ta.r_now()->color=v::black;
-        motor::move(motor::ONE_BACK);
+        if(ta.ac_next(v::front,1)!=ta.r_pre())motor::move(motor::ONE_BACK);
+        else motor::move(motor::ONE_ADVANCE);
         motor::fix_position(v::back);
         ta.turn_l();
         ta.turn_l();
@@ -163,6 +164,9 @@ bool nachylenie2(uint8_t x){/*make_nodes‚æ‚è‚à‘O‚ÉŽg‚¤*/
             }
         }
         ta.w_now(t);t->type=v::slope;
+        if(ta.start_f[ta.r_now()->z]==np){
+            ta.start_f[ta.r_now()->z]=ta.r_now();
+        }//new
         ta.go_st();/*node_b*/
         IRIS_string("\n\rNAC2[END]\n\r");
         serial_send_node(ta.r_now());

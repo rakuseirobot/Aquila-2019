@@ -23,6 +23,7 @@ public:
 	AVLtree at;
 	nodes mall;
 	stack stk;
+    node* start_f[20];
 	//range_set set;
     core();
     void turn_r();
