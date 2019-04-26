@@ -39,7 +39,13 @@ void cpploop(void) {
 	xbee.string("Hello!");
 	led_count_set(77);
 	//stack_dfs();
-	h_stack_dfs();
+	//h_stack_dfs();
+	while(1){
+		mv_cap(MV_LEFT,true);
+		mv_cap(MV_FRONT,true);
+		mv_cap(MV_RIGHT,true);
+
+	}
 	while(1){
 		//color_check();
 		xbee.putint(red+green+blue);

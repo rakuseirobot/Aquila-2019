@@ -41,7 +41,7 @@ const int rose=700;
 const int16_t longway = 4500;
 
 #if rose>Sikiti*2
-#error "Rose's value is wrong!"
+#error "Rose's value is wronggit git !"
 //rose=(Sikiti/2)*3
 #else
 #endif
@@ -1479,7 +1479,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do 
 							{
@@ -1489,7 +1489,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do
 							{
@@ -1504,6 +1504,8 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_LEFT);
+				brake(MOTOR_RIGHT);
 				return 2;
 			}
 			else if(ang>=Ang_slope_Norm+Ang_slope_thre){//下り
@@ -1522,7 +1524,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do 
 							{
@@ -1532,7 +1534,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do
 							{
@@ -1548,6 +1550,8 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_LEFT);
+				brake(MOTOR_RIGHT);
 				return 1;
 			}
 		}else if(x==v::back){//後進中
@@ -1567,7 +1571,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do 
 							{
@@ -1577,7 +1581,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do
 							{
@@ -1593,6 +1597,8 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_LEFT);
+				brake(MOTOR_RIGHT);
 				return 1;
 			}
 			else if(ang<=Ang_slope_Norm-Ang_slope_thre){//昇り
@@ -1611,7 +1617,7 @@ namespace motor{
 						if(anx>Ang_x_Norm){//右向いてる
 							error_led(2,1);
 							error_led(1,0);
-							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_2)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//左速度落とす
 							do 
 							{
@@ -1621,7 +1627,7 @@ namespace motor{
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
 							error_led(1,1);
-							set_pwm(MOTOR_RIGHT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
+							set_pwm(MOTOR_LEFT,__HAL_TIM_GET_COMPARE(&htim1,TIM_CHANNEL_1)-MOTOR_SPEED[SPEED_SLOPE_FIX_DEV]);
 							//右速度落とす
 							do
 							{
@@ -1637,6 +1643,8 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_LEFT);
+				brake(MOTOR_RIGHT);
 				return 2;
 			}
 		}
