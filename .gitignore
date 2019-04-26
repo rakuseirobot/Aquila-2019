@@ -11,3 +11,4 @@
 *.ipch
 *.cproject
 *.project
+/Src/.vscode/
