@@ -16,21 +16,18 @@
 #include <stdint.h>
 #define ping_flag true //trueなら2マス先も見る
 #define serial_send_node_suru true //suru ?
-uint16_t box[1025][10];
 
 extern uart xbee;
 uart iris_serial = xbee;
-extern uart serial;
 
 void IRIS_string(const char * s){ if(serial_send_node_suru)iris_serial.string(s); }
 
 void serial_send_node(node* n){
     if(serial_send_node_suru){
-        IRIS_string("--------------------");
-        IRIS_string("\n\r");
-        IRIS_string("*[adress] : ");
-        iris_serial.putint((int)n);
-        IRIS_string("\n\r");
+        IRIS_string("\n\r--------------------\n\r");
+        //IRIS_string("*[adress] : ");
+        //iris_serial.putint((int)n);
+        //IRIS_string("\n\r");
         IRIS_string("*[x,y,z] = ");
         iris_serial.putint((int)n->x);
         IRIS_string(",");
@@ -38,35 +35,33 @@ void serial_send_node(node* n){
         IRIS_string(",");
         iris_serial.putint((int)n->z);
         IRIS_string("\n\r");
-        IRIS_string("*[type] : ");
+        IRIS_string("*[type] ");
         iris_serial.putint((int)n->type);
         IRIS_string("\n\r");
-        IRIS_string("*[flag] : ");
+        IRIS_string("*[flag] ");
         iris_serial.putint((int)n->flag);
         IRIS_string("\n\r");
-        IRIS_string("*[color] : ");
+        IRIS_string("*[color] ");
         iris_serial.putint((int)n->color);
-        IRIS_string("\n\r");
-        IRIS_string("--------------------");
-        IRIS_string("\n\r");
+        IRIS_string("\n\r--------------------\n\r");
     }
 }
 
 void make_nodes(){
-    IRIS_string("make_nodes\n\r");
+    IRIS_string("\n\rmake_nodes\n\r");
     if(!ta.r_now()->ac){
         rep(i,4){
             if(check_ping(i)>1){
                 if(ta.ac_next(i,1)==np){ 
                     ta.ap_node(ta.r_now(),i);
-                    IRIS_string("make!");
-                    ta.hamilton=false; 
+                    IRIS_string("\n\rmake!\n\r");
+                    ta.hamilton=false;
                 }else{ ta.cn_graph(ta.r_now(),ta.ac_next(i,1)); }
-                
+
                 if(check_ping(i)>2 && ping_flag){//2マス先も見る.
                     if(ta.ac_next(i,2)==np){ 
                         ta.ap_node(ta.ac_next(i,1),i);
-                        IRIS_string("make!");
+                        IRIS_string("\n\rmake!\n\r");
                         ta.hamilton = false;
                     }else{ ta.cn_graph(ta.ac_next(i,1),ta.ac_next(i,2)); }
                 }
@@ -78,7 +73,7 @@ void make_nodes(){
 
 void black_tile(){
     if(color_check()==1 || ta.r_now()->type==v::black){
-        IRIS_string("\x1b[30m \n\r");
+        IRIS_string("\n\r \x1b[30m \n\r");
         IRIS_string("BLACK");
         IRIS_string("\x1b[37m \n\r");
         ta.r_now()->type=v::black;
@@ -147,16 +142,16 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
     }
     motor::gb_fix();
     motor::turn_fix();
-    IRIS_string("nac2");
+    IRIS_string("\n\r NAC[START] \n\r");
     ta.hamilton=false;
     if(ta.r_now()->type==v::slope){
-        IRIS_string("a");
+        IRIS_string("NAC[__]\n\r");
         node* t = ta.r_now();/*空間計算量を抑える為に使いまわす*/
         rep(i,4){ if(t->next[i]->type==v::slope){t=t->next[i];break;} }/*node_aの探索*/
         rep(i,4){ if(t->next[i]->type!=v::slope){t=t->next[i];break;} }/*node_bの探索*/
         ta.w_now(t);
     }else{/*make_nodesよりも後だと、こちらが面倒*/
-        IRIS_string("b");
+        IRIS_string("NAC[*_]\n\r");
         ta.r_now()->type=v::slope;
         node* t = ta.ac_next(v::back,1);/*t=nowの一つ前のnode*/
         uint8_t zz = ta.r_now()->z;
@@ -166,13 +161,13 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
                 ta.r_now()->next[i]=ta.mall.make(t->x,t->y,zz,(ta.r_flg()+1)%2); 
                 t=ta.r_now()->next[i];/*t=node_a*/
                 t->next[0]=ta.r_now();
-                IRIS_string("c");
+                IRIS_string("NAC[**]\n\r");
                 break;
             }
         }
         ta.w_now(t);t->type=v::slope;
         ta.go_st();/*node_b*/
-        IRIS_string("nac2:end:");
+        IRIS_string("\n\rNAC2[END]\n\r");
         serial_send_node(ta.r_now());
     }
     return true;
@@ -242,8 +237,8 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
         default:
             break;
     }
-    IRIS_string("now:: ");
-//    serial_send_node(ta.r_now());
+    IRIS_string("\n\r::<now>:: \n\r");
+    serial_send_node(ta.r_now());
     if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
     black_tile();
     motor::fix_position();
@@ -255,15 +250,15 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
 
 void move_n(node* n){//move to neighborhood((node*)n)
     if(n!=np){
-        IRIS_string("m_n [start]");
+        IRIS_string("\n\rm_n[start]\n\r");
         rep(i,4)if(ta.ac_next(i,1)==n && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->type!=v::black){
             move(i);
             lcd_clear();
-            lcd_putstr("[*]m_n");
-            IRIS_string("in m_n \n\r");
+            lcd_putstr("m_n");
+            IRIS_string("m_n[*]\n\r");
             break;
         }
-        IRIS_string("m_n [end]\n\r");
+        IRIS_string("m_n[end]\n\r");
     }
 }
 
@@ -272,22 +267,22 @@ void move_toa(node* a){//move to (node*)a
     ta.clear_dist();
     ta.bfs(a,ta.r_now());
     bl fg;
-    IRIS_string("\n\r__ m_a [START]\n\r");
+    IRIS_string("\n\r M_a[START]\n\r");
     //IRIS_string("= (node*)a = ");
     serial_send_node(ta.r_now());
     while(ta.r_now()!=a && a->type!=v::black && a->type!=v::slope){
         fg = false;
         rep(i,4){
-            IRIS_string("[*_] in m_a \n\r");
+            IRIS_string("M_a[*_] \n\r");
             iris_serial.putint((int)a);
             if(!fg && ta.ac_next(i,1)!=np && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->dist<ta.r_now()->dist && ta.ac_next(i,1)->type!=v::black){ move_n(ta.ac_next(i,1)); fg=true; }
             if(ta.find(a->x,a->y,a->z)->type==v::slope)fg=true;
         }
     }
-    IRIS_string("[**] in m_a *b\n\r");
+    IRIS_string("M_a[**]\n\r");
     ta.clear_dist();
     lcd_clear();
-    IRIS_string("m_a [END]\n\r");
+    IRIS_string("M_a[END]\n\r");
     lcd_putstr("end");
 }
 
@@ -330,7 +325,7 @@ void stack_dfs(){
 }
 
 void _stack_dfs(){	
-	IRIS_string("dfs [START]\n\r");
+	IRIS_string("dfs[START]\n\r");
     serial_send_node(ta.r_now());
 	ta.stk.push(ta.r_start());
 	ta.r_start()->color=color::gray;
@@ -364,14 +359,14 @@ void _stack_dfs(){
 		}//sub loop
         IRIS_string("dfs::[***]\n\r");
 	}//main loop
-	IRIS_string("dfs [END]\n\r");
+	IRIS_string("dfs[END]\n\r");
     IRIS_string("END ALL PROCEDURE.\n\r");
     IRIS_string("Thank you!! :) \n\r");
 	lcd_clear(); lcd_putstr("end_dfs");
 }
 
 void h_stack_dfs(){
-	IRIS_string("dfs [START]\n\r");
+	IRIS_string("\n\rdfs[START]\n\r");
     serial_send_node(ta.r_now());
 	ta.stk.push(ta.r_start());
 	ta.r_start()->color=color::gray;
@@ -381,7 +376,7 @@ void h_stack_dfs(){
     bl fg;/*for ??*/ 
     bool hm_flag = true;//もし、直前にstackにnode突っ込んでたらhamiltonしない.
 	while(!ta.stk.empty()){
-        IRIS_string("dfs::[___]\n\r");
+        IRIS_string("dfs[______]\n\r");
 		if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
 		//node追加 normal ver
         hm_flag = true;
@@ -392,11 +387,14 @@ void h_stack_dfs(){
                 hm_flag = false;
 			}
 		}//node追加部分ここまで
-		lcd_clear(); lcd_putstr("dfs");
-        while(ta.stk.top()->type!=v::unknown && ta.stk.top()->type!=v::start){
+		IRIS_string("dfs[*_____]\n\r");
+        lcd_clear(); lcd_putstr("dfs");
+		if(ta.stk.empty()){ta.stk.push(ta.r_start());}
+        while(!ta.stk.empty() && ta.stk.top()->type!=v::unknown && ta.stk.top()!=ta.r_start() && ta.r_now()!=ta.r_start()){
             ta.stk.pop();
             ta.hamilton = false;
         }
+        IRIS_string("dfs[**____]\n\r");
 		fg=false;
         if(!ta.hamilton && hm_flag){
         	ta.dp_calc();
@@ -410,27 +408,28 @@ void h_stack_dfs(){
             IRIS_string("_hami_");
             IRIS_string("\x1b[37m \n\r");
         }else{ sstk = ta.stk; }
+        IRIS_string("dfs[***___]\n\r");
 		while(!fg){
-            if(sstk.top()==ta.r_now())sstk.pop();
+			if(ta.stk.empty()){//new...
+			    move_toa(ta.r_start());
+			    break;
+			}
+            if(sstk.top()==ta.r_now()&&ta.r_now()!=ta.r_start())sstk.pop();
 			if(sstk.top()->color!=color::black && !sstk.empty() && sstk.top()!=np){
-				IRIS_string("*dfs : stk_top ===");
-				iris_serial.putint((int)sstk.top());
+				IRIS_string("stk_top ");
+				serial_send_node(sstk.top());
 				IRIS_string("\n\r");
-				IRIS_string("dfs::[*__]\n\r");
+				IRIS_string("dfs[****__]\n\r");
                 move_toa(sstk.top());
 				lcd_clear(); lcd_putstr("dfs");
                 IRIS_string("\n\r");
-                IRIS_string("dfs::[**_]\n\r");
+                IRIS_string("dfs[*****_]\n\r");
 				fg=true;
 			}else{ sstk.pop(); }
-            if(ta.stk.empty()){//new...
-                move_toa(ta.r_start());
-                break;
-            }
 		}//sub loop
-        IRIS_string("dfs::[***]\n\r");
+        IRIS_string("dfs[******]\n\r");
 	}//main loop
-	IRIS_string("dfs [END] \n\r");
+	IRIS_string("dfs[END] \n\r");
     IRIS_string("Thank you! :) \n\r");
 	lcd_clear(); lcd_putstr("end_dfs");
 }

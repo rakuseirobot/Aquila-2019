@@ -30,7 +30,6 @@ spi spi_t(&hspi1);
 jy901 gyro(&hi2c2);
 
 void cpploop(void) {
-	HAL_GPIO_WritePin(GPIOD,ST_MOTOR_CH1_Pin|ST_MOTOR_CH2_Pin|ST_MOTOR_CH3_Pin|ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
 	init_lcd();
 	led_count_set(20);
 	buzzer();

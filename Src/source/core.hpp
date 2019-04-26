@@ -18,6 +18,7 @@ class core{
     int flg;//0 or 1
     //for dfs
     queue q;//for bfs
+    node* pre;//ˆê‚Â‘O‚Ì’¸“_
 public:
 	AVLtree at;
 	nodes mall;
@@ -30,6 +31,7 @@ public:
 	int r_flg();
     node* r_now();
 	node* r_start();
+    node* r_pre();
     void dfs(node* t,int x,int y,int z,int depth);
     node* find(int x,int y,int z);
 	void ins_node(node* x);
@@ -44,7 +46,7 @@ public:
     void clear_dist();
     void bfs(node* s,node* t);
     /*test ver*/
-    bool hamilton;//trueãªã‚‰ans_vã¨vertex_sizeè¦‹ã¦,æœ€é©åŒ–
+    bool hamilton;//true‚È‚çans_v‚Ævertex_sizeŒ©‚Ä,Å“K‰»
     stack ans_v;
     node* vertex[M_V_SIZE+2];//vertexs
     int8_t vertex_size;
@@ -52,12 +54,12 @@ public:
     uint8_t dist[M_V_SIZE+2][M_V_SIZE+2];
     //dist[s][t]:=distance(s->t)
     uint16_t dp[1<<(M_V_SIZE+2)][M_V_SIZE+2];
-    //é›†åˆ(set)ã®iã§çµ‚ã‚ã‚‹æœ€çŸ­ãƒãƒŸãƒ«ãƒˆãƒ³è·¯ã®é•·ã•ã‚’ç®—å‡º
-    //ãŸã ã—ã€å§‹ç‚¹v[0]ã¨çµ‚ç‚¹v[vertex_size]ã¯å›ºå®š
+    //W‡(set)‚Ìi‚ÅI‚í‚éÅ’Zƒnƒ~ƒ‹ƒgƒ“˜H‚Ì’·‚³‚ğZo
+    //‚½‚¾‚µAn“_v[0]‚ÆI“_v[vertex_size]‚ÍŒÅ’è
     //dp[(set)][i] :=ans(dp_calc)
     
     int8_t prev[1<<(M_V_SIZE+2)][M_V_SIZE+2];
-    //prev[(set)][i]:~dp[(Set)][i]ã®è§£ã‚’ã¨ã‚‹æ™‚ã®,å‰ã®é ‚ç‚¹
+    //prev[(set)][i]:~dp[(Set)][i]‚Ì‰ğ‚ğ‚Æ‚é‚Ì,‘O‚Ì’¸“_
     node* vertex_calc(int set,int i,int v_size);
     bool dp_init();
     bool dp_calc();

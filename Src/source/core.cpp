@@ -19,6 +19,7 @@ core::core(){
     hamilton = false;
     ans_v.init();
     stk.init();
+    pre = np;
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };
@@ -26,6 +27,7 @@ void core::w_now(node* u){ now = u; }
 int core::r_flg(){ return flg; }
 node* core::r_now(){return now;}
 node* core::r_start(){return start;}
+node* core::r_pre(){return pre;}
 void core::dfs(node* t,int x,int y,int z,int depth){
     if(t!=np){
         if(t->depth>depth+1)t->depth=depth+1;
@@ -50,14 +52,14 @@ node* core::find(int x,int y,int z){
     return at.find(x,y,z);
 }
 void core::ins_node(node* x){at.insert(x);}
-void core::cn_graph(node* v, node* u){//Connect Nodes on Graph ::vã¨uã‚’graph(next[])ã«é–¢ã—ã¦ã¤ãªã’ã‚‹
+void core::cn_graph(node* v, node* u){//Connect Nodes on Graph ::v‚Æu‚ðgraph(next[])‚ÉŠÖ‚µ‚Ä‚Â‚È‚°‚é
     at.insert(u);
     if(v!=np && u!=np){
         rep(i,4)if(v->next[i]==np){ v->next[i]=u; break; }else if(v->next[i]==u){break;}
         rep(i,4)if(u->next[i]==np){ u->next[i]=v; break; }else if(u->next[i]==v){break;}
     }
 }
-void core::cn_tree(node* par,node* v){//connect nodes on Tree ::par(ent)ã¨vã‚’tree(back)ã«é–¢ã—ã¦ã¤ãªã’ã‚‹
+void core::cn_tree(node* par,node* v){//connect nodes on Tree ::par(ent)‚Æv‚ðtree(back)‚ÉŠÖ‚µ‚Ä‚Â‚È‚°‚é
     at.insert(v);
     if(v!=np && par!=np)if(v->back==np)v->back=par;
 }
@@ -65,7 +67,7 @@ void core::ap_node(node* t,int dire){//append node (cn_graph)
     dire = (dire+dir+3)%4;
     node* u = find(t->x+v::vv[dire][0],t->y+v::vv[dire][1],t->z);
     if(u==np)u = mall.make(t->x+v::vv[dire][0],t->y+v::vv[dire][1],t->z,(flg+1)%2);
-	//set.at(u->z)->update(u->x,t->y);//ç¯„å›²ç®—å‡ºç”¨
+	//set.at(u->z)->update(u->x,t->y);//”ÍˆÍŽZo—p
     cn_graph(t,u);
 }
 node* core::ac_next(node* t,int now_dir,int dire,int dist){//(node*,int,int,int)->node* | nullptr(error) 
@@ -87,6 +89,7 @@ void core::go_st(){
     next = ac_next(v::front,1);
     cn_graph(now,next);
     cn_tree(now,next);
+    pre = now;//new
     now = next;
 }
 
@@ -107,7 +110,7 @@ void core::clear_dist(){
 }
 
 
-void core::bfs(node* s,node* t){//sã‚’å§‹ç‚¹ã«ã—ã¦tã‚’æ¤œç´¢ã™ã‚‹
+void core::bfs(node* s,node* t){//s‚ðŽn“_‚É‚µ‚Ät‚ðŒŸõ‚·‚é
     q.push(s);
     s->dist=0;
     while(!q.empty()){
@@ -133,28 +136,28 @@ bool core::dp_init(){
     if(stk.size()>M_V_SIZE+1)return false;
     if(stk.size()<2)return false;
     int jj;vertex_size=0;
-    if(now->z!=start->z){//éšŽãŒstackå†…ã§é•ã†
+    if(now->z!=start->z){//ŠK‚ªstack“à‚Åˆá‚¤
         jj=0;
         for(int i=0;stk.box[i]!=np;i++){
             if(stk.box[i]->z==now->z){
                 vertex[jj]=stk.box[i];jj++;
             }
         }
-    }else{//éšŽãŒstackå†…ã§åŒã˜
+    }else{//ŠK‚ªstack“à‚Å“¯‚¶
         rep(i,M_V_SIZE)vertex[i]=np;
         vertex[0]=start;
         jj=1;//jj:=suffix
-        for(int i=0;stk.box[i]!=np;i++){/*start ã¨ now ä»¥å¤–ã®stkã®ä¸­èº«ã‚’æ›¸ãè¾¼ã‚€*/
+        for(int i=0;stk.box[i]!=np;i++){/*start ‚Æ now ˆÈŠO‚Ìstk‚Ì’†g‚ð‘‚«ž‚Þ*/
             if(stk.box[i]!=start && stk.box[i]!=now && stk.box[i]!=np){vertex[jj]=stk.box[i];jj++; }
         }
         vertex[jj]=now;jj++;
         /* vertex[0]=start , [1...k-1]=(node*) , [k]=now */
-    }/* ã“ã“ã¾ã§vertexã®init */
-    //*jjã¯é ‚ç‚¹æ•°*
+    }/* ‚±‚±‚Ü‚Åvertex‚Ìinit */
+    //*jj‚Í’¸“_”*
     vertex_size = jj;
     rep(i,jj){
         clear_dist();
-        bfs(vertex[i],start);//startã¯ä½•ã§ã‚‚ã„ã„ã¯ãš
+        bfs(vertex[i],start);//start‚Í‰½‚Å‚à‚¢‚¢‚Í‚¸
         rep(j,jj){
             dist[i][j] = vertex[j]->dist; dist[j][i] = vertex[j]->dist;
         }
@@ -180,12 +183,12 @@ node* core::vertex_calc(int set,int i,int v_size){
 }
 
 bool core::dp_calc(){
-    stk.push(np);
     if(now==start)return hamilton = false;
+    stk.push(np);
     if(!dp_init())return hamilton = false;
     int mask=(1<<0);//bit set ,(now)mask = {0}
     dp[mask][0]=0;
-    //vertex[0]=startã¨vertex[vertex_size]=nowã®è¦ç´ ã¯å›ºå®š
+    //vertex[0]=start‚Ævertex[vertex_size]=now‚Ì—v‘f‚ÍŒÅ’è
     for(mask=1;mask<(1<<(vertex_size-1));mask++)rep(i,vertex_size-1)if(mask&(1<<i))rep(j,vertex_size-1){
         if(!(mask&(1<<0)))continue;
         if(chmin(dp[mask|(1<<j)][j],dp[mask][i]+dist[i][j])){
