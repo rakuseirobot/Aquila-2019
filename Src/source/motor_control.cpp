@@ -936,13 +936,13 @@ namespace motor{
 		dis[2] = ping(RIGHT_FRONT);
 		dis[3] = ping(RIGHT_BACK);
 		if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
-			i=2;
+			i=1;
 		}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
 			i=2;
 		}else{
 			i=0;
 		}
-		if(i==2){
+		if(i>0){
 			HAL_Delay(100);
 			xbee.string("\n\r\x1b[7mLEFT_BACK:");
 			xbee.putint(dis[0]);
@@ -969,11 +969,29 @@ namespace motor{
 			if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
 				i=1;
 			}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
-				i=1;
+				i=2;
 			}else{
 				i=0;
 			}
-		}if(i==1){
+		}
+		if(i==1){
+			if(FIND_BRICK==MV_LEFT){
+				buzzer(200);
+				FIND_BRICK=0;
+				return 0;
+			}
+		}
+		else if(i==2){
+			if(FIND_BRICK==MV_RIGHT){
+				buzzer(200);
+				FIND_BRICK=0;
+				return 0;
+			}
+		}
+		else{
+			FIND_BRICK=0;
+		}
+		if(i>0){
 			lcd_clear();
 			lcd_putstr("NotifyHA");
 			motor_serial.string("\x1b[42mNotifyHalf\x1b[49m");
@@ -985,6 +1003,7 @@ namespace motor{
 				motor::move(HALF_BACK);
 			}
 			lcd_clear();
+			i=1;
 		}
 		return i;
 	}
