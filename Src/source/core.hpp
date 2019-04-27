@@ -48,6 +48,7 @@ public:
     void bfs(node* s,node* t);
     /*test ver*/
     bool hamilton;//true‚È‚çans_v‚Ævertex_sizeŒ©‚Ä,Å“K‰»
+    bool now_hami;
     stack ans_v;
     node* vertex[M_V_SIZE+2];//vertexs
     int8_t vertex_size;

@@ -21,6 +21,7 @@ core::core(){
     stk.init();
     pre = np;
     rep(i,20)start_f[i]=np;
+    now_hami = false;
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };

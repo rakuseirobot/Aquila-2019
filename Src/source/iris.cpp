@@ -406,16 +406,18 @@ void h_stack_dfs(){
         }
         if(ta.hamilton && hm_flag){ 
             sstk = ta.ans_v;
+            ta.now_hami = true;
             IRIS_string("\x1b[36m \n\r");
             IRIS_string("_hami_");
             IRIS_string("\x1b[37m \n\r");
-        }else{ sstk = ta.stk; }
+        }else{ sstk = ta.stk;ta.now_hami = false; }
         IRIS_string("dfs[***___]\n\r");
 		while(!fg){
 			if(ta.stk.empty()){//new...
 			    move_toa(ta.r_start());
 			    break;
 			}
+            if(ta.now_hami && !ta.hamilton)break;
             if(sstk.top()==ta.r_now()&&ta.r_now()!=ta.r_start())sstk.pop();
 			if(sstk.top()->color!=color::black && !sstk.empty() && sstk.top()!=np){
 				IRIS_string("stk_top");
