@@ -359,14 +359,22 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			case 3://H  2kits
 				kit_need=2;
 				if(ta.r_pre()->type == v::H && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::H;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::H;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::H;
+				}
 				lcd_clear();
 				lcd_putstr("Find H!");
 				break;
 			case 4://S  1kits
 				kit_need=1;
 				if(ta.r_pre()->type == v::S && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::S;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::S;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::S;
+				}
 				lcd_clear();
 				lcd_putstr("Find S!");
 				break;
@@ -374,14 +382,24 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 				kit_need=0;
 				lcd_clear();
 				if(ta.r_pre()->type == v::U && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::U;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::U;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::U;
+				}
+				lcd_clear();
 				lcd_putstr("Find U!");
 				break;
 			case 6:
 				kit_need=1;
 				lcd_clear();
 				if(ta.r_pre()->type == v::sermo && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::sermo;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::sermo;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::sermo;
+				}
+				lcd_clear();
 				lcd_putstr("Find Sermo!");
 				break;
 			case 7:
@@ -542,25 +560,41 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 			case 3://H  2kits
 				kit_need=2;
 				if(ta.r_pre()->type == v::H && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::H;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::H;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::H;
+				}
 				lcd_putstr("Find H!");
 				break;
 			case 4://S  1kits
 				kit_need=1;
 				if(ta.r_pre()->type == v::S && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::S;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::S;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::S;
+				}
 				lcd_putstr("Find S!");
 				break;
 			case 5://U 0kits
 				kit_need=0;
 				if(ta.r_pre()->type == v::U && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::U;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::U;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::U;
+				}
 				lcd_putstr("Find U!");
 				break;
 			case 6:
 				kit_need=1;
 				if(ta.r_pre()->type == v::sermo && koredeiino_){ return; }
-				if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::sermo;
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::sermo;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::sermo;
+				}
 				lcd_putstr("Find Sermo!");
 				break;
 			case 7:
@@ -593,12 +627,13 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
 		return;
 	}
-	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
-		//一個前の座標記録
-	}
-	else{
-		//現在地記録
-	}
+	// if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+	// 	ta.pre->type=
+	// 	//一個前の座標記録koko
+	// }
+	// else{
+	// 	//現在地記録koko
+	// }
 	if(motor::Task_Save!=motor::BRAKE){//StatusがBACKに入った場合はこの条件に入る
 		MV_RIGHT_TURN();
 	}
