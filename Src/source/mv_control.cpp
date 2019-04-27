@@ -35,10 +35,12 @@ MV
 #include "lcd_control.hpp"
 #include "motor_control.hpp"
 #include "ping_control.hpp"
+#include "JY901.hpp"
 
 spi mv_spi(&hspi2);
 extern uart xbee;
 extern core ta;
+extern jy901 gyro;
 uart mv_serial = xbee;
 
 #define koredeiino_ true //falseにするとemileの更新が止まる
@@ -278,13 +280,81 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 	mv_cap(MV_RIGHT,false);
 	return;
 }
-
+void MV_RIGHT_TURN(void){
+	motor::set_pwm(motor::MOTOR_SPEED[SPEED_TARGET]);
+	float first = 0;
+	float now = 0;
+	motor::set_Status(motor::NOPID);
+	first = gyro.read_angle();
+	//motor_serial.putint(first);
+	//motor_serial.string("\n\r");
+	turn_retry12:
+	motor::forward(motor::MOTOR_LEFT);
+	motor::back(motor::MOTOR_RIGHT);
+	HAL_Delay(2);
+	now = gyro.read_angle();
+	//motor_serial.putint(now);
+	//motor_serial.string("\n\r");
+	do{
+		now=gyro.read_angle();
+		//motor_serial.putint(now);
+		//motor_serial.string("\n\r");
+	}while((first<now?now-first:now-first+360)>270||(first<now?now-first:now-first+360)<90);
+	motor::brake(motor::MOTOR_LEFT);
+	motor::brake(motor::MOTOR_RIGHT);
+	HAL_Delay(100);
+	now=gyro.read_angle();
+	if((first<now?now-first:now-first+360)>270||(first<now?now-first:now-first+360)<90){
+		goto turn_retry12;
+	}
+	if(first<=90){
+		motor::fix_angle_v(first-90+360);
+	}
+	else{
+		motor::fix_angle_v(first-90);
+	}
+}
+void MV_LEFT_TURN(void){
+	motor::set_pwm(motor::MOTOR_SPEED[SPEED_TARGET]);
+	float first = 0;
+	float now = 0;
+	motor::set_Status(motor::NOPID);
+	first = gyro.read_angle();
+	//motor_serial.putint(first);
+	//motor_serial.string("\n\r");
+	turn_retry123:
+	motor::back(motor::MOTOR_LEFT);
+	motor::forward(motor::MOTOR_RIGHT);
+	HAL_Delay(2);
+	now=gyro.read_angle();
+	//motor_serial.putint(now);
+	//motor_serial.string("\n\r");
+	do{
+		now=gyro.read_angle();
+		//motor_serial.putint(now);
+		//motor_serial.string("\n\r");
+	}while((first<now?now-first:now-first+360)<90||(first<now?now-first:now-first+360)>270);
+	motor::brake(motor::MOTOR_LEFT);
+	motor::brake(motor::MOTOR_RIGHT);
+	now=gyro.read_angle();
+	HAL_Delay(100);
+	if((first<now?now-first:now-first+360)<90||(first<now?now-first:now-first+360)>270){
+		goto turn_retry123;
+	}
+	if(first>=270){
+		motor::fix_angle_v(first+90-360);
+	}
+	else{
+		motor::fix_angle_v(first+90);
+	}
+}
 void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
-	if(MV_RECIEVED_DATA[MV_DATA_TYPE]==FIND_NOTHING  ){
+	if(MV_RECIEVED_DATA[MV_DATA_TYPE]==FIND_NOTHING){
 		return;
 	}
 	xbee.string("enter mv_after_stop_task_check!!");
 	uint8_t kit_need=0;
+	bool turn_flag = false;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
@@ -321,7 +391,9 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			default:
 				break;
 		}
+	xbee.string("\n\rwork mv_after_stop_task_check!!\n\r");
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+		xbee.string("\n\rwork mv_after_stop_task_check!!\n\r");
 		#warning Nakao should write here >> Save mapping  >>　マッピングされていたらフラグを初期化してreturn!  >>4こ
 		if(_check_node_type(ta.r_now())){/*こっちも同様に自信がない by Emile */https://hexagon-emile.hatenablog.com/entry/2019/04/26/194904
 			MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
@@ -334,6 +406,8 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			case motor::HALF_ADVANCE:
 				//現在地地点記録
 				MV_RECIEVED_DATA[MV_DATA_DIR]=MV_LEFT;
+				MV_RIGHT_TURN();
+				turn_flag=true;
 				break;
 			case motor::ONE_BACK:
 			case motor::TWO_BACK:
@@ -409,9 +483,6 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			default:
 				break;
 		}
-		if(motor::Task_Before==motor::ONE_ADVANCE||motor::Task_Before==motor::TWO_ADVANCE||motor::Task_Before==motor::HALF_ADVANCE){
-			motor::move(motor::RIGHT_TURN);
-		}
 		led(Redled,1);
 		led(Blueled,1);
 		led(Greenled,1);
@@ -449,11 +520,13 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 		error_led(2,0);
 		MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
 		MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;//フラグ初期化
-		if(motor::Task_Before==motor::ONE_ADVANCE||motor::Task_Before==motor::TWO_ADVANCE||motor::Task_Before==motor::HALF_ADVANCE){
-			motor::move(motor::LEFT_TURN);
+		if(turn_flag==true){
+			MV_LEFT_TURN();
 		}
+		motor::set_Status(motor::RESTART);
 	}
 	else{//前以外のタスク(本来あり得ない)
+		xbee.string("\n\rnot work mv_after_stop_task_check!!\n\r");
 		mv_task_check();
 	}
 	motor::set_Status(motor::RESTART);
@@ -527,7 +600,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		//現在地記録
 	}
 	if(motor::Task_Save!=motor::BRAKE){//StatusがBACKに入った場合はこの条件に入る
-		motor::move(motor::RIGHT_TURN);
+		MV_RIGHT_TURN();
 	}
 	led(Redled,1);
 	led(Blueled,1);
@@ -571,7 +644,8 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	if(motor::Task_Save!=motor::BRAKE){//BACKに入っていた場合はこの条件に入って元のマスに戻る。
 		motor::set_Status(motor::RETURN);
 	}
-	motor::set_Status(motor::RESTART);
+	#warning RESTART???
+	motor::set_Status(motor::FREE);
 	return;
 }
 /*
