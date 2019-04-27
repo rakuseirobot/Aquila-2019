@@ -47,11 +47,26 @@ uint8_t MV_RECIEVED_DATA[3]={0,0,0};
 
 uint8_t FIND_BRICK = 0; //見つけたら0以外
 
+bool _check_node_type(node* x){
+	int8_t typ = x->type;
+	switch (typ){
+		case v::H :
+		case v::S :
+		case v::U :
+		case v::sermo :
+			return true;
+			break;
+		default:
+			return false;
+			break;
+	}
+}
+
 void mv_cap(mv_ch_t di,bool st){
 	switch(di){
 		case MV_LEFT:
 			if(st==true){
-				HAL_GPIO_WritePin ((GPIO_TypeDef*)MVSIG1_GPIO_Port ,(uint16_t)MVSIG1_Pin , GPIO_PIN_RESET);
+				HAL_GPIO_WritePin((GPIO_TypeDef*)MVSIG1_GPIO_Port ,(uint16_t)MVSIG1_Pin , GPIO_PIN_RESET);
 			}else{
 				HAL_GPIO_WritePin(MVSIG1_GPIO_Port,MVSIG1_Pin,GPIO_PIN_SET);
 			}
@@ -306,7 +321,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 		}
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		#warning Nakao should write here >> Save mapping  >>　マッピングされていたらフラグを初期化してreturn!  >>4こ
-		if(ta.r_now()->type==v::unknown){/*こっちも同様に自信がない by Emile */
+		if(_check_node_type(ta.r_now())){/*こっちも同様に自信がない by Emile */https://hexagon-emile.hatenablog.com/entry/2019/04/26/194904
 			MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
 			MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
 			return;
@@ -498,7 +513,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		}
 	}
 	#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
-	if(ta.r_now()->type!=v::unknown){/*多分これでいいはずだけど,自身が無い. by Emile */
+	if(_check_node_type(ta.r_now())){/*多分これでいいはずだけど,自身が無い. by Emile */
 		MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
 		MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
 		return;
