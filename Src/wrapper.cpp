@@ -30,6 +30,14 @@ uart xbee(&huart1);
 spi spi_t(&hspi1);
 jy901 gyro(&hi2c2);
 
+void kayaki(void){
+	while(1){
+		mv_cap(MV_LEFT,true);
+		mv_cap(MV_FRONT,true);
+		mv_cap(MV_RIGHT,true);
+	}
+}
+
 void cpploop(void) {
 	HAL_GPIO_WritePin(FET2_GPIO_Port,FET2_Pin,GPIO_PIN_SET);
 	init_lcd();
@@ -45,6 +53,11 @@ void cpploop(void) {
 		buzzer();
 		motor::move(motor::ONE_ADVANCE);
 	}*/
+	while(1){
+		mv_cap(MV_LEFT,true);
+		mv_cap(MV_FRONT,true);
+		mv_cap(MV_RIGHT,true);
+	}
 	h_stack_dfs();
 	while(1){
 		color_check();
