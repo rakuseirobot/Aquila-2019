@@ -211,7 +211,6 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 			xbee.string("LEFT>");
 			break;
 		case MVS2_Pin:
-			return;
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_FRONT;
 			res=mv_spi_send(MV_FRONT,0);
 			dir=2;
@@ -223,6 +222,9 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 			dir=3;
 			xbee.string("RIGHT>");
 			break;
+		default:
+			return;
+			break;
 	}
 	xbee.putint(res);
 	if(res==0){
@@ -233,7 +235,7 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 		xbee.string(">>Find Brick!!!\x1b[49m");
 		FIND_BRICK=MV_RECIEVED_DATA[MV_DATA_DIR];
 		HAL_GPIO_WritePin(DP1_GPIO_Port,DP1_Pin,GPIO_PIN_SET);
-		return;
+		res-=10;
 	}
 	if(!(ping(FRONT)<Sikiti)&&MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		if(motor::Task_Before==motor::LEFT_TURN||motor::Task_Before==motor::RIGHT_TURN){

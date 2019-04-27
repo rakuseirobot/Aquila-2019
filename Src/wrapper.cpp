@@ -54,9 +54,12 @@ void cpploop(void) {
 		motor::move(motor::ONE_ADVANCE);
 	}*/
 	while(1){
-		mv_cap(MV_LEFT,true);
+		buzzer();
+		mv_cap(MV_LEFT,false);
 		mv_cap(MV_FRONT,true);
-		mv_cap(MV_RIGHT,true);
+		mv_cap(MV_RIGHT,false);
+		motor::Task_Before=motor::ONE_ADVANCE;
+		mv_after_stop_task_check();
 	}
 	h_stack_dfs();
 	while(1){
