@@ -855,7 +855,7 @@ namespace motor{
 					chk[1]=LEFT_FRONT;
 				}
 			}
-			if (smaller_s(pino(RIGHT_BACK),ping(RIGHT_FRONT))<=Sikiti){
+			if (smaller_s(ping(RIGHT_BACK),ping(RIGHT_FRONT))<=Sikiti){
 				if(!(ping(RIGHT_BACK)<=Sikiti&&ping(RIGHT_FRONT)<=Sikiti)){
 					return;
 				}
