@@ -40,11 +40,12 @@ spi mv_spi(&hspi2);
 extern uart xbee;
 extern core ta;
 uart mv_serial = xbee;
-;
 
 #define koredeiino_ true //false‚É‚·‚é‚Æemile‚ÌXV‚ªŽ~‚Ü‚é
 
 uint8_t MV_RECIEVED_DATA[3]={0,0,0};
+
+uint8_t FIND_BRICK = 0; //Œ©‚Â‚¯‚½‚ç0ˆÈŠO
 
 void mv_cap(mv_ch_t di,bool st){
 	switch(di){
@@ -226,6 +227,12 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 	xbee.putint(res);
 	if(res==0){
 		xbee.string("\x1b[49m \x1b[33m invalid response \x1b[39m\n\r");
+		return;
+	}
+	if(res>=10){
+		xbee.string(">>Find Brick!!!\x1b[49m");
+		FIND_BRICK=MV_RECIEVED_DATA[MV_DATA_DIR];
+		HAL_GPIO_WritePin(DP1_GPIO_Port,DP1_Pin,GPIO_PIN_SET);
 		return;
 	}
 	if(!(ping(FRONT)<Sikiti)&&MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){

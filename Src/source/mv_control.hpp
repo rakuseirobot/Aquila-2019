@@ -32,6 +32,7 @@ void init_mv(void);
 bool kit_chk(uint8_t num);
 
 extern uint8_t MV_RECIEVED_DATA[3];
+extern uint8_t FIND_BRICK;
 
 typedef enum{
     MV_LEFT = 1,

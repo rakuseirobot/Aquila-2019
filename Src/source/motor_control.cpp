@@ -747,41 +747,53 @@ namespace motor{
 		dis[0]=ping(FRONT);//Forward
 		dis[1]=ping(PING_BACK);//Back
 		if(Sikiti>=dis[0]){//‘O‚Ì•ÇŠî€
-			HAL_Delay(3);
-			dis[0]=ping(FRONT);
-			if(!(Sikiti>=dis[0])){
+			bool flag=false;
+			if(FIND_BRICK==MV_FRONT){
+				if(!(Sikiti>=dis[1])){
+					return;
+				}
+				else{
+					flag=true;
+				}
+			}
+			if(flag==false){
+				HAL_Delay(3);
+				dis[0]=ping(FRONT);
+				if(!(Sikiti>=dis[0])){
+					return;
+				}
+				lcd_clear();
+				if((gbbest-dis[0])<fixno*-1){
+					lcd_putstr("gb_fixF");
+					forward(MOTOR_RIGHT);
+					forward(MOTOR_LEFT);
+					while(dis[0]>gbbest){
+						if(dis[0]>=longway){
+							break;
+						}
+						dis[0]=ping(FRONT);
+					}
+					motor::brake(MOTOR_LEFT);
+					motor::brake(MOTOR_RIGHT);
+				}
+				else if((gbbest-dis[0])>fixno){
+					lcd_putstr("gb_fixF");
+					back(MOTOR_RIGHT);
+					back(MOTOR_LEFT);
+					while(dis[0]<gbbest){
+						if(dis[0]>=longway){
+							break;
+						}
+						dis[0]=ping(FRONT);
+					}
+					motor::brake(MOTOR_LEFT);
+					motor::brake(MOTOR_RIGHT);
+				}
+				lcd_clear();
 				return;
 			}
-			lcd_clear();
-			if((gbbest-dis[0])<fixno*-1){
-				lcd_putstr("gb_fixF");
-				forward(MOTOR_RIGHT);
-				forward(MOTOR_LEFT);
-				while(dis[0]>gbbest){
-					if(dis[0]>=longway){
-						break;
-					}
-					dis[0]=ping(FRONT);
-				}
-				motor::brake(MOTOR_LEFT);
-				motor::brake(MOTOR_RIGHT);
-			}
-			else if((gbbest-dis[0])>fixno){
-				lcd_putstr("gb_fixF");
-				back(MOTOR_RIGHT);
-				back(MOTOR_LEFT);
-				while(dis[0]<gbbest){
-					if(dis[0]>=longway){
-						break;
-					}
-					dis[0]=ping(FRONT);
-				}
-				motor::brake(MOTOR_LEFT);
-				motor::brake(MOTOR_RIGHT);
-			}
-			lcd_clear();
 		}
-		else if(Sikiti>=dis[1]){
+		if(Sikiti>=dis[1]){
 			HAL_Delay(3);
 			dis[1]=ping(PING_BACK);
 			if(!(Sikiti>=dis[1])){
@@ -814,9 +826,9 @@ namespace motor{
 				motor::brake(MOTOR_LEFT);
 				motor::brake(MOTOR_RIGHT);
 			}
+			return;
 		}
-		else{}
-		lcd_clear();
+		else{return;}
 		return;
 	}
 	const int32_t turnvalue = 5;
@@ -833,24 +845,27 @@ namespace motor{
 				if(!(ping(LEFT_FRONT)<=Sikiti&&ping(LEFT_BACK)<=Sikiti)){
 					return;
 				}
+				else if(FIND_BRICK==MV_LEFT){
+					if(!(smaller_s(ping(RIGHT_BACK),ping(RIGHT_FRONT))<=Sikiti)){
+						return;
+					}
+				}
+				else{
+					chk[0]=LEFT_BACK;
+					chk[1]=LEFT_FRONT;
+				}
 			}
-			if (smaller_s(ping(RIGHT_BACK),ping(RIGHT_FRONT))<=Sikiti){
+			if (smaller_s(pino(RIGHT_BACK),ping(RIGHT_FRONT))<=Sikiti){
 				if(!(ping(RIGHT_BACK)<=Sikiti&&ping(RIGHT_FRONT)<=Sikiti)){
 					return;
 				}
-			}
-			int ldiff = (ping(LEFT_FRONT)+ping(LEFT_BACK))/2;
-			int rdiff = (ping(RIGHT_BACK)+ping(RIGHT_FRONT))/2;
-			
-			if(rdiff>ldiff){
-				chk[0]=LEFT_BACK;
-				chk[1]=LEFT_FRONT;
-				//usart_string("use Left!\n\r");
-			}
-			else if(rdiff<ldiff){
-				chk[0]=RIGHT_FRONT;
-				chk[1]=RIGHT_BACK;
-				//usart_string("use Right!\n\r");
+				else if(FIND_BRICK==MV_RIGHT){
+					return;
+				}
+				else{
+					chk[0]=RIGHT_FRONT;
+					chk[1]=RIGHT_BACK;
+				}
 			}
 			//usart_putdec(ping(chk[0]));
 			//usart_string(",");
@@ -936,13 +951,13 @@ namespace motor{
 		dis[2] = ping(RIGHT_FRONT);
 		dis[3] = ping(RIGHT_BACK);
 		if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
-			i=2;
+			i=1;
 		}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
 			i=2;
 		}else{
 			i=0;
 		}
-		if(i==2){
+		if(i>0){
 			HAL_Delay(100);
 			xbee.string("\n\r\x1b[7mLEFT_BACK:");
 			xbee.putint(dis[0]);
@@ -969,11 +984,26 @@ namespace motor{
 			if((dis[0]<Sikiti&&!(dis[1]<Sikiti))||(!(dis[0]<Sikiti)&&dis[1]<Sikiti)){
 				i=1;
 			}else if((dis[2]<Sikiti&&!(dis[3]<Sikiti))||(!(dis[2]<Sikiti)&&dis[3]<Sikiti)){
-				i=1;
+				i=2;
 			}else{
 				i=0;
 			}
-		}if(i==1){
+		}
+		if(i==1){
+			if(FIND_BRICK==MV_LEFT){
+				buzzer(200);
+				return 0;
+			}
+		}
+		else if(i==2){
+			if(FIND_BRICK==MV_RIGHT){
+				buzzer(200);
+				return 0;
+			}
+		}
+		else{
+		}
+		if(i>0){
 			lcd_clear();
 			lcd_putstr("NotifyHA");
 			motor_serial.string("\x1b[42mNotifyHalf\x1b[49m");
@@ -985,6 +1015,7 @@ namespace motor{
 				motor::move(HALF_BACK);
 			}
 			lcd_clear();
+			i=1;
 		}
 		return i;
 	}
@@ -1676,6 +1707,7 @@ namespace motor{
 		set_Status(NOPID);
 		turn_fix();
 		set_Status(NOPID);
+		FIND_BRICK=0;
 		//return;
 	}
 	
