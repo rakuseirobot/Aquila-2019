@@ -502,9 +502,9 @@ namespace motor{
 	void wait(bool check){
 		do{
 			if(MV_RECIEVED_DATA[MV_DATA_TYPE]!=FIND_NOTHING){		
-				HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
+				/*HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
 				HAL_NVIC_DisableIRQ(MVS2_EXTI_IRQn);
-				HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);
+				HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);*/
 				if((MV_RECIEVED_DATA[MV_DATA_DIR]==MV_LEFT||MV_RECIEVED_DATA[MV_DATA_DIR]==MV_RIGHT)||(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT&&(Task_Before==ONE_BACK||Task_Before==TWO_BACK))){
 					mv_task_check();
 				}
