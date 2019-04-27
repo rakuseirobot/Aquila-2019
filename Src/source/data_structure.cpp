@@ -88,7 +88,17 @@ bl queue::empty(){if(siz==0){return true;}else{return false;}}
 
 void stack::init(){t_ans = -1;siz=0;rep(i,max_size_stack)box[i]=np;}
 int stack::size(){return siz;}
-node* stack::top(){if(siz>0){return box[siz-1];}else{return np;}}
+node* stack::top(){
+	if(box[siz-1]!=np && box[siz-1]->type==v::black){
+		box[siz-1] = np;
+		siz--;
+	}
+	if(siz>0){
+		return box[siz-1];
+	}else{
+		return np;
+	}
+}
 node* stack::t_top(){/*return t { t âˆ? box | min(t->dist) } ,and use ta.clear_bfs(); ta.bfs(ta.r_now(),ta.r_start); */
 	//if(t_ans==-1)return np;
 	if(siz==1){ t_ans = siz-1; return box[siz-1];}
@@ -103,6 +113,11 @@ node* stack::t_top(){/*return t { t âˆ? box | min(t->dist) } ,and use ta.clear_b
 	return ans;
 }
 void stack::pop(){if(siz>0){box[siz-1]=np;siz--;}}
+void stack::pop(int x){
+	if(x>=siz)return ;
+	for(int i=x;i<siz;i++){ box[i]=box[i+1]; }
+	siz--;
+}
 void stack::t_pop(){
 	if(t_ans == -1){
 		//no action
@@ -116,6 +131,12 @@ void stack::t_pop(){
 }
 //void stack::push(node* x){box[siz]=x;siz++;}
 void stack::push(node* x){
+	int sizz=siz;
+	rep(i,sizz){
+		if(stack::box[i]!=np && stack::box[i]->type==v::black){
+			stack::pop(i);
+		}
+	}
 	while(stack::top()!=np && stack::top()->type!=v::unknown && stack::top()->type!=v::start ){
 		stack::pop();
 	}

@@ -94,6 +94,7 @@ public:
     node* top();
     node* t_top();
     void pop();
+    void pop(int x);
     void t_pop();
     void push(node* x);
     bl empty();
