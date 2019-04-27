@@ -34,14 +34,11 @@ void serial_send_node(node* n){
         iris_serial.putint((int)n->y);
         IRIS_string(",");
         iris_serial.putint((int)n->z);
-        IRIS_string("\n\r");
-        IRIS_string("*[type] ");
+        IRIS_string("\n\r*[type] ");
         iris_serial.putint((int)n->type);
-        IRIS_string("\n\r");
-        IRIS_string("*[flag] ");
+        IRIS_string("\n\r*[flag] ");
         iris_serial.putint((int)n->flag);
-        IRIS_string("\n\r");
-        IRIS_string("*[color] ");
+        IRIS_string("\n\r*[color] ");
         iris_serial.putint((int)n->color);
         IRIS_string("\n\r--------------------\n\r");
     }
@@ -273,7 +270,7 @@ void move_toa(node* a){//move to (node*)a
     while(ta.r_now()!=a && a->type!=v::black && a->type!=v::slope){
         fg = false;
         rep(i,4){
-            IRIS_string("M_a[*_] \n\r");
+            IRIS_string("M_a[*_]\n\r");
             iris_serial.putint((int)a);
             if(!fg && ta.ac_next(i,1)!=np && ta.ck_conect(ta.r_now(),ta.ac_next(i,1)) && ta.ac_next(i,1)->dist<ta.r_now()->dist && ta.ac_next(i,1)->type!=v::black){ move_n(ta.ac_next(i,1)); fg=true; }
             if(ta.find(a->x,a->y,a->z)->type==v::slope)fg=true;
@@ -368,6 +365,7 @@ void _stack_dfs(){
 void h_stack_dfs(){
 	IRIS_string("\n\rdfs[START]\n\r");
     serial_send_node(ta.r_now());
+    motor::fix_position();
 	ta.stk.push(ta.r_start());
 	ta.r_start()->color=color::gray;
 	make_nodes();
@@ -416,7 +414,7 @@ void h_stack_dfs(){
 			}
             if(sstk.top()==ta.r_now()&&ta.r_now()!=ta.r_start())sstk.pop();
 			if(sstk.top()->color!=color::black && !sstk.empty() && sstk.top()!=np){
-				IRIS_string("stk_top ");
+				IRIS_string("stk_top");
 				serial_send_node(sstk.top());
 				IRIS_string("\n\r");
 				IRIS_string("dfs[****__]\n\r");
@@ -429,7 +427,7 @@ void h_stack_dfs(){
 		}//sub loop
         IRIS_string("dfs[******]\n\r");
 	}//main loop
-	IRIS_string("dfs[END] \n\r");
+	IRIS_string("dfs[END]\n\r");
     IRIS_string("Thank you! :) \n\r");
 	lcd_clear(); lcd_putstr("end_dfs");
 }
