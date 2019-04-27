@@ -7,6 +7,7 @@
 
 #include "wrapper.hpp"
 #include "stm32f4xx_hal.h"
+#include "stm32f429xx.h"
 #include "main.h"
 #include <math.h>
 #include "peripheral.hpp"
@@ -30,6 +31,7 @@ spi spi_t(&hspi1);
 jy901 gyro(&hi2c2);
 
 void cpploop(void) {
+	HAL_GPIO_WritePin(FET2_GPIO_Port,FET2_Pin,GPIO_PIN_SET);
 	init_lcd();
 	led_count_set(20);
 	buzzer();
@@ -39,9 +41,13 @@ void cpploop(void) {
 	xbee.string("Hello!");
 	led_count_set(77);
 	//stack_dfs();
+	/*while(1){
+		buzzer();
+		motor::move(motor::ONE_ADVANCE);
+	}*/
 	h_stack_dfs();
 	while(1){
-		//color_check();
+		color_check();
 		xbee.putint(red+green+blue);
 		xbee.string("\n\r");
 	}
