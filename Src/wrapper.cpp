@@ -54,7 +54,7 @@ void cpploop(void) {
 		motor::move(motor::ONE_ADVANCE);
 	}*/
 	while(1){
-		buzzer();
+		//buzzer();
 		mv_cap(MV_LEFT,false);
 		mv_cap(MV_FRONT,true);
 		mv_cap(MV_RIGHT,false);
