@@ -21,7 +21,8 @@ uint32_t KIT_DROP_COUNT=0;
 #define DP_ONE_EXT 4000
 #define DP_GO_HOME 1000
 #define DP_P_GAIN 40
-kit_drop_status_t KIT_DROP_Status=FREE;void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
+kit_drop_status_t KIT_DROP_Status=FREE;
+void ST_Motor_Move(kit_drop_status_t lr,uint16_t num){
 	if(lr==DROP_LEFT){
 		if((DP_TWO_PRE-DP_P_GAIN>=num&&num>DP_TWO_EXT)||(DP_ONE_PRE-DP_P_GAIN>=num&&num>DP_ONE_EXT)||(DP_GO_HOME-DP_P_GAIN>=num)){
 			switch(num%4){

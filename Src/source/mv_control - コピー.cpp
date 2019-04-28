@@ -398,28 +398,57 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 		return;
 	}
 	xbee.string("enter mv_after_stop_task_check!!");
+	if(false &&_check_kit_same(ta.r_now(),v::error_kit) || _check_kit_same(ta.r_pre(),v::error_kit)){
+		lcd_clear();
+		lcd_putstr("ER_KIT");
+		return;//new
+	}
 	uint8_t kit_need=0;
 	bool turn_flag = false;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
+				if(/*_check_kit_same(ta.r_now(),v::H) &&*/ _check_kit_same(ta.r_pre(),v::H) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::H;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::H;
+				}
 				lcd_clear();
 				lcd_putstr("Find H!");
 				break;
 			case 4://S  1kits
 				kit_need=1;
+				if(/*_check_kit_same(ta.r_now(),v::S) &&*/ _check_kit_same(ta.r_pre(),v::S) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::S;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::S;
+				}
 				lcd_clear();
 				lcd_putstr("Find S!");
 				break;
 			case 5://U 0kits
 				kit_need=0;
 				lcd_clear();
+				if(/*_check_kit_same(ta.r_now(),v::U) &&*/ _check_kit_same(ta.r_pre(),v::U) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::U;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::U;
+				}
 				lcd_clear();
 				lcd_putstr("Find U!");
 				break;
 			case 6:
 				kit_need=1;
 				lcd_clear();
+				if(/*_check_kit_same(ta.r_now(),v::sermo) &&*/ _check_kit_same(ta.r_pre(),v::sermo) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::sermo;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::sermo;
+				}
 				lcd_clear();
 				lcd_putstr("Find Sermo!");
 				break;
@@ -434,6 +463,11 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		xbee.string("\n\rwork mv_after_stop_task_check!!\n\r");
 		#warning Nakao should write here >> Save mapping  >>　マッピングされていたらフラグを初期化してreturn!  >>4こ
+		if(_check_node_type(ta.r_now())){/*こっちも同様に自信がない by Emile */https://hexagon-emile.hatenablog.com/entry/2019/04/26/194904
+			MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
+			MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
+			return;
+		}
 		switch(motor::Task_Before){
 			case motor::ONE_ADVANCE:
 			case motor::TWO_ADVANCE:
@@ -571,22 +605,51 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		return;
 	}
 	xbee.string("enter mv_task_check!\n\r");
+	if(false && _check_kit_same(ta.r_now(),v::error_kit) || _check_kit_same(ta.r_pre(),v::error_kit)){
+		lcd_clear();
+		lcd_putstr("ER_KIT");
+		return;//new
+	}
 	uint8_t kit_need=0;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
+				if(/*_check_kit_same(ta.r_now(),v::H) &&*/ _check_kit_same(ta.r_pre(),v::H) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::H;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::H;
+				}
 				lcd_putstr("Find H!");
 				break;
 			case 4://S  1kits
 				kit_need=1;
+				if(/*_check_kit_same(ta.r_now(),v::S) &&*/ _check_kit_same(ta.r_pre(),v::S) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::S;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::S;
+				}
 				lcd_putstr("Find S!");
 				break;
 			case 5://U 0kits
 				kit_need=0;
+				if(/*_check_kit_same(ta.r_now(),v::U) &&*/ _check_kit_same(ta.r_pre(),v::U) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::U;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::U;
+				}
 				lcd_putstr("Find U!");
 				break;
 			case 6:
 				kit_need=1;
+				if(/*_check_kit_same(ta.r_now(),v::sermo) &&*/ _check_kit_same(ta.r_pre(),v::sermo) && koredeiino_){ return; }
+				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
+					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::sermo;
+				}else{
+					if(ta.r_now()!=ta.r_start() && koredeiino_)ta.r_now()->type = v::sermo;
+				}
 				lcd_putstr("Find Sermo!");
 				break;
 			case 7:
@@ -614,6 +677,11 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		}
 	}
 	#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
+	if(_check_node_type(ta.r_now())){/*多分これでいいはずだけど,自身が無い. by Emile */
+		MV_RECIEVED_DATA[MV_DATA_PING]=NOT_FIND_FRONT_WALL;
+		MV_RECIEVED_DATA[MV_DATA_TYPE]=FIND_NOTHING;
+		return;
+	}
 	// if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 	// 	ta.pre->type=
 	// 	//一個前の座標記録koko
