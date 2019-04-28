@@ -1504,10 +1504,7 @@ namespace motor{
 							{
 								ang=motor_gyro.read_angle_y();
 								anx=motor_gyro.read_angle_x();
-								if(!(ang<=Ang_slope_Norm-Ang_slope_thre)){
-									break;
-								}
-							} while (anx>Ang_x_Norm);
+							} while (anx>Ang_x_Norm&&ang<=Ang_slope_Norm-Ang_slope_thre);
 						}
 						else if(anx<Ang_x_Norm){//¶‚ðŒü‚¢‚Ä‚é
 							error_led(2,0);
@@ -1518,10 +1515,7 @@ namespace motor{
 							{
 								ang=motor_gyro.read_angle_y();
 								anx=motor_gyro.read_angle_x();
-								if(!(ang<=Ang_slope_Norm-Ang_slope_thre)){
-									break;
-								}
-							} while (anx<Ang_x_Norm);
+							} while (anx<Ang_x_Norm&&ang<=Ang_slope_Norm-Ang_slope_thre);
 						}
 						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 					}
