@@ -24,8 +24,8 @@ core::core(){
     now_hami = false;
     blk_tile = false;
 };
-void core::turn_r(){ dir=(dir+1)%4; };
-void core::turn_l(){ dir=(dir+4-1)%4; };
+void core::turn_r(){ core::dir=(core::dir+1)%4; };
+void core::turn_l(){ core::dir=(core::dir+4-1)%4; };
 void core::w_now(node* u){ now = u; }
 int core::r_flg(){ return flg; }
 node* core::r_now(){return now;}

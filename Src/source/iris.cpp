@@ -14,7 +14,7 @@
 #include "uart_control.hpp"
 #include "ui_control.hpp"
 #include <stdint.h>
-#define ping_flag true //trueなら2マス先も見る
+#define ping_flag false //trueなら2マス先も見る
 #define serial_send_node_suru true //suru ?
 
 extern uart xbee;
@@ -75,15 +75,19 @@ void black_tile(){
         IRIS_string("\x1b[37m \n\r");
         ta.r_now()->type=v::black;
         ta.r_now()->color=v::black;
-        if(ta.ac_next(v::front,1)!=ta.r_pre())motor::move(motor::ONE_BACK); //new
-        else motor::move(motor::ONE_ADVANCE); //new
+        if(ta.ac_next(v::front,1)!=ta.r_pre()){
+            motor::move(motor::ONE_BACK); //new
+            ta.turn_l();
+            ta.turn_l();
+            ta.go_st();
+            ta.turn_l();
+            ta.turn_l();
+        }else{
+            motor::move(motor::ONE_ADVANCE); //new
+            ta.go_st();
+        }
         motor::fix_position(v::back);
         ta.blk_tile = true;
-        ta.turn_l();
-        ta.turn_l();
-        ta.go_st();
-        ta.turn_l();
-        ta.turn_l();
         ta.hamilton=false;
     }
 }
