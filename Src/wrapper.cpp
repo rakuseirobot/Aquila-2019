@@ -48,26 +48,9 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-
-	mv_cap(MV_LEFT,false);
-	mv_cap(MV_FRONT,false);
-	mv_cap(MV_RIGHT,false);
 	while(1){
-		if(SW1&&SW2){
-			buzzer();
-			Drop_kit(DROP_RIGHT,1);while(KIT_DROP_Status!=FREE);
-		}
-		else if(SW1){
-			buzzer();
-			Drop_kit(DROP_LEFT,1);while(KIT_DROP_Status!=FREE);
-		}
-		else if(SW2){
-			buzzer();
-			Drop_kit(DROP_LEFT,2);while(KIT_DROP_Status!=FREE);
-		}
-		else if(SW3){
-			buzzer();
-			Drop_kit(DROP_RIGHT,2);while(KIT_DROP_Status!=FREE);
+		if(SW1){
+			motor::move(motor::ONE_ADVANCE);
 		}
 	}
 	_h_stack_dfs();

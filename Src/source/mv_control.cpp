@@ -229,18 +229,36 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 			res=mv_spi_send(MV_LEFT,0);
 			//dir=1;
 			xbee.string("LEFT>");
+			if(!(ping(LEFT_BACK)<=Sikiti||ping(LEFT_FRONT)<=Sikiti)){
+				if(!(ping(LEFT_BACK)<=Sikiti||ping(LEFT_FRONT)<=Sikiti)){
+					buzzer(200);
+					return;
+				}
+			}
 			break;
 		case MVS2_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_FRONT;
 			res=mv_spi_send(MV_FRONT,0);
 			//dir=2;
 			xbee.string("FRONT>");
+			if(!(ping(FRONT)<=Sikiti)){
+				if(!(ping(FRONT)<=Sikiti)){
+					buzzer(200);
+					return;
+				}
+			}
 			break;
 		case MVS3_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_RIGHT;
 			res=mv_spi_send(MV_RIGHT,0);
 			//dir=3;
 			xbee.string("RIGHT>");
+			if(!(ping(RIGHT_BACK)<=Sikiti||ping(RIGHT_FRONT)<=Sikiti)){
+				if(!(ping(RIGHT_BACK)<=Sikiti||ping(RIGHT_FRONT)<=Sikiti)){
+					buzzer(200);
+					return;
+				}
+			}
 			break;
 		default:
 			return;
