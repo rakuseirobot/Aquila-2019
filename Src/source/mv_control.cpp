@@ -49,7 +49,7 @@ uint8_t MV_RECIEVED_DATA[3]={0,0,0};
 
 uint8_t FIND_BRICK = 0; //見つけたら0以外
 
-int _check_type(int res){
+int _conv_res(int res){
 	switch(res){
 		case 3:
 			return v::H;
@@ -65,21 +65,6 @@ int _check_type(int res){
 			break;
 		default:
 			return -1;
-			break;
-	}
-}
-
-bool _check_node_type(node* x){
-	int8_t typ = x->type;
-	switch (typ){
-		case v::H :
-		case v::S :
-		case v::U :
-		case v::sermo :
-			return true;
-			break;
-		default:
-			return false;
 			break;
 	}
 }
@@ -246,26 +231,26 @@ bool check_sig(bool check){
 	else{}
 	return true;
 }
-void  int_task_check_mv(uint16_t GPIO_Pin){
-	uint8_t res=0,dir=0;
+void int_task_check_mv(uint16_t GPIO_Pin){
+	uint8_t res=0;//dir=0;
 	xbee.string("\x1b[41mVictimFind! >>");
 	switch(GPIO_Pin){
 		case MVS1_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_LEFT;
 			res=mv_spi_send(MV_LEFT,0);
-			dir=1;
+			//dir=1;
 			xbee.string("LEFT>");
 			break;
 		case MVS2_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_FRONT;
 			res=mv_spi_send(MV_FRONT,0);
-			dir=2;
+			//dir=2;
 			xbee.string("FRONT>");
 			break;
 		case MVS3_Pin:
 			MV_RECIEVED_DATA[MV_DATA_DIR]=MV_RIGHT;
 			res=mv_spi_send(MV_RIGHT,0);
-			dir=3;
+			//dir=3;
 			xbee.string("RIGHT>");
 			break;
 		default:
@@ -287,12 +272,17 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 	if(res==18||res==8||res==2){
 		return;
 	}
-	//ここ
-	/*if(/*_check_type(res)==ta.r_now()->type ||*/ //_check_type(res)==ta.r_pre()->type){
-		//return;
-	//}else{
-	//	if(_check_type(res)!=-1)ta.r_now()->type = _check_type(res);
-	//}*/
+	//ここ に　map と　return を書き込む
+	if(ta.r_now()!=np && _conv_res(res) != -1 && (_conv_res(res)==ta.r_now()->type || _conv_res(res)==ta.r_pre()->type)){
+		//現在地 or 1つ前のノードのtypeとresが一致すれば、return
+		return ;
+	}else{//そうでなければ
+		if(_conv_res(res)==-1){
+			return;
+		}else{
+			ta.r_now()->type = _conv_res(res);
+		}
+	}
 	mv_cap(MV_FRONT,false);
 	mv_cap(MV_RIGHT,false);
 	mv_cap(MV_LEFT,false);
@@ -433,7 +423,6 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 	xbee.string("\n\rwork mv_after_stop_task_check!!\n\r");
 	if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 		xbee.string("\n\rwork mv_after_stop_task_check!!\n\r");
-		#warning Nakao should write here >> Save mapping  >>　マッピングされていたらフラグを初期化してreturn!  >>4こ
 		switch(motor::Task_Before){
 			case motor::ONE_ADVANCE:
 			case motor::TWO_ADVANCE:
@@ -613,14 +602,6 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 			return;
 		}
 	}
-	#warning Nakao should write here >> Save mapping >>もともと発見されていたらフラグ初期化後、returnして！ >>2こ
-	// if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
-	// 	ta.pre->type=
-	// 	//一個前の座標記録koko
-	// }
-	// else{
-	// 	//現在地記録koko
-	// }
 	if(motor::Task_Save!=motor::BRAKE){//StatusがBACKに入った場合はこの条件に入る
 		MV_RIGHT_TURN();
 	}
