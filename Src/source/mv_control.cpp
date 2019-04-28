@@ -43,8 +43,6 @@ extern core ta;
 uart mv_serial = xbee;
 extern jy901 gyro;
 
-#define koredeiino_ false //falseにするとemileの更新が止まる
-
 uint8_t MV_RECIEVED_DATA[3]={0,0,0};
 
 uint8_t FIND_BRICK = 0; //見つけたら0以外
@@ -66,15 +64,6 @@ int _conv_res(int res){
 		default:
 			return -1;
 			break;
-	}
-}
-
-#define _FLG_CKS_ false // for _check_kit_same
-bool _check_kit_same(node* x,int _type){
-	if(x->type == _type || ( x->type == v::error_kit && _FLG_CKS_ ) ){
-		return true;
-	}else{
-		return false;
 	}
 }
 
@@ -275,9 +264,11 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 	//ここ に　map と　return を書き込む
 	if(ta.r_now()!=np && _conv_res(res) != -1 && (_conv_res(res)==ta.r_now()->type || _conv_res(res)==ta.r_pre()->type)){
 		//現在地 or 1つ前のノードのtypeとresが一致すれば、return
+		buzzer(200);
 		return ;
 	}else{//そうでなければ
 		if(_conv_res(res)==-1){
+			buzzer(200);
 			return;
 		}else{
 			ta.r_now()->type = _conv_res(res);
