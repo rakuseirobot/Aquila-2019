@@ -67,7 +67,7 @@ void cpploop(void) {
 		}
 		else if(SW3){
 			buzzer();
-			Drop_kit(DROP_RIGHT,	2);while(KIT_DROP_Status!=FREE);
+			Drop_kit(DROP_RIGHT,2);while(KIT_DROP_Status!=FREE);
 		}
 	}
 	_h_stack_dfs();
