@@ -59,6 +59,10 @@ void init_motor(void){
 	M2_Encoder_COUNT=32767;
 	//motor::speed=100;
 	HAL_GPIO_WritePin(M1_PWM_GPIO_Port,M1_PWM_Pin|M2_PWM_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(ST_MOTOR_CH1_GPIO_Port,ST_MOTOR_CH1_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(ST_MOTOR_CH2_GPIO_Port,ST_MOTOR_CH2_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(ST_MOTOR_CH3_GPIO_Port,ST_MOTOR_CH3_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(ST_MOTOR_CH4_GPIO_Port,ST_MOTOR_CH4_Pin,GPIO_PIN_RESET);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	motor::set_pwm(motor::MOTOR_SPEED[SPEED_TARGET]);
@@ -81,7 +85,7 @@ namespace motor{
 	move_t Task_Before,Task_Save;
 	int32_t Motor_target,mtasksize;
 	int32_t Right_count,Left_count;
-	int32_t MOTOR_SPEED[5]={0,0,750,400,300},MOTOR_COUNT[2][2]={{0,0},{0,0}};
+	int32_t MOTOR_SPEED[5]={0,0,750,400,350},MOTOR_COUNT[2][2]={{0,0},{0,0}};
 	int32_t MOTOR_PID_var[2][3];
 	int32_t lkasan,rkasan,ldevn,rdevn,ldevp,rdevp,lpwm,rpwm;
 	task_status_t Right_Motor_Status=FREE,Left_Motor_Status=FREE,mstatus;
@@ -1498,7 +1502,11 @@ namespace motor{
 							//右速度落とす
 							do 
 							{
+								ang=motor_gyro.read_angle_y();
 								anx=motor_gyro.read_angle_x();
+								if(!(ang<=Ang_slope_Norm-Ang_slope_thre)){
+									break;
+								}
 							} while (anx>Ang_x_Norm);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
@@ -1508,7 +1516,11 @@ namespace motor{
 							//左速度落とす
 							do
 							{
+								ang=motor_gyro.read_angle_y();
 								anx=motor_gyro.read_angle_x();
+								if(!(ang<=Ang_slope_Norm-Ang_slope_thre)){
+									break;
+								}
 							} while (anx<Ang_x_Norm);
 						}
 						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
@@ -1519,6 +1531,15 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
+				HAL_Delay(SLOPE_FORWARD);
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 				return 2;
 			}
 			else if(ang>=Ang_slope_Norm+Ang_slope_thre){//下り
@@ -1542,7 +1563,8 @@ namespace motor{
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-							} while (anx>Ang_x_Norm);
+								ang=motor_gyro.read_angle_y();
+							} while (anx>Ang_x_Norm&&ang>=Ang_slope_Norm+Ang_slope_thre);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
@@ -1552,7 +1574,8 @@ namespace motor{
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-							} while (anx<Ang_x_Norm);
+								ang=motor_gyro.read_angle_y();
+							} while (anx<Ang_x_Norm&&ang>=Ang_slope_Norm+Ang_slope_thre);
 						}
 						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 						//速度戻す
@@ -1563,6 +1586,15 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+				forward(MOTOR_RIGHT);
+				forward(MOTOR_LEFT);
+				HAL_Delay(SLOPE_FORWARD);
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 				return 1;
 			}
 		}else if(x==v::back){//後進中
@@ -1587,7 +1619,8 @@ namespace motor{
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-							} while (anx>Ang_x_Norm);
+								ang=motor_gyro.read_angle_y();
+							} while (anx>Ang_x_Norm&&ang>=Ang_slope_Norm+Ang_slope_thre);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
@@ -1597,7 +1630,8 @@ namespace motor{
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-							} while (anx<Ang_x_Norm);
+								ang=motor_gyro.read_angle_y();
+							} while (anx<Ang_x_Norm&&ang>=Ang_slope_Norm+Ang_slope_thre);
 						}
 						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 						//速度戻す
@@ -1608,6 +1642,15 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+				back(MOTOR_RIGHT);
+				back(MOTOR_LEFT);
+				HAL_Delay(SLOPE_FORWARD);
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 				return 1;
 			}
 			else if(ang<=Ang_slope_Norm-Ang_slope_thre){//昇り
@@ -1631,7 +1674,8 @@ namespace motor{
 							do 
 							{
 								anx=motor_gyro.read_angle_x();
-							} while (anx>Ang_x_Norm);
+								ang=motor_gyro.read_angle_y();
+							} while (anx>Ang_x_Norm&&ang<=Ang_slope_Norm-Ang_slope_thre);
 						}
 						else if(anx<Ang_x_Norm){//左を向いてる
 							error_led(2,0);
@@ -1641,7 +1685,8 @@ namespace motor{
 							do
 							{
 								anx=motor_gyro.read_angle_x();
-							} while (anx<Ang_x_Norm);
+								ang=motor_gyro.read_angle_y();
+							} while (anx<Ang_x_Norm&&ang<=Ang_slope_Norm-Ang_slope_thre);
 						}
 						set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 						//速度戻す
@@ -1652,6 +1697,15 @@ namespace motor{
 					}
 				}
 				lcd_clear();
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
+				back(MOTOR_RIGHT);
+				back(MOTOR_LEFT);
+				HAL_Delay(SLOPE_FORWARD);
+				brake(MOTOR_RIGHT);
+				brake(MOTOR_LEFT);
+				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
 				return 2;
 			}
 		}
@@ -1676,6 +1730,8 @@ namespace motor{
 		set_Status(NOPID);
 		set_pwm(MOTOR_SPEED[SPEED_FIX_TARGET]);
 		turn_fix();
+		set_Status(NOPID);
+		gb_fix();
 		set_Status(NOPID);
 		notify_half(x);
 		set_Status(NOPID);

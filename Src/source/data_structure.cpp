@@ -89,12 +89,19 @@ bl queue::empty(){if(siz==0){return true;}else{return false;}}
 void stack::init(){t_ans = -1;siz=0;rep(i,max_size_stack)box[i]=np;}
 int stack::size(){return siz;}
 node* stack::top(){
-	if(box[siz-1]!=np && box[siz-1]->type==v::black){
-		box[siz-1] = np;
-		siz--;
+	int sizz = stack::siz;
+	if(sizz>=1)rep(i,sizz-1){
+		if(stack::box[i]!=np && stack::box[i]->type==v::black){
+			stack::pop(i);
+			i--;
+		}
+	}
+	if(stack::box[stack::siz-1]!=np && stack::box[stack::siz-1]->type==v::black){
+		stack::box[stack::siz-1] = np;
+		stack::siz--;
 	}
 	if(siz>0){
-		return box[siz-1];
+		return stack::box[stack::siz-1];
 	}else{
 		return np;
 	}
@@ -131,12 +138,7 @@ void stack::t_pop(){
 }
 //void stack::push(node* x){box[siz]=x;siz++;}
 void stack::push(node* x){
-	int sizz=siz;
-	rep(i,sizz){
-		if(stack::box[i]!=np && stack::box[i]->type==v::black){
-			stack::pop(i);
-		}
-	}
+	stack::top();
 	while(stack::top()!=np && stack::top()->type!=v::unknown && stack::top()->type!=v::start ){
 		stack::pop();
 	}

@@ -32,6 +32,7 @@ namespace v{
 	ci S =21;
 	ci U =22;
 	ci sermo=23;
+    ci error_kit = 24;
 	//type
     ci vv[4][2]={{-1,0},{0,1},{1,0},{0,-1}};//vv[dir][0]:=x,[1]:=y
 	

@@ -20,6 +20,7 @@ class core{
     queue q;//for bfs
     node* pre;//ˆê‚Â‘O‚Ì’¸“_
 public:
+    bool blk_tile;
 	AVLtree at;
 	nodes mall;
 	stack stk;

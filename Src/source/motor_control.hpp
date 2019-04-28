@@ -23,7 +23,9 @@ extern float P_GAIN,I_GAIN,D_GAIN;
 #define Ang_slope_Norm 178
 #define Ang_slope_thre 12
 #define Ang_x_Norm 180
-#define Ang_x_thre 3
+#define Ang_x_thre 2
+
+#define SLOPE_FORWARD 300
 
 #define Motor_thre 20
 

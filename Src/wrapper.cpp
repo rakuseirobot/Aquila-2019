@@ -48,19 +48,7 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	//stack_dfs();
-	/*while(1){
-		buzzer();
-		motor::move(motor::ONE_ADVANCE);
-	}*/
-	while(1){
-		//buzzer();
-		mv_cap(MV_LEFT,false);
-		mv_cap(MV_FRONT,true);
-		mv_cap(MV_RIGHT,false);
-		motor::move(motor::ONE_BACK);
-	}
-	h_stack_dfs();
+	_h_stack_dfs();
 	while(1){
 		color_check();
 		xbee.putint(red+green+blue);

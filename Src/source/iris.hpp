@@ -17,8 +17,9 @@ bool nachylenie2();
 void move(int num);
 void move_n(node* n);
 
-void move_toa(node* a);
+bool move_toa(node* a);
 void stack_dfs();
 void _stack_dfs();
 void h_stack_dfs();
+void _h_stack_dfs();
 #endif

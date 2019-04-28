@@ -106,16 +106,23 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
+	uint32_t fu = 0;
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
     uart_string("hard fault\n\r");
     buzzer_it(100);
+    fu++;
+    if(fu>=10){
+    	break;
+    }
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
   /* USER CODE BEGIN HardFault_IRQn 1 */
+  buzzer_it(200);
+  HAL_NVIC_SystemReset();
+
 
   /* USER CODE END HardFault_IRQn 1 */
 }

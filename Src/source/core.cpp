@@ -22,6 +22,7 @@ core::core(){
     pre = np;
     rep(i,20)start_f[i]=np;
     now_hami = false;
+    blk_tile = false;
 };
 void core::turn_r(){ dir=(dir+1)%4; };
 void core::turn_l(){ dir=(dir+4-1)%4; };
@@ -135,8 +136,10 @@ void core::bfs(node* s,node* t){//s‚ðŽn“_‚É‚µ‚Ät‚ðŒŸõ‚·‚é
 /*test*/
 
 bool core::dp_init(){
+    stk.top();
     if(stk.size()>M_V_SIZE+1)return false;
     if(stk.size()<2)return false;
+    if(now->z!=start->z)return false;
     int jj;vertex_size=0;
     if(now->z!=start->z){//ŠK‚ªstack“à‚Åˆá‚¤
         rep(i,M_V_SIZE+2)vertex[i]=np;

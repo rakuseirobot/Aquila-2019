@@ -40,14 +40,34 @@ MV
 spi mv_spi(&hspi2);
 extern uart xbee;
 extern core ta;
-extern jy901 gyro;
 uart mv_serial = xbee;
+extern jy901 gyro;
 
-#define koredeiino_ true //falseにするとemileの更新が止まる
+#define koredeiino_ false //falseにするとemileの更新が止まる
 
 uint8_t MV_RECIEVED_DATA[3]={0,0,0};
 
 uint8_t FIND_BRICK = 0; //見つけたら0以外
+
+int _check_type(int res){
+	switch(res){
+		case 3:
+			return v::H;
+			break;
+		case 4:
+			return v::S;
+			break;
+		case 5:
+			return v::U;
+			break;
+		case 6:
+			return v::sermo;
+			break;
+		default:
+			return -1;
+			break;
+	}
+}
 
 bool _check_node_type(node* x){
 	int8_t typ = x->type;
@@ -61,6 +81,15 @@ bool _check_node_type(node* x){
 		default:
 			return false;
 			break;
+	}
+}
+
+#define _FLG_CKS_ false // for _check_kit_same
+bool _check_kit_same(node* x,int _type){
+	if(x->type == _type || ( x->type == v::error_kit && _FLG_CKS_ ) ){
+		return true;
+	}else{
+		return false;
 	}
 }
 
@@ -244,10 +273,29 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 			break;
 	}
 	xbee.putint(res);
+	led_count_set(res);
+	if(res==5){
+		res=3;
+	}
+	if(res==15){
+		res=15;
+	}
 	if(res==0){
 		xbee.string("\x1b[49m \x1b[33m invalid response \x1b[39m\n\r");
 		return;
 	}
+	if(res==18||res==8||res==2){
+		return;
+	}
+	//ここ
+	/*if(/*_check_type(res)==ta.r_now()->type ||*/ //_check_type(res)==ta.r_pre()->type){
+		//return;
+	//}else{
+	//	if(_check_type(res)!=-1)ta.r_now()->type = _check_type(res);
+	//}*/
+	mv_cap(MV_FRONT,false);
+	mv_cap(MV_RIGHT,false);
+	mv_cap(MV_LEFT,false);
 	if(res>=10){
 		xbee.string(">>Find Brick!!!\x1b[49m");
 		FIND_BRICK=MV_RECIEVED_DATA[MV_DATA_DIR];
@@ -275,9 +323,6 @@ void  int_task_check_mv(uint16_t GPIO_Pin){
 	HAL_NVIC_DisableIRQ(MVS1_EXTI_IRQn);
 	HAL_NVIC_DisableIRQ(MVS2_EXTI_IRQn);
 	HAL_NVIC_DisableIRQ(MVS3_EXTI_IRQn);*/
-	mv_cap(MV_LEFT,false);
-	mv_cap(MV_FRONT,false);
-	mv_cap(MV_RIGHT,false);
 	return;
 }
 void MV_RIGHT_TURN(void){
@@ -353,12 +398,17 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 		return;
 	}
 	xbee.string("enter mv_after_stop_task_check!!");
+	if(false &&_check_kit_same(ta.r_now(),v::error_kit) || _check_kit_same(ta.r_pre(),v::error_kit)){
+		lcd_clear();
+		lcd_putstr("ER_KIT");
+		return;//new
+	}
 	uint8_t kit_need=0;
 	bool turn_flag = false;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
-				if(ta.r_pre()->type == v::H && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::H) &&*/ _check_kit_same(ta.r_pre(),v::H) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::H;
 				}else{
@@ -369,7 +419,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 				break;
 			case 4://S  1kits
 				kit_need=1;
-				if(ta.r_pre()->type == v::S && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::S) &&*/ _check_kit_same(ta.r_pre(),v::S) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::S;
 				}else{
@@ -381,7 +431,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			case 5://U 0kits
 				kit_need=0;
 				lcd_clear();
-				if(ta.r_pre()->type == v::U && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::U) &&*/ _check_kit_same(ta.r_pre(),v::U) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::U;
 				}else{
@@ -393,7 +443,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 			case 6:
 				kit_need=1;
 				lcd_clear();
-				if(ta.r_pre()->type == v::sermo && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::sermo) &&*/ _check_kit_same(ta.r_pre(),v::sermo) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::sermo;
 				}else{
@@ -555,11 +605,16 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 		return;
 	}
 	xbee.string("enter mv_task_check!\n\r");
+	if(false && _check_kit_same(ta.r_now(),v::error_kit) || _check_kit_same(ta.r_pre(),v::error_kit)){
+		lcd_clear();
+		lcd_putstr("ER_KIT");
+		return;//new
+	}
 	uint8_t kit_need=0;
 	switch(MV_RECIEVED_DATA[MV_DATA_TYPE]){
 			case 3://H  2kits
 				kit_need=2;
-				if(ta.r_pre()->type == v::H && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::H) &&*/ _check_kit_same(ta.r_pre(),v::H) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::H;
 				}else{
@@ -569,7 +624,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 				break;
 			case 4://S  1kits
 				kit_need=1;
-				if(ta.r_pre()->type == v::S && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::S) &&*/ _check_kit_same(ta.r_pre(),v::S) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::S;
 				}else{
@@ -579,7 +634,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 				break;
 			case 5://U 0kits
 				kit_need=0;
-				if(ta.r_pre()->type == v::U && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::U) &&*/ _check_kit_same(ta.r_pre(),v::U) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::U;
 				}else{
@@ -589,7 +644,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 				break;
 			case 6:
 				kit_need=1;
-				if(ta.r_pre()->type == v::sermo && koredeiino_){ return; }
+				if(/*_check_kit_same(ta.r_now(),v::sermo) &&*/ _check_kit_same(ta.r_pre(),v::sermo) && koredeiino_){ return; }
 				if(MV_RECIEVED_DATA[MV_DATA_DIR]==MV_FRONT){
 					if(ta.r_pre()!=ta.r_start() && koredeiino_)ta.r_pre()->type = v::sermo;
 				}else{
@@ -679,8 +734,7 @@ void mv_task_check(void){//waitのループ内の停止を求められるキット投下
 	if(motor::Task_Save!=motor::BRAKE){//BACKに入っていた場合はこの条件に入って元のマスに戻る。
 		motor::set_Status(motor::RETURN);
 	}
-	#warning RESTART???
-	motor::set_Status(motor::FREE);
+	motor::set_Status(motor::RESTART);
 	return;
 }
 /*
