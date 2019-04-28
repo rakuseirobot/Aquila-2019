@@ -471,7 +471,7 @@ void mv_after_stop_task_check(void){//終了後にキット投下が求められるタスク用
 					led(Greenled,0);
 					error_led(1,1);
 					if(kit_need==0){
-						for(int co=0;co<2;co++){
+						for(int co=0;co<20;co++){
 							error_led(1,3);
 							error_led(2,4);
 							buzzer();
