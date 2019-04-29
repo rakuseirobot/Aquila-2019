@@ -711,7 +711,7 @@ namespace motor{
 		return;
 	}
 	#define fixno 5 //gb_fix Sikiiti
-	const int gbbest=175;//185
+	const int gbbest=165;//185
 	uint32_t tbest = 600;
 	void gb_fix(void){
 		set_Status(NOPID);
@@ -737,12 +737,7 @@ namespace motor{
 		if(Sikiti>=dis[0]){//ëOÇÃï«äÓèÄ
 			bool flag=false;
 			if(FIND_BRICK==MV_FRONT){
-				if(!(Sikiti>=dis[1])){
-					return;
-				}
-				else{
-					flag=true;
-				}
+				return;
 			}
 			if(flag==false){
 				HAL_Delay(3);
@@ -755,7 +750,7 @@ namespace motor{
 					lcd_putstr("gb_fixF");
 					forward(MOTOR_RIGHT);
 					forward(MOTOR_LEFT);
-					while(dis[0]>gbbest){
+					while(dis[0]>gbbest&&Sikiti>=dis[0]){
 						if(dis[0]>=longway){
 							break;
 						}
@@ -768,7 +763,7 @@ namespace motor{
 					lcd_putstr("gb_fixF");
 					back(MOTOR_RIGHT);
 					back(MOTOR_LEFT);
-					while(dis[0]<gbbest){
+					while(dis[0]<gbbest&&Sikiti>=dis[0]){
 						if(dis[0]>=longway){
 							break;
 						}
@@ -782,6 +777,9 @@ namespace motor{
 			}
 		}
 		if(Sikiti>=dis[1]){
+			if(FIND_BRICK!=0){
+				return;
+			}
 			HAL_Delay(3);
 			dis[1]=ping(PING_BACK);
 			if(!(Sikiti>=dis[1])){
@@ -792,7 +790,7 @@ namespace motor{
 				lcd_putstr("gb_fixF");
 				forward(MOTOR_RIGHT);
 				forward(MOTOR_LEFT);
-				while(dis[1]<gbbest){
+				while(dis[1]<gbbest&&Sikiti>=dis[1]){
 					if(dis[1]>=longway){
 						break;
 					}
@@ -806,7 +804,7 @@ namespace motor{
 				back(MOTOR_RIGHT);
 				back(MOTOR_LEFT);
 				while(dis[1]>gbbest){
-					if(dis[1]>=longway){
+					if(dis[1]>=longway&&Sikiti>=dis[1]){
 						break;
 					}
 					dis[1]=ping(PING_BACK);
@@ -1534,6 +1532,7 @@ namespace motor{
 				brake(MOTOR_RIGHT);
 				brake(MOTOR_LEFT);
 				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
+				FIND_BRICK=0;
 				return 2;
 			}
 			else if(ang>=Ang_slope_Norm+Ang_slope_thre){//â∫ÇË
@@ -1589,6 +1588,7 @@ namespace motor{
 				brake(MOTOR_RIGHT);
 				brake(MOTOR_LEFT);
 				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
+				FIND_BRICK=0;
 				return 1;
 			}
 		}else if(x==v::back){//å„êiíÜ
@@ -1645,6 +1645,7 @@ namespace motor{
 				brake(MOTOR_RIGHT);
 				brake(MOTOR_LEFT);
 				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
+				FIND_BRICK=0;
 				return 1;
 			}
 			else if(ang<=Ang_slope_Norm-Ang_slope_thre){//è∏ÇË
@@ -1700,6 +1701,7 @@ namespace motor{
 				brake(MOTOR_RIGHT);
 				brake(MOTOR_LEFT);
 				set_pwm(MOTOR_SPEED[SPEED_TARGET]);
+				FIND_BRICK=0;
 				return 2;
 			}
 		}
@@ -1733,7 +1735,7 @@ namespace motor{
 		set_Status(NOPID);
 		turn_fix();
 		set_Status(NOPID);
-		FIND_BRICK=0;
+		//FIND_BRICK=0;
 		//return;
 	}
 	

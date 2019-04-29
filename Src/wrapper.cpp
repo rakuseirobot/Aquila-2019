@@ -48,11 +48,7 @@ void cpploop(void) {
 	lcd_putstr("Hello");
 	xbee.string("Hello!");
 	led_count_set(77);
-	while(1){
-		if(SW1){
-			motor::move(motor::ONE_ADVANCE);
-		}
-	}
+	motor::wait();
 	_h_stack_dfs();
 	while(1){
 		color_check();

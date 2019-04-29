@@ -122,7 +122,7 @@ void core::bfs(node* s,node* t){//s‚ğn“_‚É‚µ‚Ät‚ğŒŸõ‚·‚é
         rep(i,4){
             node* aa=a->next[i];
             if(aa!=np){
-                aa->dist=min(aa->dist+0,a->dist+1);
+                aa->dist=(uint8_t)min(aa->dist+0,a->dist+1);
 				if(aa->type==v::black)aa->dist=255;
                 if(aa->flag!=flg){ q.push(aa); aa->flag=flg; }
             }else{ break; }

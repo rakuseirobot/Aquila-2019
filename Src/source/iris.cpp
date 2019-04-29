@@ -14,7 +14,7 @@
 #include "uart_control.hpp"
 #include "ui_control.hpp"
 #include <stdint.h>
-#define ping_flag false //trueなら2マス先も見る
+#define ping_flag true //trueなら2マス先も見る
 #define serial_send_node_suru true //suru ?
 
 extern uart xbee;
@@ -82,11 +82,12 @@ void black_tile(){
             ta.go_st();
             ta.turn_l();
             ta.turn_l();
+            motor::fix_position(v::back);
         }else{
             motor::move(motor::ONE_ADVANCE); //new
             ta.go_st();
+            motor::fix_position(v::front);
         }
-        motor::fix_position(v::back);
         ta.blk_tile = true;
         ta.hamilton=false;
     }
@@ -176,6 +177,7 @@ bool nachylenie2(uint8_t x){/*make_nodesよりも前に使う*/
         IRIS_string("\n\rNAC2[END]\n\r");
         serial_send_node(ta.r_now());
     }
+    ta.now_hami = false;
     return true;
 }
 /*
@@ -201,6 +203,8 @@ bool blind_alley(int x){ /*what's this?*/
     else return false;
 }
 
+bool flag_move;
+
 void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:back(turn),3:back(usiro)
     motor::Right_count=0;
     motor::Left_count=0;
@@ -212,10 +216,12 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
             motor::fix_position();
             ta.go_st();
             motor::move(motor::ONE_ADVANCE);
+            motor::fix_position(v::front);
             break;
         case 1:
             ta.go_st();
             motor::move(motor::ONE_ADVANCE);
+            motor::fix_position(v::front);
             break;
         case 2:
             ta.turn_r();
@@ -223,6 +229,7 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
             motor::fix_position();
             ta.go_st();
             motor::move(motor::ONE_ADVANCE);
+            motor::fix_position(v::front);
             break;
         case 4:
             ta.turn_r();
@@ -233,12 +240,14 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
             motor::fix_position();
             ta.go_st();
             motor::move(motor::ONE_ADVANCE);
+            motor::fix_position(v::front);
             break;
         case 3:
             ta.turn_l(); ta.turn_l();
             ta.go_st();
             ta.turn_l(); ta.turn_l();
             motor::move(motor::ONE_BACK);
+            motor::fix_position(v::back);
             break;
         default:
             break;
@@ -247,12 +256,21 @@ void move(int num){//num::0:turn_l(90deg)+go_st,1:go_st,2:turn_r(90deg)+go_st,4:
     serial_send_node(ta.r_now());
     if(ta.r_now()!=ta.r_start())ta.r_now()->color=color::black;
     black_tile();
+    //motor::fix_position();
+    if(FIND_BRICK!=0){
+        if(flag_move==false){
+            flag_move=true;
+        }else{
+            flag_move=false;
+            FIND_BRICK=0;
+        }
+    }
     make_nodes();
-    motor::fix_position();
     if(num==v::back){ nachylenie2(v::back); }else{ nachylenie2(v::front); }
-    //make_nodes();
+    make_nodes();
     if(ta.r_now()->type==v::unknown){ta.r_now()->type = v::normal;}
     motor::wait();
+
 }
 
 void move_n(node* n){//move to neighborhood((node*)n)
@@ -457,6 +475,7 @@ void h_stack_dfs(){
 
 void _h_stack_dfs(){
 	IRIS_string("\n\rdfs[START]\n\r");
+    flag_move = false;
     serial_send_node(ta.r_now());
     motor::fix_position();
 	ta.stk.push(ta.r_start());
@@ -505,6 +524,7 @@ void _h_stack_dfs(){
             sstk->top();
 			if(ta.stk.empty()){//new...
 			    move_toa(ta.r_start());
+                motor::set_Status(motor::FREE);
 			    break;
 			}
             if(ta.now_hami && !ta.hamilton)break;

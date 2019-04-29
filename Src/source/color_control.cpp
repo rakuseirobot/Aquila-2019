@@ -56,7 +56,7 @@ uint8_t color_check(void){	//カラーチェック 0:白 1:クロ 2:銀（チェックポイント）
 	//if(blue+green+red>700){
 		//return 2;
 	//}
-	if(blue+green+red>=50){//??
+	if(blue+green+red>=70){//??
 		return 0;
 	}
 	else{

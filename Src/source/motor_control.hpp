@@ -82,8 +82,8 @@ namespace motor{
 		BRAKE=0
 	}move_t;
 	enum move_dis_t{
-		ONE_BLOCK=2500,
-		TWO_BLOCK=5200,
+		ONE_BLOCK=2450,
+		TWO_BLOCK=4900,
 		TURN=600,
 		HALF_BLOCK=1100,
 	};

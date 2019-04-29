@@ -7,6 +7,7 @@
 #include "ping_control.hpp"
 #include "delay.hpp"
 #include "uart_control.hpp"
+#include "mv_control.hpp"
 
 extern uart xbee;
 uart serial_ping = xbee;
@@ -84,7 +85,35 @@ uint16_t smaller(uint16_t x,uint16_t y){
   return y;
  }
 }
-
+/*
+uint8_t check_ping(int x){//x::direction,return 1,2,3,4,0(0=error)
+	switch(x){
+		case 0:
+			if(FIND_BRICK==MV_LEFT){
+				return 1;
+			}
+			return smaller(c_p(1),c_p(2));
+			break;
+		case 1:
+			if(FIND_BRICK==MV_FRONT){
+				return 1;
+			}
+			return c_p(3);
+			break;
+		case 2:
+			if(FIND_BRICK==MV_RIGHT){
+				return 1;
+			}
+			return smaller(c_p(4),c_p(5));
+			break;
+		case 3:
+			return c_p(6);
+			break;
+		default:
+			return 0;
+			break;
+	}
+}*/
 uint8_t check_ping(int x){//x::direction,return 1,2,3,4,0(0=error)
 	switch(x){
 		case 0:

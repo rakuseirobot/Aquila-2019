@@ -229,8 +229,11 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 			res=mv_spi_send(MV_LEFT,0);
 			//dir=1;
 			xbee.string("LEFT>");
+			if(res>=10){
+				FIND_BRICK=MV_LEFT;
+			}
 			if(!(ping(LEFT_BACK)<=Sikiti||ping(LEFT_FRONT)<=Sikiti)){
-				if(!(ping(LEFT_BACK)<=Sikiti||ping(LEFT_FRONT)<=Sikiti)){
+				if(!(ping(LEFT_BACK)<=Sikiti||ping(LEFT_FRONT)<=Sikiti)&&res<10){
 					buzzer(200);
 					return;
 				}
@@ -241,8 +244,11 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 			res=mv_spi_send(MV_FRONT,0);
 			//dir=2;
 			xbee.string("FRONT>");
+			if(res>=10){
+				FIND_BRICK=MV_FRONT;
+			}
 			if(!(ping(FRONT)<=Sikiti)){
-				if(!(ping(FRONT)<=Sikiti)){
+				if(!(ping(FRONT)<=Sikiti)&&res<10){
 					buzzer(200);
 					return;
 				}
@@ -253,8 +259,11 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 			res=mv_spi_send(MV_RIGHT,0);
 			//dir=3;
 			xbee.string("RIGHT>");
+			if(res>=10){
+				FIND_BRICK=MV_RIGHT;
+			}
 			if(!(ping(RIGHT_BACK)<=Sikiti||ping(RIGHT_FRONT)<=Sikiti)){
-				if(!(ping(RIGHT_BACK)<=Sikiti||ping(RIGHT_FRONT)<=Sikiti)){
+				if(!(ping(RIGHT_BACK)<=Sikiti||ping(RIGHT_FRONT)<=Sikiti)&&res<10){
 					buzzer(200);
 					return;
 				}
@@ -276,7 +285,7 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 		xbee.string("\x1b[49m \x1b[33m invalid response \x1b[39m\n\r");
 		return;
 	}
-	if(res==18||res==8||res==2){
+	if(res==8||res==2){
 		return;
 	}
 	//‚±‚± ‚É@map ‚Æ@return ‚ð‘‚«ž‚Þ
@@ -295,6 +304,9 @@ void int_task_check_mv(uint16_t GPIO_Pin){
 	mv_cap(MV_FRONT,false);
 	mv_cap(MV_RIGHT,false);
 	mv_cap(MV_LEFT,false);
+	if(res<10){
+		FIND_BRICK=0;
+	}
 	if(res>=10){
 		xbee.string(">>Find Brick!!!\x1b[49m");
 		FIND_BRICK=MV_RECIEVED_DATA[MV_DATA_DIR];
@@ -388,6 +400,7 @@ void MV_LEFT_TURN(void){
 	if(first>=270){
 		motor::fix_angle_v(first+90-360);
 	}
+
 	else{
 		motor::fix_angle_v(first+90);
 	}
