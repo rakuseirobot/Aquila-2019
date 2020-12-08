@@ -20,6 +20,8 @@ Robocup Junior Rescue Maze Program
 
 ですが、開発していたそのままなので、全体的に見にくいコードになって居て申し訳ないです。。。
 
+探索アルゴリズムについてはEmileに聞いてください.
+
 # Link
 
 [About robot](https://qiita.com/Shunk_/items/b6b5c49862ec9f9d852b)
@@ -45,6 +47,10 @@ Robocup Junior Rescue Maze Program
     shun@guetan.dev
 
 * Emile
+
+    Kyoto Univ.
+    
+    twitter( @hexagon_emil )
 
 # License
 
